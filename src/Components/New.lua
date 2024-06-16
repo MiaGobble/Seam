@@ -1,7 +1,8 @@
---[=[
-    Creates a new instance with given properties.
+-- Author: iGottic
 
+--[=[
     @class New
+    @since 1.0.0
 ]=]
 
 local New = {}
@@ -13,15 +14,21 @@ local HydrateObject = require(Dependencies.HydrateObject)
 --[=[
     Constructs a new instance with given properties.
 
-    @param ClassName string -- The class name of the instance
-    @return function -- The function to hydrate the instance properties
+    @param Class string | Instance -- The class name of the instance
+    @return ({[any] : any})) -> Instance -- The function to hydrate the instance properties
 ]=]
 
-function New:__call(ClassName : string)
-    local Object = Instance.new(ClassName)
+function New:__call(Class : string | Instance)
+    if typeof(Class) == "Instance" then
+        return function(Properties : {[any] : any})
+            return HydrateObject(Class, Properties)
+        end
+    else
+        local Object = Instance.new(Class)
 
-    return function(Properties : {[string] : any})
-        HydrateObject(Object, Properties)
+        return function(Properties : {[any] : any})
+            return HydrateObject(Object, Properties)
+        end
     end
 end
 
@@ -30,7 +37,7 @@ end
 ]=]
 
 function New:__index(Index : string)
-    if Index == "__SPHI_IDENTIFIER" then
+    if Index == "__SPHI_OBJECT" then
         return "New"
     else
         return nil
