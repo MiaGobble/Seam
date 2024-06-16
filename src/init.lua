@@ -24,4 +24,20 @@ Sphi.new = Sphi.New
 Sphi.Children = require(Components.Children)
 Sphi.children = Sphi.Children
 
+--[=[
+    @prop Value Value
+    @within Sphi
+]=]
+
+Sphi.Value = require(Components.Value)
+Sphi.value = Sphi.Value
+
+--[=[
+    @prop Computed Computed
+    @within Sphi
+]=]
+
+Sphi.Computed = require(Components.Computed)
+Sphi.computed = Sphi.Computed
+
 return Sphi
