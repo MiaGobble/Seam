@@ -12,7 +12,7 @@ local Dependencies = script.Parent.Parent.Dependencies
 local HydrateObject = require(Dependencies.HydrateObject)
 
 --[=[
-    Constructs a new instance with given properties.
+    Constructs a new instance or hydrates an existing one with given properties.
 
     @param Class string | Instance -- The class name of the instance
     @return ({[any] : any})) -> Instance -- The function to hydrate the instance properties
