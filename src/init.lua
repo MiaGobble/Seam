@@ -16,4 +16,12 @@ local Components = script.Components
 Sphi.New = require(Components.New)
 Sphi.new = Sphi.New
 
+--[=[
+    @prop Children Children
+    @within Sphi
+]=]
+
+Sphi.Children = require(Components.Children)
+Sphi.children = Sphi.Children
+
 return Sphi
