@@ -1,0 +1,13 @@
+{
+  "name": "Sphi",
+
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedFirst": {
+      "Sphi": {
+        "$path": "src"
+      }
+    }
+  }
+}
