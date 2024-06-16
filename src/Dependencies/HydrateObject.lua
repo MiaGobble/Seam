@@ -15,7 +15,7 @@ function HydrateObject:__call(Object : Instance, Properties : {[any] : any})
              else
                 error(`Object hydration recieved invalid index type! Expected Sphi object or string, got table ({Object:GetFullName()})`)
              end
-        elseif typeof(Index) == "table" then
+        elseif typeof(Property) == "table" then
             if Property.__SPHI_OBJECT then
                 Property(Object, Index)
             else
