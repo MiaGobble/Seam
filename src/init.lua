@@ -40,4 +40,12 @@ Sphi.value = Sphi.Value
 Sphi.Computed = require(Components.Computed)
 Sphi.computed = Sphi.Computed
 
+--[=[
+    @prop Spring Spring
+    @within Sphi
+]=]
+
+Sphi.Spring = require(Components.Animation.Spring)
+Sphi.spring = Sphi.Spring
+
 return Sphi
