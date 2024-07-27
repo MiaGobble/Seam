@@ -48,4 +48,12 @@ Sphi.computed = Sphi.Computed
 Sphi.Spring = require(Components.Animation.Spring)
 Sphi.spring = Sphi.Spring
 
+--[=[
+    @prop Tween Tween
+    @within Sphi
+]=]
+
+Sphi.Tween = require(Components.Animation.Tween)
+Sphi.tween = Sphi.Tween
+
 return Sphi
