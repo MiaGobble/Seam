@@ -5,13 +5,12 @@ local EULERS_NUMBER = 2.71828
 
 -- Imports
 local Dependencies = script.Parent.Parent.Parent.Dependencies
+local Components = script.Parent.Parent
 local PackType = require(Dependencies.PackType)
 local UnpackType = require(Dependencies.UnpackType)
+local Computed = require(Components.Computed)
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
-	-- This returns position and instantaneous velocity
-	-- The first derivative of position is velocity
-
 	local Time = os.clock() - Tick0
 
 	if (Dampening >= 1) then
@@ -36,7 +35,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local UnpackedValue = UnpackType(Value, ValueType)
 
     for Index, Element in ipairs(UnpackedValue) do
-        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = Element, Coordinate2 = Element, Velocity = 0, Tick0 = os.clock()}
+        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
     end
 
     return UnpackedValue
@@ -63,13 +62,25 @@ function Spring:__call(Value : any, Speed : number, Dampening : number)
                 local PackedValues = {}
 
                 for Index, Spring in ipairs(UnpackedSprings) do
-                    local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+                    local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     PackedValues[Index] = Position
                 end
 
                 return PackType(PackedValues, ValueType)
+            elseif Index == "Velocity" then
+                local PackedValues = {}
+
+                for Index, Spring in ipairs(UnpackedSprings) do
+                    local _, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+
+                    PackedValues[Index] = Velocity
+                end
+
+                return PackType(PackedValues, ValueType)
             end
+
+            return nil
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
@@ -96,7 +107,9 @@ function Spring:__call(Value : any, Speed : number, Dampening : number)
         end,
 
         __call = function(self, Object, Index : string)
-            
+            return Computed(function()
+                return self.Value
+            end)(Object, Index)
         end
     })
 
