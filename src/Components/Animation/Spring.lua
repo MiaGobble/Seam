@@ -1,36 +1,46 @@
 local Spring = {}
 
+-- Constants
+local EULERS_NUMBER = 2.71828
+
 -- Imports
 local Dependencies = script.Parent.Parent.Parent.Dependencies
 local PackType = require(Dependencies.PackType)
 local UnpackType = require(Dependencies.UnpackType)
-local SpringCoefficients = require(Dependencies.SpringCoefficients)
 
--- local posPos, posVel, velPos, velVel = springCoefficients(lastUpdateTime - spring._lastSchedule, spring._currentDamping, spring._currentSpeed)
+local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
+	-- This returns position and instantaneous velocity
+	-- The first derivative of position is velocity
 
--- 		local positions = spring._springPositions
--- 		local velocities = spring._springVelocities
--- 		local startDisplacements = spring._startDisplacements
--- 		local startVelocities = spring._startVelocities
--- 		local isMoving = false
+	local Time = os.clock() - Tick0
 
--- 		for index, goal in ipairs(spring._springGoals) do
--- 			local oldDisplacement = startDisplacements[index]
--- 			local oldVelocity = startVelocities[index]
--- 			local newDisplacement = oldDisplacement * posPos + oldVelocity * posVel
--- 			local newVelocity = oldDisplacement * velPos + oldVelocity * velVel
+	if (Dampening >= 1) then
+		local EulersFastTime = math.pow(EULERS_NUMBER, (Speed * Time))
 
--- 			if math.abs(newDisplacement) > EPSILON or math.abs(newVelocity) > EPSILON then
--- 				isMoving = true
--- 			end
+		return ((Coordinate1 + Coordinate2 * Speed * Time) / EulersFastTime + Position0), -- POSITION
+			((Coordinate2 * Speed * (1 - Time) - Coordinate1) / EulersFastTime) -- VELOCITY
+	else
+		local High = math.sqrt(1 - Dampening * Dampening)
 
--- 			positions[index] = newDisplacement + goal
--- 			velocities[index] = newVelocity
--- 		end
+		local HighSpeedTime = Speed * High * Time
+		local DampenedSpeedTime = math.pow(EULERS_NUMBER, Speed * Dampening * Time)
+		local SineHighSpeedTime, CosineHighSpeedTime = math.sin(HighSpeedTime), math.cos(HighSpeedTime)
 
--- 		if not isMoving then
--- 			springsToSleep[spring] = true
--- 		end
+		return ((Coordinate1 * CosineHighSpeedTime + Coordinate2 * SineHighSpeedTime) / DampenedSpeedTime + Position0),  -- POSITION
+			(Speed * ((High * Coordinate2 - Dampening * Coordinate1) * CosineHighSpeedTime - (High * Coordinate1 + Dampening * Coordinate1) * SineHighSpeedTime) / DampenedSpeedTime) -- VELOCITY
+	end
+end
+
+local function ConvertValueToUnpackedSprings(Value : any)
+    local ValueType = typeof(Value)
+    local UnpackedValue = UnpackType(Value, ValueType)
+
+    for Index, Element in ipairs(UnpackedValue) do
+        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = Element, Coordinate2 = Element, Velocity = 0, Tick0 = os.clock()}
+    end
+
+    return UnpackedValue
+end
 
 local function GetValue(ValueObject)
     if typeof(ValueObject) == "table" and ValueObject.__SPHI_OBJECT then
@@ -41,46 +51,47 @@ local function GetValue(ValueObject)
 end
 
 function Spring:__call(Value : any, Speed : number, Dampening : number)
-    local ValuePosition = {Position = GetValue(Value)}
-    local OldPosition = table.clone(ValuePosition)
-    local InitTime = os.clock()
-    local ValueType = typeof(ValuePosition.Position)
-    local ValueVelocities = table.create(#UnpackType(ValuePosition.Position, ValueType), 0)
+    local CurrentTarget = GetValue(Value)
+    local ValueType = typeof(CurrentTarget)
+    local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
 
     local ActiveValue = setmetatable({}, {
         __index = function(self, Index : string)
             if Index == "__SPHI_OBJECT" then
                 return "Spring"
             elseif Index == "Value" then
-                local PositionCoefficient, PositionDxCoefficient, VelocityCoefficient, AccelerationCoefficient = SpringCoefficients(os.clock() - InitTime, Dampening, Speed)
-                local UnpackedOldPosition = UnpackType(OldPosition.Position, ValueType)
-                local OldVelocities = table.clone(ValueVelocities)
-                local NewUnpackedPosition = table.create(#UnpackedOldPosition, 0)
-                local NewVelocities = table.create(#OldVelocities, 0)
+                local PackedValues = {}
 
-                for Index, Goal in ipairs(UnpackedOldPosition) do
-                    local OldDisplacement = UnpackedOldPosition[Index]
-                    local OldVelocity = OldVelocities[Index]
-                    local NewDisplacement = OldDisplacement * PositionCoefficient + OldVelocity * PositionDxCoefficient
-                    local NewVelocity = OldDisplacement * VelocityCoefficient + OldVelocity * AccelerationCoefficient
+                for Index, Spring in ipairs(UnpackedSprings) do
+                    local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
-                    NewUnpackedPosition[Index] = NewDisplacement + Goal
-                    NewVelocities[Index] = NewVelocity
+                    PackedValues[Index] = Position
                 end
 
-                ValuePosition.Position = PackType(NewUnpackedPosition, ValueType)
-                ValueVelocities = NewVelocities
-
-                return ValuePosition.Position
+                return PackType(PackedValues, ValueType)
             end
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Target" then
-                print("new target", NewValue)
-                OldPosition = table.clone(ValuePosition)
-                ValuePosition.Position = GetValue(NewValue)
-                ValueVelocities = table.create(#UnpackType(ValuePosition.Position, ValueType), 0)
+                CurrentTarget = GetValue(NewValue)
+
+                local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
+
+                for Index, Spring in ipairs(UnpackedSprings) do
+                    local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+
+                    Spring.Tick0, Spring.Position0 = os.clock(), UnpackedNewValue[Index]
+                    Spring.Coordinate1 = Position - Spring.Position0
+
+                    if (Dampening >= 1) then
+                        Spring.Coordinate2 = Spring.Coordinate1 + Velocity / Speed
+                    else
+                        local High = math.sqrt(1 - Dampening * Dampening)
+
+                        Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + Velocity / (Speed * High)
+                    end
+                end
             end
         end,
 
