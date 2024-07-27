@@ -32,11 +32,13 @@ function Computed:__call(Callback : (self : Instance, PropertyName : string) -> 
                 end
             end)
 
-            Object.AncestryChanged:Connect(function()
-                if not Object:IsDescendantOf(game) then
-                    Connection:Disconnect()
-                end
-            end)
+            if typeof(Object) == "Instance" then
+                Object.AncestryChanged:Connect(function()
+                    if not Object:IsDescendantOf(game) then
+                        Connection:Disconnect()
+                    end
+                end)
+            end
         end,
 
         __index = function(_, Index : string)

@@ -31,7 +31,7 @@ function Value:__call(Value : any)
                 Value = NewValue
 
                 for _, AttachedObject in AttachedObjects do -- Update all attached objects
-                    if not AttachedObject[1]:IsDescendantOf(game) then
+                    if typeof(AttachedObject) == "Instance" and not AttachedObject[1]:IsDescendantOf(game) then
                         table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
                         continue
                     end
@@ -54,13 +54,5 @@ function Value:__call(Value : any)
 
     return ActiveValue
 end
-
--- function Value:__index(Index : string)
---     if Index == "__SPHI_OBJECT" then
---         return "Value"
---     else
---         return nil
---     end
--- end
 
 return setmetatable({}, Value)
