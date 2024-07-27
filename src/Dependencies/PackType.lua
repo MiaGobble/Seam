@@ -1,5 +1,7 @@
 --!strict
 
+-- Original Author: Elttob
+
 --[[
 	Packs an array of numbers into a given animatable data type.
 	If the type is not animatable, nil will be returned.

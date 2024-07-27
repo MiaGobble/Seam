@@ -7,6 +7,13 @@
 
 local Computed = {}
 
+-- Types
+type ComputedInstance = {
+    get : (self : Instance, PropertyName : string) -> any?
+}
+
+type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
+
 -- Services
 local RunService = game:GetService("RunService")
 
@@ -19,7 +26,8 @@ local RunService = game:GetService("RunService")
 function Computed:__call(Callback : (self : Instance, PropertyName : string) -> any?)
     local ActiveComputation = setmetatable({}, {
         __call = function(_, Object : Instance, Index : string)
-            local Connection = RunService.RenderStepped:Connect(function() -- Surprisingly enough, this is a fairly efficient way to update computed values on a large scale
+            -- TODO: Optimize this
+            local Connection = RunService.RenderStepped:Connect(function()
                 local Value = Callback(Object, Index)
 
                 if Value == nil then
@@ -32,7 +40,7 @@ function Computed:__call(Callback : (self : Instance, PropertyName : string) -> 
                 end
             end)
 
-            if typeof(Object) == "Instance" then
+            if typeof(Object) == "Instance" then -- TODO: Change the way dependencies work
                 Object.AncestryChanged:Connect(function()
                     if not Object:IsDescendantOf(game) then
                         Connection:Disconnect()
@@ -47,10 +55,14 @@ function Computed:__call(Callback : (self : Instance, PropertyName : string) -> 
             elseif Index == "get" then
                 return Callback
             end
+
+            return nil
         end
     })
 
-    return ActiveComputation
+    return ActiveComputation :: ComputedInstance
 end
 
-return setmetatable({}, Computed)
+local Meta = setmetatable({}, Computed)
+
+return Meta :: ComputedConstructor

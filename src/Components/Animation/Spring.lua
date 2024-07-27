@@ -1,4 +1,20 @@
+-- Author: iGottic
+
+--[=[
+    @class Spring
+    @since 1.0.0
+]=]
+
 local Spring = {}
+
+-- Types
+type SpringInstance = {
+    Value : any,
+    Velocity : any,
+    Target : any
+}
+
+type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> SpringInstance
 
 -- Constants
 local EULERS_NUMBER = 2.71828
@@ -49,7 +65,7 @@ local function GetValue(ValueObject)
     end
 end
 
-function Spring:__call(Value : any, Speed : number, Dampening : number)
+function Spring:__call(Value : any, Speed : number, Dampening : number) : SpringInstance
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
@@ -107,7 +123,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number)
         end,
 
         __call = function(self, Object, Index : string)
-            return Computed(function()
+            return Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
                 return self.Value
             end)(Object, Index)
         end
@@ -117,7 +133,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number)
         Value(ActiveValue, "Target")
     end
 
-    return ActiveValue
+    return ActiveValue :: SpringInstance
 end
 
 --[=[
@@ -132,4 +148,6 @@ function Spring:__index(Index : string)
     end
 end
 
-return setmetatable({}, Spring)
+local Meta = setmetatable({}, Spring)
+
+return Meta :: SpringConstructor

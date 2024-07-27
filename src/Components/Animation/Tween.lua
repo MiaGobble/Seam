@@ -1,4 +1,19 @@
+-- Author: iGottic
+
+--[=[
+    @class Tween
+    @since 1.0.0
+]=]
+
 local Tween = {}
+
+-- Types
+type TweenInstance = {
+    Value : any,
+    Target : any
+}
+
+type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInstance
 
 -- Services
 local TweenService = game:GetService("TweenService")
@@ -29,7 +44,7 @@ local function GetValue(ValueObject)
     end
 end
 
-function Tween:__call(Value : any, TweenInformation : TweenInfo)
+function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
@@ -70,7 +85,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo)
         end,
 
         __call = function(self, Object, Index : string)
-            return Computed(function()
+            return Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
                 return self.Value
             end)(Object, Index)
         end
@@ -80,7 +95,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo)
         Value(ActiveValue, "Target")
     end
 
-    return ActiveValue
+    return ActiveValue :: TweenInstance
 end
 
 --[=[
@@ -95,4 +110,6 @@ function Tween:__index(Index : string)
     end
 end
 
-return setmetatable({}, Tween)
+local Meta = setmetatable({}, Tween)
+
+return Meta :: TweenConstructor

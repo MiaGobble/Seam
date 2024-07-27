@@ -15,6 +15,8 @@ local Children = {}
 ]=]
 
 function Children:__call(Object : Instance, Children : {[any] : any})
+    -- ISSUE: As of right now, you can't use Sphi objects as children.
+
     for _, Child in Children do
         if typeof(Child) ~= "Instance" then
             error("Invalid child type! Expected Instance, got " .. typeof(Child))

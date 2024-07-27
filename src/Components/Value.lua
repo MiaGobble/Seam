@@ -7,6 +7,13 @@
 
 local Value = {}
 
+-- Types
+type ValueInstance = {
+    Value : any
+}
+
+type ValueConstructor = (Value : any) -> ValueInstance
+
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
 
@@ -43,7 +50,7 @@ function Value:__call(Value : any)
             end
         end,
 
-        __call = function(self, Object, Index : string)
+        __call = function(self, Object, Index : string) -- TODO: Change the way dependencies work
             table.insert(AttachedObjects, {
                 Object, Index
             })
@@ -52,7 +59,9 @@ function Value:__call(Value : any)
         end
     })
 
-    return ActiveValue
+    return ActiveValue :: ValueInstance
 end
 
-return setmetatable({}, Value)
+local Meta = setmetatable({}, Value)
+
+return Meta :: ValueConstructor
