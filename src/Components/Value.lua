@@ -31,6 +31,8 @@ function Value:__call(Value : any)
             elseif Index == "Value" then
                 return Value
             end
+
+            return nil
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
@@ -38,6 +40,11 @@ function Value:__call(Value : any)
                 Value = NewValue
 
                 for _, AttachedObject in AttachedObjects do -- Update all attached objects
+                    if not AttachedObject[1] then
+                        table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
+                        continue
+                    end
+
                     if typeof(AttachedObject) == "Instance" and not AttachedObject[1]:IsDescendantOf(game) then
                         table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
                         continue
