@@ -53,7 +53,6 @@ local function unpackType(value: any, typeString: string): {number}
 		return {value.Min.X, value.Min.Y, value.Max.X, value.Max.Y}
 
 	elseif typeString == "Region3" then
-		-- FUTURE: support rotated Region3s if/when they become constructable
 		return {
 			value.CFrame.X, value.CFrame.Y, value.CFrame.Z,
 			value.Size.X, value.Size.Y, value.Size.Z
