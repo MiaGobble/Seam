@@ -19,10 +19,10 @@ type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInst
 local TweenService = game:GetService("TweenService")
 
 -- Imports
-local Dependencies = script.Parent.Parent.Parent.Dependencies
+local Modules = script.Parent.Parent.Parent.Modules
 local Components = script.Parent.Parent
-local PackType = require(Dependencies.PackType)
-local UnpackType = require(Dependencies.UnpackType)
+local PackType = require(Modules.PackType)
+local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
 
 local function ConvertValueToUnpackedTweens(Value : any)

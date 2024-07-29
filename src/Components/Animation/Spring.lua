@@ -20,10 +20,10 @@ type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> Sp
 local EULERS_NUMBER = 2.71828
 
 -- Imports
-local Dependencies = script.Parent.Parent.Parent.Dependencies
+local Modules = script.Parent.Parent.Parent.Modules
 local Components = script.Parent.Parent
-local PackType = require(Dependencies.PackType)
-local UnpackType = require(Dependencies.UnpackType)
+local PackType = require(Modules.PackType)
+local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)

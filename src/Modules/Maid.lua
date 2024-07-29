@@ -31,36 +31,36 @@ local function CountDictionaryEntries(Dictionary : {[string] : any})
 end
 
 function Maid:__index(Value)
-	return Maid[Value] or self._Tasks[Value]
+	return Maid[Value] or self.CurrentTasks[Value]
 end
 
 function Maid:__newindex(Key, Value)
-	if self._Tasks[Key] then
-		ClearTask(self._Tasks[Key])
+	if self.CurrentTasks[Key] then
+		ClearTask(self.CurrentTasks[Key])
 		warn(Key .. " was reserved. Clearing task!")
 	end
 	
-	self._Tasks[Key] = Value
+	self.CurrentTasks[Key] = Value
 end
 
 function Maid.new()
-	local self = setmetatable({}, Maid)
+	local self = {}
 
-	self._Tasks = {}
+	self.CurrentTasks = {}
 	
-	return self
+	return setmetatable(self, Maid)
 end
 
 function Maid:GiveTask(Task : any)
-	local Index = CountDictionaryEntries(self._Tasks)
+	local Index = CountDictionaryEntries(self.CurrentTasks)
 	
-	self._Tasks[Index] = Task
+	self.CurrentTasks[Index] = Task
 
 	return Index
 end
 
 function Maid:ClearTask(Key : string)
-	local Task = self._Tasks[Key]
+	local Task = self.CurrentTasks[Key]
 	
 	if Task then
 		ClearTask(Task)
@@ -70,14 +70,14 @@ function Maid:ClearTask(Key : string)
 end
 
 function Maid:ClearTasks()
-	for _, Task in self._Tasks do
+	for _, Task in self.CurrentTasks do
 		ClearTask(Task)
 	end
 end
 
 function Maid:Destroy()
 	self:ClearTasks()
-	self._Tasks = nil
+	self.CurrentTasks = nil
 end
 
 return Maid
