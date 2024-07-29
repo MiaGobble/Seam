@@ -63,6 +63,8 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             LastValue = NewValue
         end))
     end
+
+    return MaidInstance
 end
 
 return DependenciesManager
