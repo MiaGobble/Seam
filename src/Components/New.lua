@@ -8,8 +8,8 @@
 local New = {}
 
 -- Imports
-local Dependencies = script.Parent.Parent.Dependencies
-local HydrateObject = require(Dependencies.HydrateObject)
+local Modules = script.Parent.Parent.Modules
+local HydrateObject = require(Modules.HydrateObject)
 
 --[=[
     Constructs a new instance or hydrates an existing one with given properties.
