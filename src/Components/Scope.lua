@@ -16,7 +16,7 @@ type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> Sco
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local Maid = require(Modules.Maid)
+local Janitor = require(Modules.Janitor)
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
@@ -47,21 +47,23 @@ function Scope:__call(ScopedObjects)
                 return
             end
 
-            self.Maid:GiveTask(Tuple)
+            for Index, Value in ipairs(Tuple) do
+                self.Janitor:Add(Value)
+            end
     
             return unpack(Tuple)
         end
     end
 
     function selfClass:Destroy()
-        self.Maid:Destroy()
-        self.Maid = nil
+        self.Janitor:Destroy()
+        self.Janitor = nil
     end
 
     local Object = setmetatable(selfClass, selfMeta)
 
     Object.ScopedObjects = ScopedObjects
-    Object.Maid = Maid.new()
+    Object.Janitor = Janitor.new()
 
     return Object
 end

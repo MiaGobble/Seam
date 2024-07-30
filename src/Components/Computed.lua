@@ -17,7 +17,7 @@ type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
-local Maid = require(Modules.Maid)
+local Janitor = require(Modules.Janitor)
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
@@ -26,19 +26,20 @@ local Maid = require(Modules.Maid)
 ]=]
 
 function Computed:__call(Callback : () -> any?)
-    local MaidInstance = Maid.new()
+    local JanitorInstance = Janitor.new()
 
     local ActiveComputation; ActiveComputation = setmetatable({
-        Destroy = function(self)
-            MaidInstance:Destroy()
-            MaidInstance = nil
+        Destroy = function()
+            JanitorInstance:Destroy()
         end
     }, {
         __call = function(_, Object : Instance, Index : string)
-            MaidInstance:GiveTask(MaidInstance[DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
-            })])
+            }))
+
+            return ActiveComputation
         end,
 
         __index = function(_, Index : string)

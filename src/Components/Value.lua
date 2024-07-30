@@ -17,7 +17,7 @@ type ValueConstructor = (Value : any) -> ValueInstance
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
-local Maid = require(Modules.Maid)
+local Janitor = require(Modules.Janitor)
 
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
@@ -27,12 +27,11 @@ local Maid = require(Modules.Maid)
 ]=]
 
 function Value:__call(Value : any)
-    local MaidInstance = Maid.new()
+    local JanitorInstance = Janitor.new()
 
     local ActiveValue = setmetatable({
         Destroy = function(self)
-            MaidInstance:Destroy()
-            MaidInstance = nil
+            JanitorInstance:Destroy()
         end
     }, {
         __index = function(self, Index : string)
@@ -54,15 +53,23 @@ function Value:__call(Value : any)
         end,
 
         __call = function(self, Object, Index : string)
+            if not Object then
+                return
+            end
+
+            if not Index then
+                return
+            end
+
             Object[Index] = Value
 
-            MaidInstance:GiveTask(MaidInstance[DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
                     return Value
                 end,
                 
                 PropertyName = Index
-            })])
+            }))
         end
     })
 

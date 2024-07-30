@@ -25,6 +25,7 @@ local Components = script.Parent.Parent
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
+local Janitor = require(Modules.Janitor)
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
 	local Time = os.clock() - Tick0
@@ -69,8 +70,15 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
+    local JanitorInstance = Janitor.new()
 
-    local ActiveValue = setmetatable({}, {
+    local ActiveValue; ActiveValue = setmetatable({
+        Destroy = function(self)
+            UnpackedSprings = nil
+            JanitorInstance:Destroy()
+            JanitorInstance = nil
+        end
+    }, {
         __index = function(self, Index : string)
             if Index == "__SPHI_OBJECT" then
                 return "Spring"
@@ -123,9 +131,11 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
         end,
 
         __call = function(self, Object, Index : string)
-            return Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
+            JanitorInstance:Add(Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
                 return self.Value
-            end)(Object, Index)
+            end)(Object, Index))
+
+            return ActiveValue
         end
     })
 
