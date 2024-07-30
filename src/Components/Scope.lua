@@ -46,10 +46,6 @@ function Scope:__call(ScopedObjects)
             if #Tuple == 0 then
                 return
             end
-    
-            -- for _, Value in Tuple do
-            --     self.Maid:GiveTask(Value)
-            -- end
 
             self.Maid:GiveTask(Tuple)
     
