@@ -7,10 +7,6 @@
 
 local New = {}
 
--- Imports
---local Modules = script.Parent.Parent.Modules
---local HydrateObject = require(Modules.HydrateObject)
-
 --[=[
     Constructs a new instance or hydrates an existing one with given properties.
 
@@ -19,18 +15,6 @@ local New = {}
 ]=]
 
 function New:__call(Class : string | Instance, Properties : {[any] : any})
-    -- if typeof(Class) == "Instance" then
-    --     return function(Properties : {[any] : any})
-    --         return HydrateObject(Class, Properties)
-    --     end
-    -- else
-    --     local Object = Instance.new(Class)
-
-    --     return function(Properties : {[any] : any})
-    --         return HydrateObject(Object, Properties)
-    --     end
-    -- end
-
     local Object = nil
 
     if typeof(Class) == "Instance" then
