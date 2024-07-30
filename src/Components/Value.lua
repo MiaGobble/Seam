@@ -27,10 +27,14 @@ local Maid = require(Modules.Maid)
 ]=]
 
 function Value:__call(Value : any)
-    local AttachedObjects = {}
     local MaidInstance = Maid.new()
 
-    local ActiveValue = setmetatable({}, {
+    local ActiveValue = setmetatable({
+        Destroy = function(self)
+            MaidInstance:Destroy()
+            MaidInstance = nil
+        end
+    }, {
         __index = function(self, Index : string)
             if Index == "__SPHI_OBJECT" then
                 return "Value"
@@ -44,30 +48,12 @@ function Value:__call(Value : any)
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(Value)  then
                 Value = NewValue
-
-                -- for _, AttachedObject in AttachedObjects do -- Update all attached objects
-                --     if not AttachedObject[1] then
-                --         table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
-                --         continue
-                --     end
-
-                --     if typeof(AttachedObject) == "Instance" and not AttachedObject[1]:IsDescendantOf(game) then
-                --         table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
-                --         continue
-                --     end
-
-                --     AttachedObject[1][AttachedObject[2]] = NewValue
-                -- end
             else
                 error("Invalid value type! Expected " .. typeof(Value) .. ", got " .. typeof(NewValue))
             end
         end,
 
         __call = function(self, Object, Index : string)
-            table.insert(AttachedObjects, {
-                Object, Index
-            })
-
             Object[Index] = Value
 
             MaidInstance:GiveTask(MaidInstance[DependenciesManager:AttachStateToObject(Object, {

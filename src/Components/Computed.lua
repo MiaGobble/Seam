@@ -14,12 +14,10 @@ type ComputedInstance = {
 
 type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
 
--- Services
-local RunService = game:GetService("RunService")
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
+local Maid = require(Modules.Maid)
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
@@ -28,39 +26,19 @@ local DependenciesManager = require(Modules.DependenciesManager)
 ]=]
 
 function Computed:__call(Callback : () -> any?)
-    local ActiveComputation; ActiveComputation = setmetatable({}, {
+    local MaidInstance = Maid.new()
+
+    local ActiveComputation; ActiveComputation = setmetatable({
+        Destroy = function(self)
+            MaidInstance:Destroy()
+            MaidInstance = nil
+        end
+    }, {
         __call = function(_, Object : Instance, Index : string)
-            -- TODO: Optimize this
-            -- local Connection = RunService.RenderStepped:Connect(function()
-            --     local Value = Callback(Object, Index)
-
-            --     if Value == nil then
-            --         warn("Computed value is nil, doing nothing")
-            --         return
-            --     end
-
-            --     if Object[Index] ~= Value then
-            --         Object[Index] = Value
-            --     end
-            -- end)
-
-            -- if typeof(Object) == "Instance" then -- TODO: Change the way dependencies work
-            --     Object.AncestryChanged:Connect(function()
-            --         if not Object:IsDescendantOf(game) then
-            --             Connection:Disconnect()
-            --         end
-            --     end)
-            -- end
-
-            -- DependenciesManager:AttachStateToObject(Object, {
-            --     Value = Callback(Object, Index),
-            --     PropertyName = Index
-            -- })
-
-            DependenciesManager:AttachStateToObject(Object, {
+            MaidInstance:GiveTask(MaidInstance[DependenciesManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
-            })
+            })])
         end,
 
         __index = function(_, Index : string)

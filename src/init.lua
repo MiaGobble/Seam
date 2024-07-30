@@ -56,4 +56,12 @@ Sphi.spring = Sphi.Spring
 Sphi.Tween = require(Components.Animation.Tween)
 Sphi.tween = Sphi.Tween
 
+--[=[
+    @prop Scope Scope
+    @within Sphi
+]=]
+
+Sphi.Scope = require(Components.Scope)
+Sphi.scope = Sphi.Scope
+
 return Sphi
