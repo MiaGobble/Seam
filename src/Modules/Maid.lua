@@ -85,6 +85,10 @@ function Maid:ClearTask(Key : string)
 end
 
 function Maid:ClearTasks()
+	if not self.CurrentTasks then
+		return
+	end
+
 	for _, Task in self.CurrentTasks do
 		ClearTask(Task)
 	end

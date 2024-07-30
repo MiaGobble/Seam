@@ -47,11 +47,11 @@ function Scope:__call(ScopedObjects)
                 return
             end
     
-            for _, Value in Tuple do
-                if typeof(Value) == "table" or typeof(Value) == "Instance" then
-                    self.Maid:GiveTask(Value)
-                end
-            end
+            -- for _, Value in Tuple do
+            --     self.Maid:GiveTask(Value)
+            -- end
+
+            self.Maid:GiveTask(Tuple)
     
             return unpack(Tuple)
         end
