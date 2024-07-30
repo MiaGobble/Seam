@@ -64,4 +64,20 @@ Sphi.tween = Sphi.Tween
 Sphi.Scope = require(Components.Scope)
 Sphi.scope = Sphi.Scope
 
+--[=[
+    @prop OnEvent OnEvent
+    @within Sphi
+]=]
+
+Sphi.OnEvent = require(Components.OnEvent)
+Sphi.onEvent = Sphi.OnEvent
+
+--[=[
+    @prop OnChange OnChanged
+    @within Sphi
+]=]
+
+Sphi.OnChanged = require(Components.OnChanged)
+Sphi.onChanged = Sphi.OnChanged
+
 return Sphi
