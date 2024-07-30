@@ -9,16 +9,11 @@ local Maid = {}
 
 local function ClearTask(Task : any)
 	local Type = typeof(Task)
-
-	print(Type)
 	
 	if Type == "RBXScriptConnection" then
 		Task:Disconnect()
 	elseif Type == "table" then
-		print(Task)
-
 		if Task.Destroy then
-			print("byebye")
 			Task:Destroy()
 		else
 			for Index, Value in Task do
@@ -30,7 +25,6 @@ local function ClearTask(Task : any)
 		Task()
 		Task = nil
 	elseif Type == "Instance" then
-		print("byebyeinstance")
 		Task:Destroy()
 	end
 end

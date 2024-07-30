@@ -54,7 +54,6 @@ function Scope:__call(ScopedObjects)
     end
 
     function selfClass:Destroy()
-        print("destroy")
         self.Maid:Destroy()
         self.Maid = nil
     end
