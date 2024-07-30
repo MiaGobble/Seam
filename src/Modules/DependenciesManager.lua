@@ -4,7 +4,7 @@ local DependenciesManager = {}
 local RunService = game:GetService("RunService")
 
 -- Imports
-local Maid = require(script.Parent.Maid)
+local Janitor = require(script.Parent.Janitor)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
@@ -20,12 +20,12 @@ end
 
 function DependenciesManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
-    local MaidInstance = Maid.new()
+    local JanitorInstance = Janitor.new()
 
     if ObjectType == "Instance" then
         local LastValue = nil
 
-        MaidInstance:GiveTask(RunService.RenderStepped:Connect(function()
+        JanitorInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
@@ -40,15 +40,15 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             LastValue = NewValue
         end))
 
-        MaidInstance:GiveTask(Object.AncestryChanged:Connect(function()
+        JanitorInstance:Add(Object.AncestryChanged:Connect(function()
             if not Object:IsDescendantOf(game) then
-                Maid:Destroy()
+                JanitorInstance:Destroy()
             end
         end))
     elseif ObjectType == "SphiObject" then
         local LastValue = StateInstance.Value
 
-        MaidInstance:GiveTask(RunService.RenderStepped:Connect(function()
+        JanitorInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
@@ -64,7 +64,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         end))
     end
 
-    return MaidInstance
+    return JanitorInstance
 end
 
 return DependenciesManager

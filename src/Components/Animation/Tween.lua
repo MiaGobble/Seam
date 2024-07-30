@@ -24,6 +24,7 @@ local Components = script.Parent.Parent
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
+local Janitor = require(Modules.Janitor)
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
@@ -48,8 +49,15 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
+    local JanitorInstance = Janitor.new()
 
-    local ActiveValue = setmetatable({}, {
+    local ActiveValue; ActiveValue = setmetatable({
+        Destroy = function(self)
+            UnpackedSprings = nil
+            JanitorInstance:Destroy()
+            JanitorInstance = nil
+        end
+    }, {
         __index = function(self, Index : string)
             if Index == "__SPHI_OBJECT" then
                 return "Tween"
@@ -85,9 +93,11 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end,
 
         __call = function(self, Object, Index : string)
-            return Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
+            JanitorInstance:Add(Computed(function()
                 return self.Value
-            end)(Object, Index)
+            end)(Object, Index))
+
+            return ActiveValue
         end
     })
 

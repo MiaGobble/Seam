@@ -14,6 +14,11 @@ type ValueInstance = {
 
 type ValueConstructor = (Value : any) -> ValueInstance
 
+-- Imports
+local Modules = script.Parent.Parent.Modules
+local DependenciesManager = require(Modules.DependenciesManager)
+local Janitor = require(Modules.Janitor)
+
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
 
@@ -22,9 +27,13 @@ type ValueConstructor = (Value : any) -> ValueInstance
 ]=]
 
 function Value:__call(Value : any)
-    local AttachedObjects = {}
+    local JanitorInstance = Janitor.new()
 
-    local ActiveValue = setmetatable({}, {
+    local ActiveValue = setmetatable({
+        Destroy = function(self)
+            JanitorInstance:Destroy()
+        end
+    }, {
         __index = function(self, Index : string)
             if Index == "__SPHI_OBJECT" then
                 return "Value"
@@ -38,31 +47,29 @@ function Value:__call(Value : any)
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(Value)  then
                 Value = NewValue
-
-                for _, AttachedObject in AttachedObjects do -- Update all attached objects
-                    if not AttachedObject[1] then
-                        table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
-                        continue
-                    end
-
-                    if typeof(AttachedObject) == "Instance" and not AttachedObject[1]:IsDescendantOf(game) then
-                        table.remove(AttachedObjects, table.find(AttachedObjects, AttachedObject))
-                        continue
-                    end
-
-                    AttachedObject[1][AttachedObject[2]] = NewValue
-                end
             else
                 error("Invalid value type! Expected " .. typeof(Value) .. ", got " .. typeof(NewValue))
             end
         end,
 
-        __call = function(self, Object, Index : string) -- TODO: Change the way dependencies work
-            table.insert(AttachedObjects, {
-                Object, Index
-            })
+        __call = function(self, Object, Index : string)
+            if not Object then
+                return
+            end
+
+            if not Index then
+                return
+            end
 
             Object[Index] = Value
+
+            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+                Value = function()
+                    return Value
+                end,
+                
+                PropertyName = Index
+            }))
         end
     })
 
