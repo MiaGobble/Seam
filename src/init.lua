@@ -80,4 +80,20 @@ Sphi.onEvent = Sphi.OnEvent
 Sphi.OnChanged = require(Components.OnChanged)
 Sphi.onChanged = Sphi.OnChanged
 
+--[=[
+    @prop DeclareComponent DeclareComponent
+    @within Sphi
+]=]
+
+Sphi.DeclareComponent = require(Components.DeclareComponent)
+Sphi.declareComponent = Sphi.DeclareComponent
+
+--[=[
+    @prop From From
+    @within Sphi
+]=]
+
+Sphi.From = require(Components.From)
+Sphi.from = Sphi.From
+
 return Sphi
