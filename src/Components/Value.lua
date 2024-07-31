@@ -18,6 +18,7 @@ type ValueConstructor = (Value : any) -> ValueInstance
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
+local Signal = require(Modules.Signal)
 
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
@@ -28,6 +29,7 @@ local Janitor = require(Modules.Janitor)
 
 function Value:__call(Value : any)
     local JanitorInstance = Janitor.new()
+    local ChangedSignal = Signal.new()
 
     local ActiveValue = setmetatable({
         Destroy = function(self)
@@ -39,6 +41,8 @@ function Value:__call(Value : any)
                 return "Value"
             elseif Index == "Value" then
                 return Value
+            elseif Index == "Changed" then
+                return ChangedSignal
             end
 
             return nil
@@ -47,6 +51,7 @@ function Value:__call(Value : any)
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(Value)  then
                 Value = NewValue
+                ChangedSignal:Fire("Value")
             else
                 error("Invalid value type! Expected " .. typeof(Value) .. ", got " .. typeof(NewValue))
             end

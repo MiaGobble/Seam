@@ -26,6 +26,7 @@ local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
 local Janitor = require(Modules.Janitor)
+local Signal = require(Modules.Signal)
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
 	local Time = os.clock() - Tick0
@@ -71,6 +72,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
     local JanitorInstance = Janitor.new()
+    local ChangedSignal = Signal.new()
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -91,6 +93,8 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                     PackedValues[Index] = Position
                 end
 
+                ChangedSignal:Fire("Value")
+
                 return PackType(PackedValues, ValueType)
             elseif Index == "Velocity" then
                 local PackedValues = {}
@@ -102,6 +106,8 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 end
 
                 return PackType(PackedValues, ValueType)
+            elseif Index == "Changed" then
+                return ChangedSignal
             end
 
             return nil
@@ -131,7 +137,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
         end,
 
         __call = function(self, Object, Index : string)
-            JanitorInstance:Add(Computed(function() -- Is this really the best solution? I feel like there is a better way to do this.
+            JanitorInstance:Add(Computed(function()
                 return self.Value
             end)(Object, Index))
 
