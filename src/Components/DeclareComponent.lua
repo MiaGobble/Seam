@@ -7,28 +7,25 @@
 
 local DeclareComponent = {}
 
+-- Types
+type ComponentConstructor = (HydratedObject : Instance, ...any) -> any
+type DeclareComponent = (ComponentName : string, Constructor : ComponentConstructor) -> nil
+
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local ComponentsManager = require(Modules.ComponentsManager)
 
 --[=[
+    Declares a new component
 
+    @param ComponentName string -- The component name
+    @param Constructor function -- The constructor function
 ]=]
 
-function DeclareComponent:__call(ComponentName : string, Constructor : (any) -> any)
+function DeclareComponent:__call(ComponentName : string, Constructor : ComponentConstructor)
     ComponentsManager:PushComponent(ComponentName, Constructor)
 end
 
--- --[=[
---     @ignore
--- ]=]
+local Meta = setmetatable({}, DeclareComponent)
 
--- function DeclareComponent:__index(Index : string)
---     if Index == "__SPHI_OBJECT" then
---         return "DeclareComponent"
---     else
---         return nil
---     end
--- end
-
-return setmetatable({}, DeclareComponent)
+return Meta :: DeclareComponent
