@@ -20,16 +20,6 @@ function New:__call(Class : string | Instance, Properties : {[any] : any}, From 
     if typeof(Class) == "Instance" then
         Object = Class
     elseif typeof(Class) == "string" then
-        -- if From then
-        --     if From.__SPHI_OBJECT == "From" then
-        --         Object = From.Component(unpack(From.Args))
-        --     else
-        --         error("Invalid From object! Expected From object, got " .. typeof(From))
-        --     end
-        -- else
-        --     Object = Instance.new(Class)
-        -- end
-
         Object = Instance.new(Class)
     else
         error("Invalid class type! Expected string or instance, got " .. typeof(Class))
