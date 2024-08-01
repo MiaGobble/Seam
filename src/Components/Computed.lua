@@ -43,7 +43,7 @@ function Computed:__call(Callback : () -> any?)
         end,
 
         __index = function(_, Index : string)
-            if Index == "__SPHI_OBJECT" then
+            if Index == "__SEAM_OBJECT" then
                 return "Computed"
             elseif Index == "Value" then
                 return Callback()

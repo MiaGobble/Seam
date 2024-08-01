@@ -36,7 +36,7 @@ function Scope:__call(ScopedObjects)
         end
     
         if typeof(Object) ~= "table" then
-            error("Object is not a valid Sphi object")
+            error("Object is not a valid Seam object")
             return
         end
     

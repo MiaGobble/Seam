@@ -39,7 +39,7 @@ local function ConvertValueToUnpackedTweens(Value : any)
 end
 
 local function GetValue(ValueObject)
-    if typeof(ValueObject) == "table" and ValueObject.__SPHI_OBJECT then
+    if typeof(ValueObject) == "table" and ValueObject.__SEAM_OBJECT then
         return ValueObject.Value
     else
         return ValueObject
@@ -61,7 +61,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end
     }, {
         __index = function(self, Index : string)
-            if Index == "__SPHI_OBJECT" then
+            if Index == "__SEAM_OBJECT" then
                 return "Tween"
             elseif Index == "Value" then
                 local PackedValues = {}
@@ -107,7 +107,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end
     })
 
-    if typeof(Value) == "table" and Value.__SPHI_OBJECT then
+    if typeof(Value) == "table" and Value.__SEAM_OBJECT then
         Value(ActiveValue, "Target")
     end
 
@@ -119,7 +119,7 @@ end
 ]=]
 
 function Tween:__index(Index : string)
-    if Index == "__SPHI_OBJECT" then
+    if Index == "__SEAM_OBJECT" then
         return "Tween"
     else
         return nil

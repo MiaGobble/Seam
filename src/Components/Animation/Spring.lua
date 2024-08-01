@@ -60,7 +60,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
 end
 
 local function GetValue(ValueObject)
-    if typeof(ValueObject) == "table" and ValueObject.__SPHI_OBJECT then
+    if typeof(ValueObject) == "table" and ValueObject.__SEAM_OBJECT then
         return ValueObject.Value
     else
         return ValueObject
@@ -82,7 +82,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
         end
     }, {
         __index = function(self, Index : string)
-            if Index == "__SPHI_OBJECT" then
+            if Index == "__SEAM_OBJECT" then
                 return "Spring"
             elseif Index == "Value" then
                 local PackedValues = {}
@@ -145,7 +145,7 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
         end
     })
 
-    if typeof(Value) == "table" and Value.__SPHI_OBJECT then
+    if typeof(Value) == "table" and Value.__SEAM_OBJECT then
         Value(ActiveValue, "Target")
     end
 
@@ -157,7 +157,7 @@ end
 ]=]
 
 function Spring:__index(Index : string)
-    if Index == "__SPHI_OBJECT" then
+    if Index == "__SEAM_OBJECT" then
         return "Spring"
     else
         return nil

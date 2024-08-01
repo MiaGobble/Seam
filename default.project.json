@@ -1,11 +1,11 @@
 {
-  "name": "Sphi",
+  "name": "Seam",
 
   "tree": {
     "$className": "DataModel",
 
     "ReplicatedFirst": {
-      "Sphi": {
+      "Seam": {
         "$path": "src"
       }
     }

@@ -26,7 +26,7 @@ function From:__call(ComponentName : string, ... : any)
     end
 
     return {
-        __SPHI_OBJECT = "From",
+        __SEAM_OBJECT = "From",
         Component = Component,
         Args = {...}
     }

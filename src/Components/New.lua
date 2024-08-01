@@ -27,16 +27,16 @@ function New:__call(Class : string | Instance, Properties : {[any] : any}, From 
 
     for Index, Property in Properties do
         if typeof(Index) == "table" then
-             if Index.__SPHI_INDEX then
+             if Index.__SEAM_INDEX then
                 Index(Object, Property)
              else
-                error(`Object hydration recieved invalid index type! Expected Sphi object or string, got table ({Object:GetFullName()})`)
+                error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()})`)
              end
         elseif typeof(Property) == "table" then
-            if Property.__SPHI_OBJECT then
+            if Property.__SEAM_OBJECT then
                 Property(Object, Index)
             else
-                error("Invalid property type! Expected Sphi object or string, got table")
+                error("Invalid property type! Expected Seam object or string, got table")
             end
         else
             Object[Index] = Property
@@ -44,7 +44,7 @@ function New:__call(Class : string | Instance, Properties : {[any] : any}, From 
     end
 
     if From then
-        if From.__SPHI_OBJECT == "From" then
+        if From.__SEAM_OBJECT == "From" then
             Object = From.Component(Object, unpack(From.Args))
         else
             error("Invalid From object! Expected From object, got " .. typeof(From))
@@ -59,7 +59,7 @@ end
 ]=]
 
 function New:__index(Index : string)
-    if Index == "__SPHI_OBJECT" then
+    if Index == "__SEAM_OBJECT" then
         return "New"
     else
         return nil

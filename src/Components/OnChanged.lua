@@ -18,7 +18,7 @@ function OnChanged:__call(Object : Instance, Callback : (PropertyChanged : strin
 end
 
 function OnChanged:__index(Index : string)
-    if Index == "__SPHI_INDEX" then
+    if Index == "__SEAM_INDEX" then
         return "OnChanged"
     else
         return nil
