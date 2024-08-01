@@ -24,6 +24,8 @@ local Janitor = require(Modules.Janitor)
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
 
+local Meta = setmetatable({}, Scope)
+
 function Scope:__call(ScopedObjects)
     local selfClass = {}
     local selfMeta = {}
@@ -47,7 +49,7 @@ function Scope:__call(ScopedObjects)
                 return
             end
 
-            for Index, Value in ipairs(Tuple) do
+            for _, Value in ipairs(Tuple) do
                 self.Janitor:Add(Value)
             end
     
@@ -55,10 +57,19 @@ function Scope:__call(ScopedObjects)
         end
     end
 
-    function selfClass:InnerScope(...)
-        local NewScope = Scope(...)
+    function selfClass:InnerScope()
+        local NewScope = Meta(ScopedObjects)
         self.Janitor:Add(NewScope)
         return NewScope
+    end
+
+    function selfClass:AddObject(Object : any)
+        self.Janitor:Add(Object)
+    end
+
+    function selfClass:RemoveObject(Object : any)
+        Object:Destroy()
+        self.Janitor[Object] = nil
     end
 
     function selfClass:Destroy()
@@ -73,7 +84,5 @@ function Scope:__call(ScopedObjects)
 
     return Object
 end
-
-local Meta = setmetatable({}, Scope)
 
 return Meta :: ScopeConstructor
