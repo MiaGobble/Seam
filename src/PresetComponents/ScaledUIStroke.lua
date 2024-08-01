@@ -6,10 +6,6 @@ local TICK_RATE = 1 / 1
 -- Services
 local RunService = game:GetService("RunService")
 
--- -- Imports
--- local States = script.Parent.Parent.States
--- local New = require(States.New)
-
 -- Variables
 local Camera = workspace.CurrentCamera
 local LastTick = os.clock()
