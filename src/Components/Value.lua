@@ -81,6 +81,20 @@ function Value:__call(Value : any)
     return ActiveValue :: ValueInstance
 end
 
+--[=[
+    @ignore
+]=]
+
+function Value:__index(Index : string)
+    if Index == "__SEAM_INDEX" then
+        return "Value"
+    elseif Index == "__SEAM_CAN_BE_SCOPED" then
+        return true
+    else
+        return nil
+    end
+end
+
 local Meta = setmetatable({}, Value)
 
 return Meta :: ValueConstructor

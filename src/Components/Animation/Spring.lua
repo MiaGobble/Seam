@@ -108,6 +108,25 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 return PackType(PackedValues, ValueType)
             elseif Index == "Changed" then
                 return ChangedSignal
+            elseif Index == "Impulse" then
+                return function(self, AmountValue : any)
+                    local UnpackedAmount = UnpackType(AmountValue, ValueType)
+
+                    for Index, Spring in ipairs(UnpackedSprings) do
+                        local Amount = UnpackedAmount[Index]
+                        local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+
+                        Spring.Tick0, Spring.Coordinate1 = os.clock(), Position
+
+                        if (Dampening >= 1) then
+                            Spring.Coordinate2 = Spring.Coordinate1 + (Velocity + Amount) / Speed
+                        else
+                            local High = math.sqrt(1 - Dampening * Dampening)
+    
+                            Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + (Velocity + Amount) / (Speed * High)
+                        end
+                    end
+                end
             end
 
             return nil
@@ -133,6 +152,18 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                         Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + Velocity / (Speed * High)
                     end
                 end
+            elseif Index == "Value" then
+                local UnpackedNewValue = UnpackType(NewValue, ValueType)
+
+                for Index, Spring in ipairs(UnpackedSprings) do
+                    Spring.Position0 = UnpackedNewValue[Index]
+                    Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = 0, 0, 0
+                    Spring.Tick0 = os.clock()
+                end
+            elseif Index == "Dampening" then
+                Dampening = NewValue
+            elseif Index == "Speed" then
+                Speed = NewValue
             end
         end,
 
@@ -159,6 +190,8 @@ end
 function Spring:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
         return "Spring"
+    elseif Index == "__SEAM_CAN_BE_SCOPED" then
+        return true
     else
         return nil
     end

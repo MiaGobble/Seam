@@ -31,4 +31,12 @@ function OnEvent:__call(EventName : string)
     return EventBinding
 end
 
+function OnEvent:__index(Index : string)
+    if Index == "__SEAM_CAN_BE_SCOPED" then
+        return false
+    else
+        return nil
+    end
+end
+
 return setmetatable({}, OnEvent)

@@ -44,7 +44,7 @@ function Computed:__call(Callback : () -> any?)
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "Computed"
+                return "ComputedInstance"
             elseif Index == "Value" then
                 return Callback()
             end
@@ -54,6 +54,20 @@ function Computed:__call(Callback : () -> any?)
     })
 
     return ActiveComputation :: ComputedInstance
+end
+
+--[=[
+    @ignore
+]=]
+
+function Computed:__index(Key : string)
+    if Key == "__SEAM_INDEX" then
+        return "Computed"
+    elseif Key == "__SEAM_CAN_BE_SCOPED" then
+        return true
+    else
+        return nil
+    end
 end
 
 local Meta = setmetatable({}, Computed)
