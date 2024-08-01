@@ -37,8 +37,13 @@ function Scope:__call(ScopedObjects)
             return self[Key]
         end
     
-        if typeof(Object) ~= "table" then
-            error("Object is not a valid Seam object")
+        if typeof(Object) ~= "table" or not Object.__SEAM_CAN_BE_SCOPED then
+            if Object.__SEAM_OBJECT or Object.__SEAM_INDEX then
+                error((Object.__SEAM_OBJECT or Object.__SEAM_INDEX) .. " is not a valid scopable Seam object")
+            else
+                error("Object is not a valid scopable Seam object")
+            end
+            
             return
         end
     
@@ -83,6 +88,16 @@ function Scope:__call(ScopedObjects)
     Object.Janitor = Janitor.new()
 
     return Object
+end
+
+function Scope:__index(Key : string)
+    if Key == "__SEAM_OBJECT" then
+        return "Scope"
+    elseif Key == "__SEAM_CAN_BE_SCOPED" then
+        return true
+    else
+        return nil
+    end
 end
 
 return Meta :: ScopeConstructor

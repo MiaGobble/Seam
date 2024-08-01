@@ -131,6 +131,8 @@ end
 function Tween:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
         return "Tween"
+    elseif Index == "__SEAM_CAN_BE_SCOPED" then
+        return true
     else
         return nil
     end

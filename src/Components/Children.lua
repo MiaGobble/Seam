@@ -33,6 +33,8 @@ end
 function Children:__index(Index : string)
     if Index == "__SEAM_INDEX" then
         return "Children"
+    elseif Index == "__SEAM_CAN_BE_SCOPED" then
+        return false
     else
         return nil
     end

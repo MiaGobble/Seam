@@ -32,4 +32,12 @@ function From:__call(ComponentName : string, ... : any)
     }
 end
 
+function From:__index(Key : string)
+    if Key == "__SEAM_CAN_BE_SCOPED" then
+        return false
+    end
+
+    return nil
+end
+
 return setmetatable({}, From)

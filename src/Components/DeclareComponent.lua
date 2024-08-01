@@ -26,6 +26,14 @@ function DeclareComponent:__call(ComponentName : string, Constructor : Component
     ComponentsManager:PushComponent(ComponentName, Constructor)
 end
 
+function DeclareComponent:__index(Key : string)
+    if Key == "__SEAM_CAN_BE_SCOPED" then
+        return false
+    end
+
+    return nil
+end
+
 local Meta = setmetatable({}, DeclareComponent)
 
 return Meta :: DeclareComponent
