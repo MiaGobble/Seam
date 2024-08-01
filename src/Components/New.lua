@@ -14,13 +14,15 @@ local New = {}
     @return ({[any] : any})) -> Instance -- The function to hydrate the instance properties
 ]=]
 
-function New:__call(Class : string | Instance, Properties : {[any] : any})
+function New:__call(Class : string | Instance, Properties : {[any] : any}, From : any?)
     local Object = nil
 
     if typeof(Class) == "Instance" then
         Object = Class
-    else
+    elseif typeof(Class) == "string" then
         Object = Instance.new(Class)
+    else
+        error("Invalid class type! Expected string or instance, got " .. typeof(Class))
     end
 
     for Index, Property in Properties do
@@ -38,6 +40,14 @@ function New:__call(Class : string | Instance, Properties : {[any] : any})
             end
         else
             Object[Index] = Property
+        end
+    end
+
+    if From then
+        if From.__SPHI_OBJECT == "From" then
+            Object = From.Component(Object, unpack(From.Args))
+        else
+            error("Invalid From object! Expected From object, got " .. typeof(From))
         end
     end
 

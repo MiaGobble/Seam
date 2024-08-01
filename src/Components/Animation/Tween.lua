@@ -25,6 +25,7 @@ local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(Components.Computed)
 local Janitor = require(Modules.Janitor)
+local Signal = require(Modules.Signal)
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
@@ -50,6 +51,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
     local JanitorInstance = Janitor.new()
+    local ChangedSignal = Signal.new()
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -72,7 +74,11 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     PackedValues[Index] = Position
                 end
 
+                ChangedSignal:Fire("Value")
+
                 return PackType(PackedValues, ValueType)
+             elseif Index == "Changed" then
+                return ChangedSignal
             end
 
             return nil
