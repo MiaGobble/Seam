@@ -1,99 +1,99 @@
 --[=[
-    The main framework module for Sphi.
-    @class Sphi
+    The main framework module for Seam.
+    @class Seam
 ]=]
 
-local Sphi = {}
+local Seam = {}
 
 -- Variables
 local Components = script.Components
 
 --[=[
     @prop New New
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.New = require(Components.New)
-Sphi.new = Sphi.New
+Seam.New = require(Components.New)
+Seam.new = Seam.New
 
 --[=[
     @prop Children Children
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Children = require(Components.Children)
-Sphi.children = Sphi.Children
+Seam.Children = require(Components.Children)
+Seam.children = Seam.Children
 
 --[=[
     @prop Value Value
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Value = require(Components.Value)
-Sphi.value = Sphi.Value
+Seam.Value = require(Components.Value)
+Seam.value = Seam.Value
 
 --[=[
     @prop Computed Computed
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Computed = require(Components.Computed)
-Sphi.computed = Sphi.Computed
+Seam.Computed = require(Components.Computed)
+Seam.computed = Seam.Computed
 
 --[=[
     @prop Spring Spring
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Spring = require(Components.Animation.Spring)
-Sphi.spring = Sphi.Spring
+Seam.Spring = require(Components.Animation.Spring)
+Seam.spring = Seam.Spring
 
 --[=[
     @prop Tween Tween
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Tween = require(Components.Animation.Tween)
-Sphi.tween = Sphi.Tween
+Seam.Tween = require(Components.Animation.Tween)
+Seam.tween = Seam.Tween
 
 --[=[
     @prop Scope Scope
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.Scope = require(Components.Scope)
-Sphi.scope = Sphi.Scope
+Seam.Scope = require(Components.Scope)
+Seam.scope = Seam.Scope
 
 --[=[
     @prop OnEvent OnEvent
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.OnEvent = require(Components.OnEvent)
-Sphi.onEvent = Sphi.OnEvent
+Seam.OnEvent = require(Components.OnEvent)
+Seam.onEvent = Seam.OnEvent
 
 --[=[
     @prop OnChange OnChanged
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.OnChanged = require(Components.OnChanged)
-Sphi.onChanged = Sphi.OnChanged
+Seam.OnChanged = require(Components.OnChanged)
+Seam.onChanged = Seam.OnChanged
 
 --[=[
     @prop DeclareComponent DeclareComponent
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.DeclareComponent = require(Components.DeclareComponent)
-Sphi.declareComponent = Sphi.DeclareComponent
+Seam.DeclareComponent = require(Components.DeclareComponent)
+Seam.declareComponent = Seam.DeclareComponent
 
 --[=[
     @prop From From
-    @within Sphi
+    @within Seam
 ]=]
 
-Sphi.From = require(Components.From)
-Sphi.from = Sphi.From
+Seam.From = require(Components.From)
+Seam.from = Seam.From
 
-return Sphi
+return Seam

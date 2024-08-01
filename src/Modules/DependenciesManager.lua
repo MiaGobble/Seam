@@ -10,7 +10,7 @@ local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
         return "Instance"
     elseif typeof(Object) == "table" then
-        if Object.__SPHI_OBJECT then
+        if Object.__SEAM_OBJECT then
             return "SphiObject"
         end
     end

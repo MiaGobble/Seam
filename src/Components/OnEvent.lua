@@ -20,7 +20,7 @@ function OnEvent:__call(EventName : string)
         end,
 
         __index = function(self, Index : string)
-            if Index == "__SPHI_INDEX" then
+            if Index == "__SEAM_INDEX" then
                 return "OnEvent"
             else
                 return nil

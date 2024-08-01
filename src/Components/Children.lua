@@ -15,7 +15,7 @@ local Children = {}
 ]=]
 
 function Children:__call(Object : Instance, Children : {[any] : any})
-    -- ISSUE: As of right now, you can't use Sphi objects as children.
+    -- ISSUE: As of right now, you can't use Seam objects as children.
 
     for _, Child in Children do
         if typeof(Child) ~= "Instance" then
@@ -31,7 +31,7 @@ end
 ]=]
 
 function Children:__index(Index : string)
-    if Index == "__SPHI_INDEX" then
+    if Index == "__SEAM_INDEX" then
         return "Children"
     else
         return nil

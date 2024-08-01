@@ -37,7 +37,7 @@ function Value:__call(Value : any)
         end
     }, {
         __index = function(self, Index : string)
-            if Index == "__SPHI_OBJECT" then
+            if Index == "__SEAM_OBJECT" then
                 return "Value"
             elseif Index == "Value" then
                 return Value
