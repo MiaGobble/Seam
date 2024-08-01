@@ -152,6 +152,18 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                         Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + Velocity / (Speed * High)
                     end
                 end
+            elseif Index == "Value" then
+                local UnpackedNewValue = UnpackType(NewValue, ValueType)
+
+                for Index, Spring in ipairs(UnpackedSprings) do
+                    Spring.Position0 = UnpackedNewValue[Index]
+                    Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = 0, 0, 0
+                    Spring.Tick0 = os.clock()
+                end
+            elseif Index == "Dampening" then
+                Dampening = NewValue
+            elseif Index == "Speed" then
+                Speed = NewValue
             end
         end,
 
