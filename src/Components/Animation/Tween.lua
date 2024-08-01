@@ -95,6 +95,16 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     Tween.Position1 = UnpackedTargetValue[Index]
                     Tween.Tick0 = os.clock()
                 end
+            elseif Index == "Value" then
+                local UnpackedValue = UnpackType(NewValue, ValueType)
+
+                for Index, Tween in ipairs(UnpackedTweens) do
+                    Tween.Position0 = UnpackedValue[Index]
+                    Tween.Position1 = UnpackedValue[Index]
+                    Tween.Tick0 = os.clock()
+                end
+            elseif Index == "TweenInformation" then
+                TweenInformation = NewValue
             end
         end,
 
