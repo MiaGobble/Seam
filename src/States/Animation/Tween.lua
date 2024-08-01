@@ -20,10 +20,10 @@ local TweenService = game:GetService("TweenService")
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local Components = script.Parent.Parent
+local States = script.Parent.Parent
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Computed = require(Components.Computed)
+local Computed = require(States.Computed)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 

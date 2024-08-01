@@ -6,14 +6,14 @@
 local Seam = {}
 
 -- Variables
-local Components = script.Components
+local States = script.States
 
 --[=[
     @prop New New
     @within Seam
 ]=]
 
-Seam.New = require(Components.New)
+Seam.New = require(States.New)
 Seam.new = Seam.New
 
 --[=[
@@ -21,7 +21,7 @@ Seam.new = Seam.New
     @within Seam
 ]=]
 
-Seam.Children = require(Components.Children)
+Seam.Children = require(States.Children)
 Seam.children = Seam.Children
 
 --[=[
@@ -29,7 +29,7 @@ Seam.children = Seam.Children
     @within Seam
 ]=]
 
-Seam.Value = require(Components.Value)
+Seam.Value = require(States.Value)
 Seam.value = Seam.Value
 
 --[=[
@@ -37,7 +37,7 @@ Seam.value = Seam.Value
     @within Seam
 ]=]
 
-Seam.Computed = require(Components.Computed)
+Seam.Computed = require(States.Computed)
 Seam.computed = Seam.Computed
 
 --[=[
@@ -45,7 +45,7 @@ Seam.computed = Seam.Computed
     @within Seam
 ]=]
 
-Seam.Spring = require(Components.Animation.Spring)
+Seam.Spring = require(States.Animation.Spring)
 Seam.spring = Seam.Spring
 
 --[=[
@@ -53,7 +53,7 @@ Seam.spring = Seam.Spring
     @within Seam
 ]=]
 
-Seam.Tween = require(Components.Animation.Tween)
+Seam.Tween = require(States.Animation.Tween)
 Seam.tween = Seam.Tween
 
 --[=[
@@ -61,7 +61,7 @@ Seam.tween = Seam.Tween
     @within Seam
 ]=]
 
-Seam.Scope = require(Components.Scope)
+Seam.Scope = require(States.Scope)
 Seam.scope = Seam.Scope
 
 --[=[
@@ -69,7 +69,7 @@ Seam.scope = Seam.Scope
     @within Seam
 ]=]
 
-Seam.OnEvent = require(Components.OnEvent)
+Seam.OnEvent = require(States.OnEvent)
 Seam.onEvent = Seam.OnEvent
 
 --[=[
@@ -77,7 +77,7 @@ Seam.onEvent = Seam.OnEvent
     @within Seam
 ]=]
 
-Seam.OnChanged = require(Components.OnChanged)
+Seam.OnChanged = require(States.OnChanged)
 Seam.onChanged = Seam.OnChanged
 
 --[=[
@@ -85,7 +85,7 @@ Seam.onChanged = Seam.OnChanged
     @within Seam
 ]=]
 
-Seam.DeclareComponent = require(Components.DeclareComponent)
+Seam.DeclareComponent = require(States.DeclareComponent)
 Seam.declareComponent = Seam.DeclareComponent
 
 --[=[
@@ -93,7 +93,7 @@ Seam.declareComponent = Seam.DeclareComponent
     @within Seam
 ]=]
 
-Seam.From = require(Components.From)
+Seam.From = require(States.From)
 Seam.from = Seam.From
 
 return Seam
