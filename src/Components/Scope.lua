@@ -55,6 +55,12 @@ function Scope:__call(ScopedObjects)
         end
     end
 
+    function selfClass:InnerScope(...)
+        local NewScope = Scope(...)
+        self.Janitor:Add(NewScope)
+        return NewScope
+    end
+
     function selfClass:Destroy()
         self.Janitor:Destroy()
         self.Janitor = nil
