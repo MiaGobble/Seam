@@ -5,8 +5,14 @@
 
 local Seam = {}
 
--- Variables
+-- Imports
 local States = script.States
+local Modules = script.Modules
+local InitPresetComponents = require(Modules.InitPresetComponents)
+
+local function Init()
+    InitPresetComponents()
+end
 
 --[=[
     @prop New New
@@ -96,4 +102,4 @@ Seam.declareComponent = Seam.DeclareComponent
 Seam.From = require(States.From)
 Seam.from = Seam.From
 
-return Seam
+return Seam, Init()
