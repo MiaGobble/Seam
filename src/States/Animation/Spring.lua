@@ -108,25 +108,6 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 return PackType(PackedValues, ValueType)
             elseif Index == "Changed" then
                 return ChangedSignal
-            elseif Index == "Impulse" then
-                return function(self, AmountValue : any)
-                    local UnpackedAmount = UnpackType(AmountValue, ValueType)
-
-                    for Index, Spring in ipairs(UnpackedSprings) do
-                        local Amount = UnpackedAmount[Index]
-                        local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
-
-                        Spring.Tick0, Spring.Coordinate1 = os.clock(), Position
-
-                        if (Dampening >= 1) then
-                            Spring.Coordinate2 = Spring.Coordinate1 + (Velocity + Amount) / Speed
-                        else
-                            local High = math.sqrt(1 - Dampening * Dampening)
-    
-                            Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + (Velocity + Amount) / (Speed * High)
-                        end
-                    end
-                end
             end
 
             return nil
