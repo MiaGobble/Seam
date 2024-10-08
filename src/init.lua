@@ -14,12 +14,14 @@ local function Init()
     InitPresetComponents()
 end
 
+-- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time.
+
 --[=[
     @prop New New
     @within Seam
 ]=]
 
-Seam.New = require(States.New)
+Seam.New = require(States:WaitForChild("New"))
 Seam.new = Seam.New
 
 --[=[
@@ -27,7 +29,7 @@ Seam.new = Seam.New
     @within Seam
 ]=]
 
-Seam.Children = require(States.Children)
+Seam.Children = require(States:WaitForChild("Children"))
 Seam.children = Seam.Children
 
 --[=[
@@ -35,7 +37,7 @@ Seam.children = Seam.Children
     @within Seam
 ]=]
 
-Seam.Value = require(States.Value)
+Seam.Value = require(States:WaitForChild("Value"))
 Seam.value = Seam.Value
 
 --[=[
@@ -43,7 +45,7 @@ Seam.value = Seam.Value
     @within Seam
 ]=]
 
-Seam.Computed = require(States.Computed)
+Seam.Computed = require(States:WaitForChild("Computed"))
 Seam.computed = Seam.Computed
 
 --[=[
@@ -51,7 +53,7 @@ Seam.computed = Seam.Computed
     @within Seam
 ]=]
 
-Seam.Spring = require(States.Animation.Spring)
+Seam.Spring = require(States.Animation:WaitForChild("Spring"))
 Seam.spring = Seam.Spring
 
 --[=[
@@ -59,7 +61,7 @@ Seam.spring = Seam.Spring
     @within Seam
 ]=]
 
-Seam.Tween = require(States.Animation.Tween)
+Seam.Tween = require(States.Animation:WaitForChild("Tween"))
 Seam.tween = Seam.Tween
 
 --[=[
