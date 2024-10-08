@@ -18,6 +18,7 @@ type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> Sp
 
 -- Constants
 local EULERS_NUMBER = 2.71828
+local EPSILON = 0.001
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
@@ -90,6 +91,12 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 for Index, Spring in ipairs(UnpackedSprings) do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
+					if math.abs(Position) <= EPSILON then
+						Position = 0
+					elseif math.abs(Position - Spring.Position0) <= EPSILON then
+						Position = Spring.Position0
+					end
+
                     PackedValues[Index] = Position
                 end
 
@@ -137,8 +144,8 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
                 for Index, Spring in ipairs(UnpackedSprings) do
-                    Spring.Position0 = UnpackedNewValue[Index]
-                    Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = 0, 0, 0
+                    --Spring.Position0 = UnpackedNewValue[Index]
+					Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = UnpackedNewValue[Index] - Spring.Position0, 0, 0
                     Spring.Tick0 = os.clock()
                 end
             elseif Index == "Dampening" then
