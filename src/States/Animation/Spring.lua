@@ -18,13 +18,14 @@ type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> Sp
 
 -- Constants
 local EULERS_NUMBER = 2.71828
+local EPSILON = 0.001
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local Components = script.Parent.Parent
+local States = script.Parent.Parent
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Computed = require(Components.Computed)
+local Computed = require(States.Computed)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 
@@ -90,6 +91,12 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 for Index, Spring in ipairs(UnpackedSprings) do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
+					if math.abs(Position) <= EPSILON then
+						Position = 0
+					elseif math.abs(Position - Spring.Position0) <= EPSILON then
+						Position = Spring.Position0
+					end
+
                     PackedValues[Index] = Position
                 end
 
@@ -108,25 +115,6 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 return PackType(PackedValues, ValueType)
             elseif Index == "Changed" then
                 return ChangedSignal
-            elseif Index == "Impulse" then
-                return function(self, AmountValue : any)
-                    local UnpackedAmount = UnpackType(AmountValue, ValueType)
-
-                    for Index, Spring in ipairs(UnpackedSprings) do
-                        local Amount = UnpackedAmount[Index]
-                        local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
-
-                        Spring.Tick0, Spring.Coordinate1 = os.clock(), Position
-
-                        if (Dampening >= 1) then
-                            Spring.Coordinate2 = Spring.Coordinate1 + (Velocity + Amount) / Speed
-                        else
-                            local High = math.sqrt(1 - Dampening * Dampening)
-    
-                            Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + (Velocity + Amount) / (Speed * High)
-                        end
-                    end
-                end
             end
 
             return nil
@@ -156,8 +144,8 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
                 for Index, Spring in ipairs(UnpackedSprings) do
-                    Spring.Position0 = UnpackedNewValue[Index]
-                    Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = 0, 0, 0
+                    --Spring.Position0 = UnpackedNewValue[Index]
+					Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = UnpackedNewValue[Index] - Spring.Position0, 0, 0
                     Spring.Tick0 = os.clock()
                 end
             elseif Index == "Dampening" then

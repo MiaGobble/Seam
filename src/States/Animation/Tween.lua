@@ -15,15 +15,18 @@ type TweenInstance = {
 
 type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInstance
 
+-- Constants
+local EPSILON = 0.001
+
 -- Services
 local TweenService = game:GetService("TweenService")
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local Components = script.Parent.Parent
+local States = script.Parent.Parent
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Computed = require(Components.Computed)
+local Computed = require(States.Computed)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 
@@ -70,6 +73,12 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
                     local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
                     local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
+
+                    if math.abs(Position) <= EPSILON then
+						Position = 0
+					elseif math.abs(Position - Tween.Position0) <= EPSILON then
+						Position = Tween.Position0
+					end
 
                     PackedValues[Index] = Position
                 end
