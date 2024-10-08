@@ -11,7 +11,6 @@ With Seam, you can:
 ## Why use Seam?
 Seam is easier to use than most other frameworks, and is built with flexibility in mind. You no longer need to worry about a mess of dependencies, weird syntax, or difficult use-cases.
 
-> [!WARNING]
 > Warning! Seam is not yet production ready and future versions may not be backwards-compatible. If you choose to use it on larger projects, keep this in mind.
 
 ## Bear in mind...
@@ -22,3 +21,6 @@ Visit the documentation [here](./docs/index.md).
 
 ## Download
 You can find the releases page [here](https://github.com/MiaGobble/Seam/releases/), and the source code [here](https://github.com/MiaGobble/Seam/).
+
+### Notice
+This site is temporary. Awesome stuff coming soon 😎
