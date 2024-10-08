@@ -1,2 +1,2 @@
 ## Seam
-Not done yet.
+Read documentation [here](./docs/index.md)
