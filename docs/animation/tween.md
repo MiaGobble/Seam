@@ -46,6 +46,3 @@ local Object = New("Object", {
 ```
 
 *Documention TBD*
-
-[^1]: https://en.wikipedia.org/wiki/Hooke%27s_law
-[^2]: https://en.wikipedia.org/wiki/Damping
