@@ -15,7 +15,7 @@
 ## Preset Components
 * [BasicButton](./presetcomponents/basicbutton.md)
 * [QuickSound](./presetcomponents/quicksound.md)
-* [ScaledUIStroke](./scaleduistroke.md)
+* [ScaledUIStroke](./presetcomponents/scaleduistroke.md)
 
 ## Guides
 *Coming soon*.
