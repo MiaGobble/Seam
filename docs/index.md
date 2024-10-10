@@ -12,6 +12,11 @@
 * [Scope](./scope.md)
 * [Value](./value.md)
 
+## Preset Components
+* [BasicButton](./presetcomponents/basicbutton.md)
+* [QuickSound](./presetcomponents/quicksound.md)
+* [ScaledUIStroke](./scaleduistroke.md)
+
 ## Guides
 *Coming soon*.
 
