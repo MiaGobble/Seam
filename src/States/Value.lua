@@ -8,8 +8,9 @@
 local Value = {}
 
 -- Types
-type ValueInstance = {
-    Value : any
+export type ValueInstance = {
+    Value : any,
+    Changed : RBXScriptSignal,
 }
 
 type ValueConstructor = (Value : any) -> ValueInstance

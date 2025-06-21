@@ -18,6 +18,7 @@ type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
+local Value = require(script.Parent.Value)
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
@@ -25,8 +26,31 @@ local Janitor = require(Modules.Janitor)
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
 
-function Computed:__call(Callback : () -> any?)
+function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> any?)
     local JanitorInstance = Janitor.new()
+    local UsedValues = {}
+    local CurrentValue = nil
+
+    local function Use(Value : Value.ValueInstance)
+        if UsedValues[Value] then
+            return UsedValues[Value].Value
+        end
+
+        if not Value.Changed then
+            print("no changed")
+            return
+        end
+
+        UsedValues[Value] = Value
+
+        JanitorInstance:Add(Value.Changed:Connect(function()
+            CurrentValue = Callback(Use)
+        end))
+
+        return Value.Value
+    end
+
+    CurrentValue = Callback(Use)
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -35,7 +59,10 @@ function Computed:__call(Callback : () -> any?)
     }, {
         __call = function(_, Object : Instance, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
-                Value = Callback,
+                Value = function()
+                    return CurrentValue
+                end, --Callback,
+
                 PropertyName = Index
             }))
 
@@ -46,7 +73,7 @@ function Computed:__call(Callback : () -> any?)
             if Index == "__SEAM_OBJECT" then
                 return "ComputedInstance"
             elseif Index == "Value" then
-                return Callback()
+                return CurrentValue
             end
 
             return nil

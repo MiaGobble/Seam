@@ -24,6 +24,7 @@ local TweenService = game:GetService("TweenService")
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local States = script.Parent.Parent
+local DependenciesManager = require(Modules.DependenciesManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(States.Computed)
@@ -118,9 +119,13 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end,
 
         __call = function(self, Object, Index : string)
-            JanitorInstance:Add(Computed(function()
-                return self.Value
-            end)(Object, Index))
+            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+                Value = function()
+                    return self.Value
+                end,
+
+                PropertyName = Index
+            }))
 
             return ActiveValue
         end

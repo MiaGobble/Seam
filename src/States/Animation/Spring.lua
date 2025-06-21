@@ -23,6 +23,7 @@ local EPSILON = 0.001
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local States = script.Parent.Parent
+local DependenciesManager = require(Modules.DependenciesManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Computed = require(States.Computed)
@@ -156,9 +157,13 @@ function Spring:__call(Value : any, Speed : number, Dampening : number) : Spring
         end,
 
         __call = function(self, Object, Index : string)
-            JanitorInstance:Add(Computed(function()
-                return self.Value
-            end)(Object, Index))
+            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+                Value = function()
+                    return self.Value
+                end,
+
+                PropertyName = Index
+            }))
 
             return ActiveValue
         end
