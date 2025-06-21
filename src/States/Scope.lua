@@ -43,8 +43,6 @@ function Scope:__call(ScopedObjects)
             else
                 error("Object is not a valid scopable Seam object")
             end
-            
-            return
         end
     
         return function(self, ...)
