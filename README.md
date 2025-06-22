@@ -1,1 +1,1 @@
-https://miagobble.github.io/Seam/
+https://seaminterface.com/
