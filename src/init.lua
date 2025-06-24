@@ -104,4 +104,18 @@ Seam.declareComponent = Seam.DeclareComponent
 Seam.From = require(Constructors.From)
 Seam.from = Seam.From
 
+--[=[
+    @prop Attribute Attribute
+    @within Seam
+]=]
+Seam.Attribute = require(Constructors.Attribute)
+Seam.attribute = Seam.Attribute
+
+--[=[
+    @prop OnAttributeChanged OnAttributeChanged
+    @within Seam
+]=]
+Seam.OnAttributeChanged = require(Constructors.OnAttributeChanged)
+Seam.onAttributeChanged = Seam.OnAttributeChanged
+
 return Seam, Init()

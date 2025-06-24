@@ -1,0 +1,42 @@
+-- Author: iGottic
+
+--[=[
+    @class OnAttributeChanged
+    @since 0.0.3
+]=]
+
+local OnAttributeChanged = {}
+
+--[=[
+    Connects to an attribute change from an instance.
+
+    @param AttributeName string -- The name of the event to connect to
+]=]
+
+function OnAttributeChanged:__call(AttributeName : string)
+    local EventBinding = setmetatable({}, {
+        __call = function(self, Object : Instance, Callback : (...any?) -> nil)
+            return Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
+        end,
+
+        __index = function(self, Index : string)
+            if Index == "__SEAM_INDEX" then
+                return "OnAttributeChanged"
+            else
+                return nil
+            end
+        end
+    })
+
+    return EventBinding
+end
+
+function OnAttributeChanged:__index(Index : string)
+    if Index == "__SEAM_CAN_BE_SCOPED" then
+        return false
+    else
+        return nil
+    end
+end
+
+return setmetatable({}, OnAttributeChanged)

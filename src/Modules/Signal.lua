@@ -45,8 +45,16 @@ end
     @return nil
 ]=]
 
-function Connection:Disconnect()
+function Connection.Disconnect(self)
     self.Signal[self] = nil
+end
+
+--[=[
+    @ignore
+]=]
+
+function Connection.Destroy(self, ...)
+    Connection.Disconnect(self, ...)
 end
 
 --[=[
@@ -66,7 +74,7 @@ end
     @return Connection -- The connection object
 ]=]
 
-function Signal:Connect(Callback)
+function Signal.Connect(self, Callback)
     local SelfConnection = Connection.new(self, Callback)
     self[SelfConnection] = true
     
@@ -80,9 +88,9 @@ end
     @return Connection -- The connection object
 ]=]
 
-function Signal:Once(Callback)
+function Signal.Once(self, Callback)
     local SelfConnection; SelfConnection = Connection.new(self, function(...)
-        SelfConnection:Disconnect()
+        SelfConnection.Disconnect(self)
         Callback(...)
     end)
     
@@ -97,11 +105,11 @@ end
     @return T... -- The arguments passed to the signal
 ]=]
 
-function Signal:Wait()
+function Signal.Wait(self)
     local WaitingCoroutine = coroutine.running()
     
     local SelfConnection; SelfConnection = self:Connect(function(...)
-        SelfConnection:Disconnect()
+        SelfConnection.Disconnect(self)
         task.spawn(WaitingCoroutine, ...)
     end)
     
@@ -114,7 +122,7 @@ end
     @return nil
 ]=]
 
-function Signal:DisconnectAll()
+function Signal.DisconnectAll(self)
     table.clear(self)
 end
 
@@ -125,7 +133,7 @@ end
     @return nil
 ]=]
 
-function Signal:Fire(...)
+function Signal.Fire(self, ...)
     if next(self) then
         for SelfConnection in pairs(self) do
             SelfConnection.Callback(...)
