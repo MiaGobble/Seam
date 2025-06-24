@@ -118,4 +118,12 @@ Seam.attribute = Seam.Attribute
 Seam.OnAttributeChanged = require(Constructors.OnAttributeChanged)
 Seam.onAttributeChanged = Seam.OnAttributeChanged
 
+--[=[
+    @prop Lifetime Lifetime
+    @within Seam
+]=]
+
+Seam.Lifetime = require(Constructors.Lifetime)
+Seam.lifetime = Seam.Lifetime
+
 return Seam, Init()
