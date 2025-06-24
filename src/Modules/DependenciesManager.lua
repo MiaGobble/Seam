@@ -1,3 +1,10 @@
+-- Author: iGottic
+
+--[=[
+    @class DependenciesManager
+    @since 0.0.1
+]=]
+
 local DependenciesManager = {}
 
 -- Services
@@ -17,6 +24,14 @@ local function GetObjectType(Object : any) : string
 
     return "unknown"
 end
+
+--[=[
+    Attaches a state instance to a given object, updating the object's property on each render step.
+    
+    @param Object any -- The object to attach the state to
+    @param StateInstance any -- The state instance containing the value and property name
+    @return Janitor -- A Janitor instance managing the connections
+]=]
 
 function DependenciesManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)

@@ -2,7 +2,7 @@
 
 --[=[
     @class Children
-    @since 1.0.0
+    @since 0.0.1
 ]=]
 
 local Children = {}

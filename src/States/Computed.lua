@@ -2,7 +2,7 @@
 
 --[=[
     @class Computed
-    @since 1.0.0
+    @since 0.0.1
 ]=]
 
 local Computed = {}
@@ -12,13 +12,14 @@ type ComputedInstance = {
     get : (self : Instance, PropertyName : string) -> any?
 }
 
-type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 local Value = require(script.Parent.Value)
+
+-- Types Extended
+type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> any) -> any?) -> ComputedInstance
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
