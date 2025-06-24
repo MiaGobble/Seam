@@ -1,10 +1,10 @@
 -- Imports
-local States = script.Parent.Parent.States
-local New = require(States.New)
-local OnEvent = require(States.OnEvent)
-local Computed = require(States.Computed)
-local Value = require(States.Value)
-local Tween = require(States.Animation.Tween)
+local Constructors = script.Parent.Parent.Constructors
+local New = require(Constructors.New)
+local OnEvent = require(Constructors.OnEvent)
+local Computed = require(Constructors.Computed)
+local Value = require(Constructors.Value)
+local Tween = require(Constructors.Animation.Tween)
 
 return function(ButtonObject : GuiButton)
     local State = Value("Idle")

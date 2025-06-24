@@ -2,7 +2,7 @@
 
 --[=[
     @class Spring
-    @since 1.0.0
+    @since 0.0.1
 ]=]
 
 local Spring = {}
@@ -22,11 +22,9 @@ local EPSILON = 0.001
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local States = script.Parent.Parent
 local DependenciesManager = require(Modules.DependenciesManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Computed = require(States.Computed)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 

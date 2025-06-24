@@ -2,8 +2,8 @@
 local SoundService = game:GetService("SoundService")
 
 -- Imports
-local States = script.Parent.Parent.States
-local New = require(States.New)
+local Constructors = script.Parent.Parent.Constructors
+local New = require(Constructors.New)
 
 return function(Sound : Sound)
     New(Sound, {
