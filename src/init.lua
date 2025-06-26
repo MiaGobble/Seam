@@ -134,4 +134,20 @@ Seam.lifetime = Seam.Lifetime
 Seam.Rendered = require(Constructors.Rendered)
 Seam.rendered = Seam.Rendered
 
+--[=[
+    @prop FollowProperty FollowProperty
+    @within Seam
+]=]
+
+Seam.FollowProperty = require(Constructors.FollowProperty)
+Seam.followProperty = Seam.FollowProperty
+
+--[=[
+    @prop FollowAttribute FollowAttribute
+    @within Seam
+]=]
+
+Seam.FollowAttribute = require(Constructors.FollowAttribute)
+Seam.followAttribute = Seam.FollowAttribute
+
 return Seam, Init()
