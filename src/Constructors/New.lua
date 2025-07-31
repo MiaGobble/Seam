@@ -2,10 +2,13 @@
 
 --[=[
     @class New
-    @since 1.0.0
+    @since 0.0.1
 ]=]
 
 local New = {}
+
+-- Types
+type NewConstructor = (Class : string | Instance, Properties : {[any] : any}, From : any?) -> Instance
 
 --[=[
     Constructs a new instance or hydrates an existing one with given properties.
@@ -68,4 +71,6 @@ function New:__index(Index : string)
     end
 end
 
-return setmetatable({}, New)
+local Meta = setmetatable({}, New)
+
+return Meta :: NewConstructor

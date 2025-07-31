@@ -1,56 +1,33 @@
 -- Author: iGottic
 
 --[=[
-    @class Computed
-    @since 1.0.0
+    @class Rendered
+    @since 0.0.3
 ]=]
 
-local Computed = {}
+local Rendered = {}
 
 -- Types
 type ComputedInstance = {
     get : (self : Instance, PropertyName : string) -> any?
 }
 
-type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
-local Value = require(script.Parent.Value)
+
+-- Types Extended
+type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
 
 --[=[
-    Constructs a Computed instance, which actively computes a value based on a given function.
+    Constructs a Rendered instance, which actively computes a value based on a given function.
 
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
 
-function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> any?)
+function Rendered:__call(Callback : () -> any?)
     local JanitorInstance = Janitor.new()
-    local UsedValues = {}
-    local CurrentValue = nil
-
-    local function Use(Value : Value.ValueInstance)
-        if UsedValues[Value] then
-            return UsedValues[Value].Value
-        end
-
-        if not Value.Changed then
-            print("no changed")
-            return
-        end
-
-        UsedValues[Value] = Value
-
-        JanitorInstance:Add(Value.Changed:Connect(function()
-            CurrentValue = Callback(Use)
-        end))
-
-        return Value.Value
-    end
-
-    CurrentValue = Callback(Use)
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -59,10 +36,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
     }, {
         __call = function(_, Object : Instance, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
-                Value = function()
-                    return CurrentValue
-                end, --Callback,
-
+                Value = Callback,
                 PropertyName = Index
             }))
 
@@ -73,7 +47,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
             if Index == "__SEAM_OBJECT" then
                 return "ComputedInstance"
             elseif Index == "Value" then
-                return CurrentValue
+                return Callback()
             end
 
             return nil
@@ -87,9 +61,9 @@ end
     @ignore
 ]=]
 
-function Computed:__index(Key : string)
+function Rendered:__index(Key : string)
     if Key == "__SEAM_INDEX" then
-        return "Computed"
+        return "Rendered"
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else
@@ -97,6 +71,6 @@ function Computed:__index(Key : string)
     end
 end
 
-local Meta = setmetatable({}, Computed)
+local Meta = setmetatable({}, Rendered)
 
 return Meta :: ComputedConstructor

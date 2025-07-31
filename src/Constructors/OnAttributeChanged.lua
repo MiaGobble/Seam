@@ -1,27 +1,27 @@
 -- Author: iGottic
 
 --[=[
-    @class OnEvent
-    @since 1.0.0
+    @class OnAttributeChanged
+    @since 0.0.3
 ]=]
 
-local OnEvent = {}
+local OnAttributeChanged = {}
 
 --[=[
-    Connects to an event from an instance.
+    Connects to an attribute change from an instance.
 
-    @param EventName string -- The name of the event to connect to
+    @param AttributeName string -- The name of the event to connect to
 ]=]
 
-function OnEvent:__call(EventName : string)
+function OnAttributeChanged:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {
         __call = function(self, Object : Instance, Callback : (...any?) -> nil)
-            return (Object[EventName] :: RBXScriptSignal):Connect(Callback)
+            return Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
         end,
 
         __index = function(self, Index : string)
             if Index == "__SEAM_INDEX" then
-                return "OnEvent"
+                return "OnAttributeChanged"
             else
                 return nil
             end
@@ -31,7 +31,7 @@ function OnEvent:__call(EventName : string)
     return EventBinding
 end
 
-function OnEvent:__index(Index : string)
+function OnAttributeChanged:__index(Index : string)
     if Index == "__SEAM_CAN_BE_SCOPED" then
         return false
     else
@@ -39,4 +39,4 @@ function OnEvent:__index(Index : string)
     end
 end
 
-return setmetatable({}, OnEvent)
+return setmetatable({}, OnAttributeChanged)

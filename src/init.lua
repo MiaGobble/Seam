@@ -6,7 +6,7 @@
 local Seam = {}
 
 -- Imports
-local States = script.States
+local Constructors = script.Constructors
 local Modules = script.Modules
 local InitPresetComponents = require(Modules.InitPresetComponents)
 
@@ -21,7 +21,7 @@ end
     @within Seam
 ]=]
 
-Seam.New = require(States:WaitForChild("New"))
+Seam.New = require(Constructors:WaitForChild("New"))
 Seam.new = Seam.New
 
 --[=[
@@ -29,7 +29,7 @@ Seam.new = Seam.New
     @within Seam
 ]=]
 
-Seam.Children = require(States:WaitForChild("Children"))
+Seam.Children = require(Constructors:WaitForChild("Children"))
 Seam.children = Seam.Children
 
 --[=[
@@ -37,7 +37,7 @@ Seam.children = Seam.Children
     @within Seam
 ]=]
 
-Seam.Value = require(States:WaitForChild("Value"))
+Seam.Value = require(Constructors:WaitForChild("Value"))
 Seam.value = Seam.Value
 
 --[=[
@@ -45,7 +45,7 @@ Seam.value = Seam.Value
     @within Seam
 ]=]
 
-Seam.Computed = require(States:WaitForChild("Computed"))
+Seam.Computed = require(Constructors:WaitForChild("Computed"))
 Seam.computed = Seam.Computed
 
 --[=[
@@ -53,7 +53,7 @@ Seam.computed = Seam.Computed
     @within Seam
 ]=]
 
-Seam.Spring = require(States.Animation:WaitForChild("Spring"))
+Seam.Spring = require(Constructors.Animation:WaitForChild("Spring"))
 Seam.spring = Seam.Spring
 
 --[=[
@@ -61,7 +61,7 @@ Seam.spring = Seam.Spring
     @within Seam
 ]=]
 
-Seam.Tween = require(States.Animation:WaitForChild("Tween"))
+Seam.Tween = require(Constructors.Animation:WaitForChild("Tween"))
 Seam.tween = Seam.Tween
 
 --[=[
@@ -69,7 +69,7 @@ Seam.tween = Seam.Tween
     @within Seam
 ]=]
 
-Seam.Scope = require(States.Scope)
+Seam.Scope = require(Constructors.Scope)
 Seam.scope = Seam.Scope
 
 --[=[
@@ -77,7 +77,7 @@ Seam.scope = Seam.Scope
     @within Seam
 ]=]
 
-Seam.OnEvent = require(States.OnEvent)
+Seam.OnEvent = require(Constructors.OnEvent)
 Seam.onEvent = Seam.OnEvent
 
 --[=[
@@ -85,7 +85,7 @@ Seam.onEvent = Seam.OnEvent
     @within Seam
 ]=]
 
-Seam.OnChanged = require(States.OnChanged)
+Seam.OnChanged = require(Constructors.OnChanged)
 Seam.onChanged = Seam.OnChanged
 
 --[=[
@@ -93,7 +93,7 @@ Seam.onChanged = Seam.OnChanged
     @within Seam
 ]=]
 
-Seam.DeclareComponent = require(States.DeclareComponent)
+Seam.DeclareComponent = require(Constructors.DeclareComponent)
 Seam.declareComponent = Seam.DeclareComponent
 
 --[=[
@@ -101,7 +101,53 @@ Seam.declareComponent = Seam.DeclareComponent
     @within Seam
 ]=]
 
-Seam.From = require(States.From)
+Seam.From = require(Constructors.From)
 Seam.from = Seam.From
+
+--[=[
+    @prop Attribute Attribute
+    @within Seam
+]=]
+Seam.Attribute = require(Constructors.Attribute)
+Seam.attribute = Seam.Attribute
+
+--[=[
+    @prop OnAttributeChanged OnAttributeChanged
+    @within Seam
+]=]
+Seam.OnAttributeChanged = require(Constructors.OnAttributeChanged)
+Seam.onAttributeChanged = Seam.OnAttributeChanged
+
+--[=[
+    @prop Lifetime Lifetime
+    @within Seam
+]=]
+
+Seam.Lifetime = require(Constructors.Lifetime)
+Seam.lifetime = Seam.Lifetime
+
+--[=[
+    @prop Rendered Rendered
+    @within Seam
+]=]
+
+Seam.Rendered = require(Constructors.Rendered)
+Seam.rendered = Seam.Rendered
+
+--[=[
+    @prop FollowProperty FollowProperty
+    @within Seam
+]=]
+
+Seam.FollowProperty = require(Constructors.FollowProperty)
+Seam.followProperty = Seam.FollowProperty
+
+--[=[
+    @prop FollowAttribute FollowAttribute
+    @within Seam
+]=]
+
+Seam.FollowAttribute = require(Constructors.FollowAttribute)
+Seam.followAttribute = Seam.FollowAttribute
 
 return Seam, Init()
