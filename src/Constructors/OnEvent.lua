@@ -7,6 +7,9 @@
 
 local OnEvent = {}
 
+-- Types
+export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
+
 --[=[
     Connects to an event from an instance.
 
@@ -39,4 +42,6 @@ function OnEvent:__index(Index : string)
     end
 end
 
-return setmetatable({}, OnEvent)
+local Meta = setmetatable({}, OnEvent)
+
+return Meta :: OnEvent

@@ -7,6 +7,9 @@
 
 local Children = {}
 
+-- Types
+export type Children = (Object : Instance, Children : {[any] : any}) -> nil
+
 --[=[
     Sets the parent of the given children to the given object. To be used in New()
 
@@ -46,4 +49,6 @@ function Children:__index(Index : string)
     end
 end
 
-return setmetatable({}, Children)
+local Meta = setmetatable({}, Children)
+
+return Meta :: Children

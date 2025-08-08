@@ -8,7 +8,7 @@
 local OnChanged = {}
 
 -- Types
-type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
+export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
 
 --[=[
     Connects to a changed event from an instance.

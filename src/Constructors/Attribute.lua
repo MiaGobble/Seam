@@ -7,6 +7,9 @@
 
 local Attribute = {}
 
+-- Types
+export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : any) -> nil
+
 --[=[
     Sets an attribute
 
@@ -50,4 +53,6 @@ function Attribute:__index(Index : string)
     end
 end
 
-return setmetatable({}, Attribute)
+local Meta = setmetatable({}, Attribute)
+
+return Meta :: Attribute

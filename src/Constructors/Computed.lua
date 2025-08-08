@@ -9,7 +9,7 @@ local Computed = {}
 
 -- Types
 type ComputedInstance = {
-    get : (self : Instance, PropertyName : string) -> any?
+    Value: any?,
 }
 
 -- Imports
@@ -19,7 +19,7 @@ local Janitor = require(Modules.Janitor)
 local Value = require(script.Parent.Value)
 
 -- Types Extended
-type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> any) -> any?) -> ComputedInstance
+export type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> any) -> any?) -> ComputedInstance
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.

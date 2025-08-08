@@ -14,7 +14,7 @@ type SpringInstance = {
     Target : any
 }
 
-type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> SpringInstance
+export type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> SpringInstance
 
 -- Constants
 local EULERS_NUMBER = 2.71828
