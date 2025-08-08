@@ -86,3 +86,5 @@ local function unpackType(value: any, typeString: string): {number}
 end
 
 return unpackType
+
+-- Note from iGottic: Elttob's modules from Fusion for managing types are so awesome. Big thanks to him for open-sourcing this!

@@ -97,3 +97,5 @@ local function packType(numbers: {number}, typeString: string)
 end
 
 return packType
+
+-- Note from iGottic: Elttob's modules from Fusion for managing types are so awesome. Big thanks to him for open-sourcing this!

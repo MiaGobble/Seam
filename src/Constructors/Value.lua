@@ -32,6 +32,12 @@ function Value:__call(Value : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
 
+    --[[
+        local This = Value(...)
+        This.Value = x OR x = This.Value
+        This.Changed -> As rbxscriptsignal
+    --]]
+
     local ActiveValue = setmetatable({
         Destroy = function(self)
             JanitorInstance:Destroy()

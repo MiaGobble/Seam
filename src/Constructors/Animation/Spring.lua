@@ -29,15 +29,18 @@ local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
+    -- I copied this spring math from another module I did a long time ago,
+    -- so let's hope it doesn't explode.
+
 	local Time = os.clock() - Tick0
 
-	if (Dampening >= 1) then
+	if (Dampening >= 1) then -- When overdamped or critically damped
 		local EulersFastTime = math.pow(EULERS_NUMBER, (Speed * Time))
 
 		return ((Coordinate1 + Coordinate2 * Speed * Time) / EulersFastTime + Position0), -- POSITION
 			((Coordinate2 * Speed * (1 - Time) - Coordinate1) / EulersFastTime) -- VELOCITY
-	else
-		local High = math.sqrt(1 - Dampening * Dampening)
+	else -- When underdamped
+		local High = math.sqrt(1 - Dampening ^ 2)
 
 		local HighSpeedTime = Speed * High * Time
 		local DampenedSpeedTime = math.pow(EULERS_NUMBER, Speed * Dampening * Time)
