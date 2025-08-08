@@ -160,3 +160,5 @@ local function lerpType(from: any, to: any, ratio: number): any
 end
 
 return lerpType
+
+-- Note from iGottic: Elttob's modules from Fusion for managing types are so awesome. Big thanks to him for open-sourcing this!

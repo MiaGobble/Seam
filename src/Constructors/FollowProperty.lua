@@ -7,6 +7,9 @@
 
 local FollowProperty = {}
 
+-- Types
+export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : any) -> nil
+
 --[=[
     @ignore
 ]=]
@@ -35,4 +38,6 @@ function FollowProperty:__call(PropertyName : string)
     })
 end
 
-return setmetatable({}, FollowProperty)
+local Meta = setmetatable({}, FollowProperty)
+
+return Meta :: FollowProperty

@@ -7,6 +7,9 @@
 
 local FollowAttribute = {}
 
+-- Types
+export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : any) -> nil
+
 --[=[
     @ignore
 ]=]
@@ -35,4 +38,6 @@ function FollowAttribute:__call(AttributeName : string)
     })
 end
 
-return setmetatable({}, FollowAttribute)
+local Meta = setmetatable({}, FollowAttribute)
+
+return Meta :: FollowAttribute

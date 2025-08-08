@@ -7,6 +7,9 @@
 
 local OnAttributeChanged = {}
 
+-- Types
+export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
+
 --[=[
     Connects to an attribute change from an instance.
 

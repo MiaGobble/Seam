@@ -7,6 +7,9 @@
 
 local Lifetime = {}
 
+-- Types
+export type Lifetime = (Object : Instance, CleanupTime : number) -> nil
+
 -- Services
 local DebrisService = game:GetService("Debris")
 
@@ -28,4 +31,6 @@ function Lifetime:__index(Index : string)
     end
 end
 
-return setmetatable({}, Lifetime)
+local Meta = setmetatable({}, Lifetime)
+
+return Meta :: Lifetime

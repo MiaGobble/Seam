@@ -8,7 +8,7 @@
 local New = {}
 
 -- Types
-type NewConstructor = (Class : string | Instance, Properties : {[any] : any}, From : any?) -> Instance
+export type NewConstructor = (Class : string | Instance, Properties : {[any] : any}, From : any?) -> Instance
 
 --[=[
     Constructs a new instance or hydrates an existing one with given properties.

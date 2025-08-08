@@ -7,6 +7,9 @@
 
 local Children = {}
 
+-- Types
+export type Children = (Object : Instance, Children : {[any] : any}) -> nil
+
 --[=[
     Sets the parent of the given children to the given object. To be used in New()
 
@@ -15,6 +18,14 @@ local Children = {}
 ]=]
 
 function Children:__call(Object : Instance, Children : {[any] : any})
+    if typeof(Children) ~= "table" then
+        error("Invalid children type! Expected table, got " .. typeof(Children))
+    end
+
+    if Children.__SEAM_OBJECT == "Computed" then
+        error("ForValues not yet supported in Children constructor! Please use Seam.New instead.")
+    end
+
     for _, Child in Children do
         if typeof(Child) ~= "Instance" then
             error("Invalid child type! Expected Instance, got " .. typeof(Child))
@@ -38,4 +49,6 @@ function Children:__index(Index : string)
     end
 end
 
-return setmetatable({}, Children)
+local Meta = setmetatable({}, Children)
+
+return Meta :: Children

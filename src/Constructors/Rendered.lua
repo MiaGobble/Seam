@@ -8,8 +8,8 @@
 local Rendered = {}
 
 -- Types
-type ComputedInstance = {
-    get : (self : Instance, PropertyName : string) -> any?
+type RenderInstance = {
+    Value : any?,
 }
 
 -- Imports
@@ -18,7 +18,7 @@ local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 
 -- Types Extended
-type ComputedConstructor = (Callback : () -> any?) -> ComputedInstance
+export type RenderedConstructor = (Callback : () -> any?) -> RenderInstance
 
 --[=[
     Constructs a Rendered instance, which actively computes a value based on a given function.
@@ -54,7 +54,7 @@ function Rendered:__call(Callback : () -> any?)
         end
     })
 
-    return ActiveComputation :: ComputedInstance
+    return ActiveComputation :: RenderInstance
 end
 
 --[=[
@@ -73,4 +73,4 @@ end
 
 local Meta = setmetatable({}, Rendered)
 
-return Meta :: ComputedConstructor
+return Meta :: RenderedConstructor

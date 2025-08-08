@@ -13,7 +13,7 @@ type TweenInstance = {
     Target : any
 }
 
-type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInstance
+export type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInstance
 
 -- Constants
 local EPSILON = 0.001

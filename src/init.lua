@@ -1,6 +1,16 @@
 --[=[
     The main framework module for Seam.
+
+    NOT READY FOR PRODUCTION USE. USE WITH CAUTION.
+
+    Some credits for internal modules:
+    - iGottic (creator of this framework)
+    - Elttob (UnpackType, PackType, LerpType, Janitor)
+    - Validark, pobammer, codesenseAye (Janitor)
+    - bottosson (Oklab color space)
+
     @class Seam
+    @author iGottic
 ]=]
 
 local Seam = {}
@@ -11,10 +21,17 @@ local Modules = script.Modules
 local InitPresetComponents = require(Modules.InitPresetComponents)
 
 local function Init()
+    if not game:IsLoaded() then
+        game.Loaded:Wait()
+
+        -- There is this weird bug where, when loaded from ReplicatedFirst, the framework loads *too* fast and animations don't work on the frontend.
+        -- This is a hacky workaround for this while I figure out a better solution.
+    end
+
     InitPresetComponents()
 end
 
--- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time.
+-- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage
 
 --[=[
     @prop New New
@@ -150,4 +167,13 @@ Seam.followProperty = Seam.FollowProperty
 Seam.FollowAttribute = require(Constructors.FollowAttribute)
 Seam.followAttribute = Seam.FollowAttribute
 
-return Seam, Init()
+return Seam, Init() -- Weird syntax? Yeah.
+
+-- DEV NOTES --
+
+--[[
+    I made this framework to be as simple as possible behind the scenes, so ideally it should be easy to understand when compared to other frameworks.
+    I'm also trying to integrate this into new and experimental projects of mine to give it a spin, so along the way I'll add features that I think are useful to me.
+
+    If you feel something needs more documentation, please let me know!
+--]]

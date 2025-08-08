@@ -7,6 +7,9 @@
 
 local From = {}
 
+-- Types
+export type From = (ComponentName : string, ...any) -> Instance
+
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local ComponentsManager = require(Modules.ComponentsManager)
@@ -40,4 +43,6 @@ function From:__index(Key : string)
     return nil
 end
 
-return setmetatable({}, From)
+local Meta = setmetatable({}, From)
+
+return Meta :: From

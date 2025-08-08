@@ -8,8 +8,8 @@
 local DeclareComponent = {}
 
 -- Types
-type ComponentConstructor = (HydratedObject : Instance, ...any) -> any
-type DeclareComponent = (ComponentName : string, Constructor : ComponentConstructor) -> nil
+export type ComponentConstructor = (HydratedObject : Instance, ...any) -> any
+export type DeclareComponent = (ComponentName : string, Constructor : ComponentConstructor) -> nil
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
