@@ -17,6 +17,10 @@ local StoredComponents = {}
 ]=]
 
 function ComponentsManager:PushComponent(ComponentName : string, Constructor : (any) -> any)
+    if StoredComponents[ComponentName] then
+        error("Component '" .. ComponentName .. "' already exists.")
+    end
+
     StoredComponents[ComponentName] = Constructor
 end
 
