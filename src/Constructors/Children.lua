@@ -17,13 +17,11 @@ export type Children = (Object : Instance, Children : {[any] : any}) -> nil
     @param Children {[any] : any} -- The children to parent to the object
 ]=]
 
-function Children:__call(Object : Instance, Children : {[any] : any})
+local function ApplyChildren(Parent : Instance, Children : {[any] : any})
+    local ChildrenCreated = {}
+
     if typeof(Children) ~= "table" then
         error("Invalid children type! Expected table, got " .. typeof(Children))
-    end
-
-    if Children.__SEAM_OBJECT == "Computed" then
-        error("ForValues not yet supported in Children constructor! Please use Seam.New instead.")
     end
 
     for _, Child in Children do
@@ -31,8 +29,41 @@ function Children:__call(Object : Instance, Children : {[any] : any})
             error("Invalid child type! Expected Instance, got " .. typeof(Child))
         end
 
-        Child.Parent = Object
+        Child.Parent = Parent
+        table.insert(ChildrenCreated, Child)
     end
+
+    return ChildrenCreated
+end
+
+function Children:__call(Object : Instance, Children : {[any] : any})
+    if typeof(Children) ~= "table" then
+        error("Invalid children type! Expected table, got " .. typeof(Children))
+    end
+
+    if Children.__SEAM_OBJECT == "ComputedInstance" then -- Since 0.0.4, you can use computed as the children
+        local ActiveChildren = ApplyChildren(Object, Children.Value)
+
+        local Connection = Children.Changed:Connect(function()
+            for _, Child in ActiveChildren do
+                Child:Destroy()
+            end
+
+            ActiveChildren = ApplyChildren(Object, Children.Value)
+        end)
+
+        Object.Destroying:Connect(function()
+            Connection:Disconnect()
+
+            for _, Child in ActiveChildren do
+                Child:Destroy()
+            end
+        end)
+
+        return
+    end
+
+    ApplyChildren(Object, Children)
 end
 
 --[=[

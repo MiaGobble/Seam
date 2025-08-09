@@ -16,6 +16,7 @@ type ComputedInstance = {
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
+local Signal = require(Modules.Signal)
 local Value = require(script.Parent.Value)
 
 -- Types Extended
@@ -29,6 +30,7 @@ export type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> 
 
 function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> any?)
     local JanitorInstance = Janitor.new()
+    local ChangedSignal = Signal.new()
     local UsedValues = {}
     local CurrentValue = nil
 
@@ -45,6 +47,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
 
         JanitorInstance:Add(Value.Changed:Connect(function()
             CurrentValue = Callback(Use)
+            ChangedSignal:Fire()
         end))
 
         return Value.Value
@@ -55,7 +58,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
             JanitorInstance:Destroy()
-        end
+        end,
     }, {
         __call = function(_, Object : Instance, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
@@ -74,6 +77,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
                 return "ComputedInstance"
             elseif Index == "Value" then
                 return CurrentValue
+            elseif Index == "Changed" then
+                return ChangedSignal
             end
 
             return nil

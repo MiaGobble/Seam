@@ -5,7 +5,7 @@
 
     Some credits for internal modules:
     - iGottic (creator of this framework)
-    - Elttob (UnpackType, PackType, LerpType, Janitor)
+    - Elttob (UnpackType, PackType, Janitor)
     - Validark, pobammer, codesenseAye (Janitor)
     - bottosson (Oklab color space)
 
