@@ -41,13 +41,10 @@ function Children:__call(Object : Instance, Children : {[any] : any})
         error("Invalid children type! Expected table, got " .. typeof(Children))
     end
 
-    if Children.__SEAM_OBJECT == "ComputedInstance" then
-        -- Goal with 0.0.4: Allow [Children] = Computed()() for dynamic children
-        --error("ForValues not yet supported in Children constructor! Please use Seam.New instead.")
+    if Children.__SEAM_OBJECT == "ComputedInstance" then -- Since 0.0.4, you can use computed as the children
         local ActiveChildren = ApplyChildren(Object, Children.Value)
 
         local Connection = Children.Changed:Connect(function()
-            print("aaaa")
             for _, Child in ActiveChildren do
                 Child:Destroy()
             end
