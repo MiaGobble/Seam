@@ -18,7 +18,7 @@ local function GetObjectType(Object : any) : string
         return "Instance"
     elseif typeof(Object) == "table" then
         if Object.__SEAM_OBJECT then
-            return "SphiObject"
+            return "SeamObject"
         end
     end
 
@@ -60,7 +60,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 JanitorInstance:Destroy()
             end
         end))
-    elseif ObjectType == "SphiObject" then
+    elseif ObjectType == "SeamObject" then
         local LastValue = StateInstance.Value
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
