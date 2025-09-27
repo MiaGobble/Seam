@@ -7,8 +7,12 @@
 
 local Children = {}
 
--- Types
-export type Children = (Object : Instance, Children : {[any] : any}) -> nil
+-- Imports
+local Modules = script.Parent.Parent.Modules
+local Types = require(Modules.Types)
+
+-- Types Extended
+export type Children = (Object : Instance, Children : Types.BaseState | {any}) -> nil
 
 --[=[
     Sets the parent of the given children to the given object. To be used in New()
@@ -17,7 +21,7 @@ export type Children = (Object : Instance, Children : {[any] : any}) -> nil
     @param Children {[any] : any} -- The children to parent to the object
 ]=]
 
-local function ApplyChildren(Parent : Instance, Children : {[any] : any})
+local function ApplyChildren(Parent : Instance, Children : {any})
     local ChildrenCreated = {}
 
     if typeof(Children) ~= "table" then
@@ -36,7 +40,7 @@ local function ApplyChildren(Parent : Instance, Children : {[any] : any})
     return ChildrenCreated
 end
 
-function Children:__call(Object : Instance, Children : {[any] : any})
+function Children:__call(Object : Instance, Children : Types.BaseState | {any})
     if typeof(Children) ~= "table" then
         error("Invalid children type! Expected table, got " .. typeof(Children))
     end

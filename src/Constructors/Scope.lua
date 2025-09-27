@@ -8,11 +8,11 @@
 local Scope = {}
 
 -- Types
-type ScopeInstance = {
+export type ScopeInstance = {
     ScopedObjects : {[string] : (...any) -> ...any},
 }
 
-type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
+export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
@@ -26,7 +26,7 @@ local Janitor = require(Modules.Janitor)
 
 local Meta = setmetatable({}, Scope)
 
-function Scope:__call(ScopedObjects)
+function Scope:__call(ScopedObjects : {[string] : any})
     local selfClass = {}
     local selfMeta = {}
 

@@ -7,14 +7,6 @@
 
 local Tween = {}
 
--- Types
-type TweenInstance = {
-    Value : any,
-    Target : any
-}
-
-export type TweenConstructor = (Value : any, TweenInformation : TweenInfo) -> TweenInstance
-
 -- Constants
 local EPSILON = 0.001
 
@@ -28,6 +20,14 @@ local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
+local Types = require(Modules.Types)
+
+-- Types Extended
+export type TweenInstance = {
+    Target : any
+} & Types.BaseState
+
+export type TweenConstructor = (Value : Types.BaseState | any, TweenInformation : TweenInfo) -> TweenInstance
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)

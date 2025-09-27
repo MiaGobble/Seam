@@ -7,17 +7,14 @@
 
 local Rendered = {}
 
--- Types
-type RenderInstance = {
-    Value : any?,
-}
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
+local Types = require(Modules.Types)
 
 -- Types Extended
+type RenderInstance = {} & Types.BaseState
 export type RenderedConstructor = (Callback : () -> any?) -> RenderInstance
 
 --[=[

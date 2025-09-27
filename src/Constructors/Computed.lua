@@ -7,19 +7,16 @@
 
 local Computed = {}
 
--- Types
-type ComputedInstance = {
-    Value: any?,
-}
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Value = require(script.Parent.Value)
+local Types = require(Modules.Types)
 
 -- Types Extended
+export type ComputedInstance = {} & Types.BaseState
 export type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> any) -> any?) -> ComputedInstance
 
 --[=[

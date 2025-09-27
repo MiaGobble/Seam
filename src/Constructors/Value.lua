@@ -7,19 +7,19 @@
 
 local Value = {}
 
--- Types
-export type ValueInstance = {
-    Value : any,
-    Changed : RBXScriptSignal,
-}
-
-type ValueConstructor = (Value : any) -> ValueInstance
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
+local Types = require(Modules.Types)
+
+-- Types Extended
+export type ValueInstance = {
+    Changed : RBXScriptSignal,
+} & Types.BaseState
+
+export type ValueConstructor = (Value : any) -> ValueInstance
 
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.

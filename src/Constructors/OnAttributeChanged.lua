@@ -42,4 +42,6 @@ function OnAttributeChanged:__index(Index : string)
     end
 end
 
-return setmetatable({}, OnAttributeChanged)
+local Meta = setmetatable({}, OnAttributeChanged)
+
+return Meta :: OnAttributeChanged

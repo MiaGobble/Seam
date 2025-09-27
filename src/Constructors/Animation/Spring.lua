@@ -7,15 +7,6 @@
 
 local Spring = {}
 
--- Types
-type SpringInstance = {
-    Value : any,
-    Velocity : any,
-    Target : any
-}
-
-export type SpringConstructor = (Value : any, Speed : number, Dampening : number) -> SpringInstance
-
 -- Constants
 local EULERS_NUMBER = 2.71828
 local EPSILON = 0.001
@@ -27,6 +18,15 @@ local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
+local Types = require(Modules.Types)
+
+-- Types Extended
+export type SpringInstance = {
+    Velocity : any,
+    Target : any
+} & Types.BaseState
+
+export type SpringConstructor = (Value : Types.BaseState | any, Speed : number, Dampening : number) -> SpringInstance
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
     -- I copied this spring math from another module I did a long time ago,
@@ -70,7 +70,7 @@ local function GetValue(ValueObject)
     end
 end
 
-function Spring:__call(Value : any, Speed : number, Dampening : number) : SpringInstance
+function Spring:__call(Value : Types.BaseState, Speed : number, Dampening : number) : SpringInstance
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
