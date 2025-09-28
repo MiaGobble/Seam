@@ -14,8 +14,8 @@ local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 
 -- Types Extended
-type RenderInstance = {} & Types.BaseState
-export type RenderedConstructor = (Callback : () -> any?) -> RenderInstance
+export type RenderedInstance = {} & Types.BaseState
+export type RenderedConstructor = (Callback : () -> any?) -> RenderedInstance
 
 --[=[
     Constructs a Rendered instance, which actively computes a value based on a given function.
