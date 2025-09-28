@@ -1,10 +1,9 @@
 -- Services
-local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local PlayersService = game:GetService("Players")
 
 -- Imports
-local Seam = require(ReplicatedFirst.Seam)
-local New = Seam.New
+local Constructors = script.Parent.Parent.Constructors
+local New = require(Constructors.New)
 
 -- Variables
 local Player = PlayersService.LocalPlayer
