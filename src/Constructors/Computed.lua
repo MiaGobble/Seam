@@ -16,8 +16,8 @@ local Value = require(script.Parent.Value)
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type ComputedInstance = {} & Types.BaseState
-export type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> any) -> any?) -> ComputedInstance
+export type ComputedInstance<T> = {} & Types.BaseState<T>
+export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ComputedInstance<T>
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
@@ -25,13 +25,13 @@ export type ComputedConstructor = (Callback : ((Value : Value.ValueInstance) -> 
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
 
-function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> any?)
+function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
     local UsedValues = {}
     local CurrentValue = nil
 
-    local function Use(Value : Value.ValueInstance)
+    local function Use(Value : Value.ValueInstance<any>)
         if UsedValues[Value] then
             return UsedValues[Value].Value
         end
@@ -82,7 +82,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance) -> any) -> an
         end
     })
 
-    return ActiveComputation :: ComputedInstance
+    return ActiveComputation :: ComputedInstance<any>
 end
 
 --[=[
@@ -101,4 +101,4 @@ end
 
 local Meta = setmetatable({}, Computed)
 
-return Meta :: ComputedConstructor
+return Meta :: ComputedConstructor<any>

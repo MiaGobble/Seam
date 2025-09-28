@@ -1,8 +1,6 @@
 --[=[
     The main framework module for Seam.
 
-    NOT READY FOR PRODUCTION USE. USE WITH CAUTION.
-
     Some credits for internal modules:
     - iGottic (creator of this framework)
     - Elttob (UnpackType, PackType, Janitor)
@@ -18,6 +16,8 @@
 local Constructors = script:WaitForChild("Constructors")
 local Modules = script:WaitForChild("Modules")
 local InitPresetComponents = require(Modules:WaitForChild("InitPresetComponents"))
+local Types = require(Modules:WaitForChild("Types"))
+
 local New = require(Constructors:WaitForChild("New"))
 local Children = require(Constructors:WaitForChild("Children"))
 local Value = require(Constructors:WaitForChild("Value"))
@@ -36,21 +36,20 @@ local Rendered = require(Constructors:WaitForChild("Rendered"))
 local FollowProperty = require(Constructors:WaitForChild("FollowProperty"))
 local FollowAttribute = require(Constructors:WaitForChild("FollowAttribute"))
 
--- Types extended
-export type Seam = {
-    -- Constructor types
+-- Types extended (private)
+type Seam = {
     New : New.NewConstructor,
     new : New.NewConstructor,
     Children : Children.Children,
     children : Children.Children,
-    Value : Value.ValueConstructor,
-    value : Value.ValueConstructor,
-    Computed : Computed.ComputedConstructor,
-    computed : Computed.ComputedConstructor,
-    Spring : Spring.SpringConstructor,
-    spring : Spring.SpringConstructor,
-    Tween : Tween.TweenConstructor,
-    tween : Tween.TweenConstructor,
+    Value : Value.ValueConstructor<any>,
+    value : Value.ValueConstructor<any>,
+    Computed : Computed.ComputedConstructor<any>,
+    computed : Computed.ComputedConstructor<any>,
+    Spring : Spring.SpringConstructor<any>,
+    spring : Spring.SpringConstructor<any>,
+    Tween : Tween.TweenConstructor<any>,
+    tween : Tween.TweenConstructor<any>,
     Scope : Scope.ScopeConstructor,
     scope : Scope.ScopeConstructor,
     OnEvent : OnEvent.OnEvent,
@@ -67,22 +66,42 @@ export type Seam = {
     onAttributeChanged : OnAttributeChanged.OnAttributeChanged,
     Lifetime : Lifetime.Lifetime,
     lifetime : Lifetime.Lifetime,
-    Rendered : Rendered.RenderedConstructor,
-    rendered : Rendered.RenderedConstructor,
+    Rendered : Rendered.RenderedConstructor<any>,
+    rendered : Rendered.RenderedConstructor<any>,
     FollowProperty : FollowProperty.FollowProperty,
     followProperty : FollowProperty.FollowProperty,
     FollowAttribute : FollowAttribute.FollowAttribute,
     followAttribute : FollowAttribute.FollowAttribute,
-
-    -- Instance types
-    ValueInstance : Value.ValueInstance,
-    ComputedInstance : Computed.ComputedInstance,
-    SpringInstance : Spring.SpringInstance,
-    TweenInstance : Tween.TweenInstance,
-    ScopeInstance : Scope.ScopeInstance,
-    RenderedInstance : Rendered.RenderedInstance,
 }
 
+-- Types exported (public)
+export type NewConstructor = New.NewConstructor
+export type Children = Children.Children
+export type Value<T> = Value.ValueInstance<T>
+export type ValueConstructor<T> = Value.ValueConstructor<T>
+export type Computed<T> = Computed.ComputedInstance<T>
+export type ComputedConstructor<T> = Computed.ComputedConstructor<T>
+export type Spring<T> = Spring.SpringInstance<T>
+export type SpringConstructor<T> = Spring.SpringConstructor<T>
+export type Tween<T> = Tween.TweenInstance<T>
+export type TweenConstructor<T> = Tween.TweenConstructor<T>
+export type Scope = Scope.ScopeInstance
+export type ScopeConstructor = Scope.ScopeConstructor
+export type OnEvent = OnEvent.OnEvent
+export type OnChanged = OnChanged.OnChanged
+export type DeclareComponent = DeclareComponent.DeclareComponent
+export type From = From.From
+export type Attribute = Attribute.Attribute
+export type OnAttributeChanged = OnAttributeChanged.OnAttributeChanged
+export type Lifetime = Lifetime.Lifetime
+export type Rendered<T> = Rendered.RenderedInstance<T>
+export type RenderedConstructor<T> = Rendered.RenderedConstructor<T>
+export type FollowProperty = FollowProperty.FollowProperty
+export type FollowAttribute = FollowAttribute.FollowAttribute
+
+export type BaseState<T> = Types.BaseState<T>
+
+-- Declaration
 local Seam : Seam = {} :: Seam
 
 local function Init()
@@ -230,7 +249,9 @@ Seam.followProperty = FollowProperty
 Seam.FollowAttribute = FollowAttribute
 Seam.followAttribute = FollowAttribute
 
-return Seam, Init() -- Weird syntax? Yeah.
+Init()
+
+return Seam :: Seam
 
 -- DEV NOTES --
 

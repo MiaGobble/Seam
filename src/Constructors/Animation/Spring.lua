@@ -21,12 +21,12 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type SpringInstance = {
-    Velocity : any,
-    Target : any
-} & Types.BaseState
+export type SpringInstance<T> = {
+    Velocity : T,
+    Target : T
+} & Types.BaseState<T>
 
-export type SpringConstructor = (Value : Types.BaseState | any, Speed : number, Dampening : number) -> SpringInstance
+export type SpringConstructor<T> = (Value : Types.BaseState<T> | any, Speed : number, Dampening : number) -> SpringInstance<T>
 
 local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
     -- I copied this spring math from another module I did a long time ago,
@@ -70,7 +70,7 @@ local function GetValue(ValueObject)
     end
 end
 
-function Spring:__call(Value : Types.BaseState, Speed : number, Dampening : number) : SpringInstance
+function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening : number) : SpringInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
@@ -174,7 +174,7 @@ function Spring:__call(Value : Types.BaseState, Speed : number, Dampening : numb
         Value(ActiveValue, "Target")
     end
 
-    return ActiveValue :: SpringInstance
+    return ActiveValue :: SpringInstance<any>
 end
 
 --[=[
@@ -193,4 +193,4 @@ end
 
 local Meta = setmetatable({}, Spring)
 
-return Meta :: SpringConstructor
+return Meta :: SpringConstructor<any>

@@ -4,8 +4,8 @@
     @since 0.1.3
 ]=]
 
-export type BaseState = {
-    Value : any,
+export type BaseState<T> = {
+    Value : T,
 }
 
 return nil

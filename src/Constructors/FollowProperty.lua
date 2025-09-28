@@ -12,7 +12,7 @@ local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState) -> nil
+export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
 
 --[=[
     @ignore
@@ -20,7 +20,7 @@ export type FollowProperty = (PropertyName : string) -> (Object : Instance, Valu
 
 function FollowProperty:__call(PropertyName : string)
     return setmetatable({}, {
-        __call = function(_, Object : Instance, ValueState : Types.BaseState)
+        __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
             Object:GetPropertyChangedSignal(PropertyName):Connect(function()
                 if Object[PropertyName] ~= ValueState.Value then
                     ValueState.Value = Object[PropertyName]

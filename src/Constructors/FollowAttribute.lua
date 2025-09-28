@@ -12,7 +12,7 @@ local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : Types.BaseState) -> nil
+export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
 
 --[=[
     @ignore
@@ -20,7 +20,7 @@ export type FollowAttribute = (AttributeName : string) -> (Object : Instance, Va
 
 function FollowAttribute:__call(AttributeName : string)
     return setmetatable({}, {
-        __call = function(_, Object : Instance, ValueState : Types.BaseState)
+        __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
             Object:GetAttributeChangedSignal(AttributeName):Connect(function()
                 if Object:GetAttribute(AttributeName) ~= ValueState.Value then
                     ValueState.Value = Object:GetAttribute(AttributeName)

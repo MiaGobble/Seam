@@ -14,8 +14,8 @@ local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type RenderedInstance = {} & Types.BaseState
-export type RenderedConstructor = (Callback : () -> any?) -> RenderedInstance
+export type RenderedInstance<T> = {} & Types.BaseState<T>
+export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance<T>
 
 --[=[
     Constructs a Rendered instance, which actively computes a value based on a given function.
@@ -51,7 +51,7 @@ function Rendered:__call(Callback : () -> any?)
         end
     })
 
-    return ActiveComputation :: RenderInstance
+    return ActiveComputation :: RenderedInstance<any>
 end
 
 --[=[
@@ -70,4 +70,4 @@ end
 
 local Meta = setmetatable({}, Rendered)
 
-return Meta :: RenderedConstructor
+return Meta :: RenderedConstructor<any>

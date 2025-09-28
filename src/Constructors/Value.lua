@@ -15,11 +15,11 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type ValueInstance = {
+export type ValueInstance<T> = {
     Changed : RBXScriptSignal,
-} & Types.BaseState
+} & Types.BaseState<T>
 
-export type ValueConstructor = (Value : any) -> ValueInstance
+export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
 
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
@@ -85,7 +85,7 @@ function Value:__call(Value : any)
         end
     })
 
-    return ActiveValue :: ValueInstance
+    return ActiveValue :: ValueInstance<any>
 end
 
 --[=[
@@ -104,4 +104,4 @@ end
 
 local Meta = setmetatable({}, Value)
 
-return Meta :: ValueConstructor
+return Meta :: ValueConstructor<any>

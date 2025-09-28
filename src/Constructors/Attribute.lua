@@ -12,7 +12,7 @@ local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState | any) -> nil
+export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
 
 --[=[
     Sets an attribute

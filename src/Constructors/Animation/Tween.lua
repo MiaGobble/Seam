@@ -23,11 +23,11 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type TweenInstance = {
-    Target : any
-} & Types.BaseState
+export type TweenInstance<T> = {
+    Target : T
+} & Types.BaseState<T>
 
-export type TweenConstructor = (Value : Types.BaseState | any, TweenInformation : TweenInfo) -> TweenInstance
+export type TweenConstructor<T> = (Value : Types.BaseState<T> | any, TweenInformation : TweenInfo) -> TweenInstance<T>
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
@@ -48,7 +48,7 @@ local function GetValue(ValueObject)
     end
 end
 
-function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
+function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
@@ -57,7 +57,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
-            UnpackedSprings = nil
+            UnpackedTweens = nil
             JanitorInstance:Destroy()
             JanitorInstance = nil
         end
@@ -133,7 +133,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         Value(ActiveValue, "Target")
     end
 
-    return ActiveValue :: TweenInstance
+    return ActiveValue :: TweenInstance<any>
 end
 
 --[=[
@@ -152,4 +152,4 @@ end
 
 local Meta = setmetatable({}, Tween)
 
-return Meta :: TweenConstructor
+return Meta :: TweenConstructor<any>
