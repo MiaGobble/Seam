@@ -1,4 +1,6 @@
 --[=[
+    Documentation: https://www.seaminterface.com/
+
     The main framework module for Seam.
 
     Some credits for internal modules:
@@ -259,5 +261,5 @@ return Seam :: Seam
     I made this framework to be as simple as possible behind the scenes, so ideally it should be easy to understand when compared to other frameworks.
     I'm also trying to integrate this into new and experimental projects of mine to give it a spin, so along the way I'll add features that I think are useful to me.
 
-    If you feel something needs more documentation, please let me know!
+    If you feel something needs more documentation, please let me know! Find current documentation at https://www.seaminterface.com/
 --]]
