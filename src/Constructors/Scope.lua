@@ -7,16 +7,33 @@
 
 local Scope = {}
 
--- Types
-export type ScopeInstance = {
-    ScopedObjects : {[string] : (...any) -> ...any},
-}
-
-export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
-
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Janitor = require(Modules.Janitor)
+local Types = require(Modules.Types)
+local Computed = require(script.Parent.Computed)
+local New = require(script.Parent.New)
+local Rendered = require(script.Parent.Rendered)
+local Value = require(script.Parent.Value)
+local Spring = require(script.Parent.Animation.Spring)
+local Tween = require(script.Parent.Animation.Tween)
+
+-- Extended types
+export type ScopeInstance = {
+    New : (self : ScopeInstance, Class : string | Instance, Properties : {[any] : any}, From : any?) -> Instance,
+    Rendered : (self : ScopeInstance, Callback : () -> any?) -> Rendered.RenderedInstance<any>,
+    Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
+    Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
+    Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
+    Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
+
+    InnerScope : (self : ScopeInstance) -> ScopeInstance,
+    AddObject : (self : ScopeInstance, Object : any) -> (),
+    RemoveObject : (self : ScopeInstance, Object : any) -> (),
+    Destroy : (self : ScopeInstance) -> (),
+}
+
+export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
 
 --[=[
     Constructs a Computed instance, which actively computes a value based on a given function.
