@@ -32,6 +32,10 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local CurrentValue = nil
 
     local function Use(Value : Value.ValueInstance<any>)
+        if not Value then
+            return nil
+        end
+
         if UsedValues[Value] then
             return UsedValues[Value].Value
         end
