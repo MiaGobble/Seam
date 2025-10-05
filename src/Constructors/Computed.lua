@@ -36,6 +36,10 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             return nil
         end
 
+        if typeof(Value) ~= "table" or not Value.Value then
+            return Value
+        end
+
         if UsedValues[Value] then
             return UsedValues[Value].Value
         end
