@@ -12,7 +12,7 @@ local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
 
 -- Types Extended
-export type Children = (Object : Instance, Children : Types.BaseState<{any}> | {any}) -> nil
+export type Children = (Object : Instance, Children : {Types.Child}) -> nil
 
 --[=[
     Sets the parent of the given children to the given object. To be used in New()
@@ -21,7 +21,7 @@ export type Children = (Object : Instance, Children : Types.BaseState<{any}> | {
     @param Children {[any] : any} -- The children to parent to the object
 ]=]
 
-local function ApplyChildren(Parent : Instance, Children : {any})
+local function ApplyChildren(Parent : Instance, Children : {Types.Child})
     local ChildrenCreated = {}
 
     if typeof(Children) ~= "table" then

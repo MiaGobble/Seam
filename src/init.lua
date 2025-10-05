@@ -102,6 +102,7 @@ export type FollowProperty = FollowProperty.FollowProperty
 export type FollowAttribute = FollowAttribute.FollowAttribute
 
 export type BaseState<T> = Types.BaseState<T>
+export type Child = Types.Child
 
 -- Declaration
 local Seam : Seam = {} :: Seam

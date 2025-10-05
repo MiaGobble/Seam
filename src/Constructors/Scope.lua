@@ -27,7 +27,7 @@ export type ScopeInstance = {
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
     Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
 
-    InnerScope : (self : ScopeInstance) -> ScopeInstance,
+    InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
     AddObject : (self : ScopeInstance, Object : any) -> (),
     RemoveObject : (self : ScopeInstance, Object : any) -> (),
     Destroy : (self : ScopeInstance) -> (),
@@ -77,8 +77,20 @@ function Scope:__call(ScopedObjects : {[string] : any})
         end
     end
 
-    function selfClass:InnerScope()
-        local NewScope = Meta(ScopedObjects)
+    function selfClass:InnerScope(NewScopedObjects : {[string] : any}?)
+        if NewScopedObjects == nil then
+            NewScopedObjects = {}
+        end
+
+        for Index, Value in ScopedObjects do
+            if NewScopedObjects[Index] then
+                continue
+            end
+
+            NewScopedObjects[Index] = Value
+        end
+
+        local NewScope = Meta(NewScopedObjects)
         self.Janitor:Add(NewScope)
         return NewScope
     end
