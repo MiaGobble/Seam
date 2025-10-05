@@ -54,7 +54,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
             return self[Key]
         end
     
-        if typeof(Object) ~= "table" or not Object.__SEAM_CAN_BE_SCOPED then
+        if typeof(Object) ~= "function" and (typeof(Object) ~= "table" or not Object.__SEAM_CAN_BE_SCOPED) then
             if Object.__SEAM_OBJECT or Object.__SEAM_INDEX then
                 error((Object.__SEAM_OBJECT or Object.__SEAM_INDEX) .. " is not a valid scopable Seam object")
             else
