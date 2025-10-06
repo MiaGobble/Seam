@@ -57,9 +57,11 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         end))
 
         JanitorInstance:Add(Object.AncestryChanged:Connect(function()
-            if not Object:IsDescendantOf(game) then
-                JanitorInstance:Destroy()
-            end
+            task.defer(function()
+                if not Object:IsDescendantOf(game) then
+                    JanitorInstance:Destroy()
+                end
+            end)
         end))
     elseif ObjectType == "SeamObject" then
         local LastValue = StateInstance.Value
