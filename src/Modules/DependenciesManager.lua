@@ -82,10 +82,6 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         end))
     end
 
-    JanitorInstance:Add(function()
-        print("dependency cleaned up!", debug.traceback())
-    end)
-
     return JanitorInstance
 end
 

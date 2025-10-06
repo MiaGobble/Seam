@@ -20,8 +20,14 @@ return function(OldValue : any, NewValue : any) : boolean
     end
 
     for Index, Element in OldUnpackedValue do
-        if math.abs(Element - NewUnpackedValue[Index]) > EPSILON then
-            return true
+        if typeof(Element) == "number" then
+            if math.abs(Element - NewUnpackedValue[Index]) > EPSILON then
+                return true
+            end
+        else
+            if Element ~= NewUnpackedValue[Index] then
+                return true
+            end
         end
     end
 
