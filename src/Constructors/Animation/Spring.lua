@@ -19,6 +19,7 @@ local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
+local IsValueChanged = require(Modules.IsValueChanged)
 
 -- Types Extended
 export type SpringInstance<T> = {
@@ -94,7 +95,11 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 for Index, Spring in ipairs(UnpackedSprings) do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
-                    if not DidChangeValue and math.abs(Position - Spring.Position0) > EPSILON then
+                    -- if not DidChangeValue and math.abs(Position - Spring.Position0) > EPSILON then
+                    --     DidChangeValue = true
+                    -- end
+
+                    if not DidChangeValue and IsValueChanged(Position, Spring.Position0) then
                         DidChangeValue = true
                     end
 

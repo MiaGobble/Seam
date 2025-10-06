@@ -21,6 +21,7 @@ local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
+local IsValueChanged = require(Modules.IsValueChanged)
 
 -- Types Extended
 export type TweenInstance<T> = {
@@ -74,7 +75,11 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
                     local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
 
-                    if not DidChangeValue and math.abs(Position - Tween.Position0) > EPSILON then
+                    -- if not DidChangeValue and math.abs(Position - Tween.Position0) > EPSILON then
+                    --     DidChangeValue = true
+                    -- end
+
+                    if not DidChangeValue and IsValueChanged(Position, Tween.Position0) then
                         DidChangeValue = true
                     end
 
