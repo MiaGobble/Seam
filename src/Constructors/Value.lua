@@ -29,9 +29,10 @@ export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
     @return {Value : any} -- The value object
 ]=]
 
-function Value:__call(Value : any)
+function Value:__call(... : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local ThisValue = ...
 
     --[[
         local This = Value(...)
@@ -48,7 +49,7 @@ function Value:__call(Value : any)
             if Index == "__SEAM_OBJECT" then
                 return "Value"
             elseif Index == "Value" then
-                return Value
+                return ThisValue
             elseif Index == "Changed" then
                 return ChangedSignal
             end
@@ -58,12 +59,11 @@ function Value:__call(Value : any)
 
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(Value) then
-                Value = NewValue
-
                 if not IsValueChanged(Value, NewValue) then
                     return
                 end
-                
+
+                ThisValue = NewValue
                 ChangedSignal:Fire("Value")
             else
                 error("Invalid value type! Expected " .. typeof(Value) .. ", got " .. typeof(NewValue))
@@ -79,11 +79,11 @@ function Value:__call(Value : any)
                 return
             end
 
-            Object[Index] = Value
+            Object[Index] = ThisValue
 
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
-                    return Value
+                    return ThisValue
                 end,
                 
                 PropertyName = Index
