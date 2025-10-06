@@ -58,15 +58,15 @@ function Value:__call(... : any)
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
-            if Index == "Value" and typeof(NewValue) == typeof(Value) then
-                if not IsValueChanged(Value, NewValue) then
+            if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
+                if not IsValueChanged(ThisValue, NewValue) then
                     return
                 end
 
                 ThisValue = NewValue
                 ChangedSignal:Fire("Value")
             else
-                error("Invalid value type! Expected " .. typeof(Value) .. ", got " .. typeof(NewValue))
+                error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))
             end
         end,
 
