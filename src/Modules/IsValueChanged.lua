@@ -7,6 +7,11 @@ local UnpackType = require(Modules.UnpackType)
 
 return function(OldValue : any, NewValue : any) : boolean
     local ValueType = typeof(OldValue)
+
+    if ValueType == "boolean" then
+        return OldValue ~= NewValue
+    end
+
     local OldUnpackedValue = UnpackType(OldValue, ValueType)
     local NewUnpackedValue = UnpackType(NewValue, ValueType)
 
