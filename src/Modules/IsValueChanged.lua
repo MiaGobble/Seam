@@ -18,12 +18,16 @@ return function(OldValue : any, NewValue : any) : boolean
                 return true
             elseif typeof(Element) == "number" then
                 return math.abs(Element - NewValue[Index]) > EPSILON
-            elseif NewValue[Index] ~= Element then
+            elseif typeof(Element) == "boolean" then
+                if Element ~= NewValue[Index] then
+                    return true
+                end
+            else
                 return true
             end
         end
 
-        for Index, Element in NewValue do
+        for Index, _ in NewValue do
             if not OldValue[Index] then
                 return true
             end
