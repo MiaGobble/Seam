@@ -70,14 +70,10 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 local PackedValues = {}
                 local DidChangeValue = false
 
-                for Index, Tween in ipairs(UnpackedTweens) do
+                for Index, Tween in UnpackedTweens do
                     local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
                     local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
                     local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
-
-                    -- if not DidChangeValue and math.abs(Position - Tween.Position0) > EPSILON then
-                    --     DidChangeValue = true
-                    -- end
 
                     if not DidChangeValue and IsValueChanged(Position, Tween.Position0) then
                         DidChangeValue = true

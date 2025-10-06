@@ -10,9 +10,7 @@ return function(OldValue : any, NewValue : any) : boolean
 
     if ValueType == "boolean" then
         return OldValue ~= NewValue
-    end
-
-    if ValueType == "table" then
+    elseif ValueType == "table" then
         for Index, Element in OldValue do
             if not NewValue[Index] then
                 return true
