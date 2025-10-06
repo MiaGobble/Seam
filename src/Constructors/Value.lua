@@ -13,6 +13,7 @@ local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
+local IsValueChanged = require(Modules.IsValueChanged)
 
 -- Types Extended
 export type ValueInstance<T> = {
@@ -57,6 +58,10 @@ function Value:__call(Value : any)
 
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(Value)  then
+                if not IsValueChanged(Value, NewValue) then
+                    return
+                end
+
                 Value = NewValue
                 ChangedSignal:Fire("Value")
             else
