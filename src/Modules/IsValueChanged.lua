@@ -12,24 +12,42 @@ return function(OldValue : any, NewValue : any) : boolean
         return OldValue ~= NewValue
     end
 
-    local OldUnpackedValue = UnpackType(OldValue, ValueType)
-    local NewUnpackedValue = UnpackType(NewValue, ValueType)
-
-    if #OldUnpackedValue ~= #NewUnpackedValue then
-        return true
-    end
-
-    for Index, Element in OldUnpackedValue do
-        if typeof(Element) == "number" then
-            if math.abs(Element - NewUnpackedValue[Index]) > EPSILON then
+    if ValueType == "table" then
+        for Index, Element in OldValue do
+            if not NewValue[Index] then
+                return true
+            elseif typeof(Element) == "number" then
+                return math.abs(Element - NewValue[Index]) > EPSILON
+            elseif NewValue[Index] ~= Element then
                 return true
             end
-        elseif typeof(Element) == "boolean" then
-            if Element ~= NewUnpackedValue[Index] then
+        end
+
+        for Index, Element in NewValue do
+            if not OldValue[Index] then
                 return true
             end
-        else
+        end
+    else
+        local OldUnpackedValue = UnpackType(OldValue, ValueType)
+        local NewUnpackedValue = UnpackType(NewValue, ValueType)
+
+        if #OldUnpackedValue ~= #NewUnpackedValue then
             return true
+        end
+
+        for Index, Element in OldUnpackedValue do
+            if typeof(Element) == "number" then
+                if math.abs(Element - NewUnpackedValue[Index]) > EPSILON then
+                    return true
+                end
+            elseif typeof(Element) == "boolean" then
+                if Element ~= NewUnpackedValue[Index] then
+                    return true
+                end
+            else
+                return true
+            end
         end
     end
 
