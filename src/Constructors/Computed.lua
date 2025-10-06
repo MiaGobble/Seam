@@ -37,7 +37,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             return nil
         end
 
-        if typeof(Value) ~= "table" or not Value.Value then
+        if typeof(Value) ~= "table" or not Value.Changed then
             return Value
         end
 
@@ -45,19 +45,9 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             return UsedValues[Value].Value
         end
 
-        if not Value.Changed then
-            return
-        end
-
-        local OldValue = Value.Value
-
         UsedValues[Value] = Value
 
         JanitorInstance:Add(Value.Changed:Connect(function()
-            if not IsValueChanged(OldValue, Value.Value) then
-                return
-            end
-
             CurrentValue = Callback(Use)
             ChangedSignal:Fire()
         end))
