@@ -63,7 +63,12 @@ function Value:__call(... : any)
                     return
                 end
 
-                ThisValue = table.clone(NewValue)
+                if typeof(NewValue) == "table" then
+                    ThisValue = table.clone(NewValue)
+                else
+                    ThisValue = NewValue
+                end
+
                 ChangedSignal:Fire("Value")
             else
                 error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))
