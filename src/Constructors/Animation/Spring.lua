@@ -116,7 +116,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
             elseif Index == "Velocity" then
                 local PackedValues = {}
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     local _, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     PackedValues[Index] = Velocity

@@ -29,10 +29,13 @@ export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
     @return {Value : any} -- The value object
 ]=]
 
-function Value:__call(... : any)
+function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
-    local ThisValue = ...
+
+    if typeof(ThisValue) == "table" then
+        ThisValue = table.clone(ThisValue)
+    end
 
     --[[
         local This = Value(...)

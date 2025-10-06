@@ -13,7 +13,6 @@ local DependenciesManager = require(Modules.DependenciesManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
-local IsValueChanged = require(Modules.IsValueChanged)
 local Value = require(script.Parent.Value)
 
 -- Types Extended
@@ -37,7 +36,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             return nil
         end
 
-        if typeof(Value) ~= "table" or not Value.Changed then
+        if typeof(Value) ~= "table" or not Value.Value then
             return Value
         end
 
