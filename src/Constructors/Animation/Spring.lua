@@ -57,7 +57,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local UnpackedValue = UnpackType(Value, ValueType)
 
     for Index, Element in ipairs(UnpackedValue) do
-        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock(), LastPosition0 = Element}
+        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
     end
 
     return UnpackedValue
@@ -77,6 +77,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local LastValue = nil
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -90,14 +91,9 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 return "Spring"
             elseif Index == "Value" then
                 local PackedValues = {}
-                local DidChangeValue = false
 
                 for Index, Spring in UnpackedSprings do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
-
-                    if not DidChangeValue and IsValueChanged(Position, Spring.LastPosition0) then
-                        DidChangeValue = true
-                    end
 
 					if math.abs(Position) <= EPSILON then
 						Position = 0
@@ -106,14 +102,17 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 					end
 
                     PackedValues[Index] = Position
-                    Spring.LastPosition0 = Position
                 end
 
-                if DidChangeValue then
+                local NewValue = PackType(PackedValues, ValueType)
+
+                if LastValue ~= nil and IsValueChanged(NewValue, LastValue) then
                     ChangedSignal:Fire("Value")
                 end
 
-                return PackType(PackedValues, ValueType)
+                LastValue = NewValue
+
+                return NewValue
             elseif Index == "Velocity" then
                 local PackedValues = {}
 
