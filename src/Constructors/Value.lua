@@ -57,7 +57,7 @@ function Value:__call(Value : any)
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
-            if Index == "Value" and typeof(NewValue) == typeof(Value)  then
+            if Index == "Value" and typeof(NewValue) == typeof(Value) then
                 if not IsValueChanged(Value, NewValue) then
                     return
                 end
