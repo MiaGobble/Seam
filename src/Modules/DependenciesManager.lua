@@ -39,7 +39,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
     local JanitorInstance = Janitor.new()
 
     if ObjectType == "Instance" then
-        local LastValue = nil
+        --local LastValue = nil
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = StateInstance.Value
@@ -48,12 +48,12 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
-                return
-            end
+            -- if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+            --     return
+            -- end
 
             Object[StateInstance.PropertyName] = NewValue
-            LastValue = NewValue
+            --LastValue = NewValue
         end))
 
         JanitorInstance:Add(Object.AncestryChanged:Connect(function()
