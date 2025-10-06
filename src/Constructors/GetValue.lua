@@ -10,14 +10,7 @@ local GetValue = {}
 -- Types
 export type GetValue = (State : any?) -> any?
 
---[=[
-    Used within New, this function is used to hydrate an existing component with given properties.
-
-    @param ComponentName string -- The name of the component to hydrate
-    @param ... any -- The optional arguments to pass to the component constructor
-]=]
-
-function GetValue:__call(State : any?)
+function GetValue:__call(State : any?) : any?
     if not State then
         return nil
     end
