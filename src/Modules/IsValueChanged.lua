@@ -24,10 +24,12 @@ return function(OldValue : any, NewValue : any) : boolean
             if math.abs(Element - NewUnpackedValue[Index]) > EPSILON then
                 return true
             end
-        else
+        elseif typeof(Element) == "boolean" then
             if Element ~= NewUnpackedValue[Index] then
                 return true
             end
+        else
+            return true
         end
     end
 
