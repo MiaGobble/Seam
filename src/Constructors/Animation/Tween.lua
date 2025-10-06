@@ -67,11 +67,16 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 return "Tween"
             elseif Index == "Value" then
                 local PackedValues = {}
+                local DidChangeValue = false
 
                 for Index, Tween in ipairs(UnpackedTweens) do
                     local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
                     local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
                     local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
+
+                    if not DidChangeValue and math.abs(Position - Tween.Position0) > EPSILON then
+                        DidChangeValue = true
+                    end
 
                     if math.abs(Position) <= EPSILON then
 						Position = 0
@@ -82,7 +87,9 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     PackedValues[Index] = Position
                 end
 
-                ChangedSignal:Fire("Value")
+                if DidChangeValue then
+                    ChangedSignal:Fire("Value")
+                end
 
                 return PackType(PackedValues, ValueType)
              elseif Index == "Changed" then
