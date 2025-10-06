@@ -57,7 +57,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local UnpackedValue = UnpackType(Value, ValueType)
 
     for Index, Element in ipairs(UnpackedValue) do
-        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
+        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock(), LastPosition0 = Element}
     end
 
     return UnpackedValue
@@ -95,7 +95,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 for Index, Spring in UnpackedSprings do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
-                    if not DidChangeValue and IsValueChanged(Position, Spring.Position0) then
+                    if not DidChangeValue and IsValueChanged(Position, Spring.LastPosition0) then
                         DidChangeValue = true
                     end
 
@@ -106,6 +106,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 					end
 
                     PackedValues[Index] = Position
+                    Spring.LastPosition0 = Position
                 end
 
                 if DidChangeValue then
