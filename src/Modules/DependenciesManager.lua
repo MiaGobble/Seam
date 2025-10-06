@@ -48,7 +48,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if not IsValueChanged(LastValue, NewValue) then
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
                 return
             end
 
@@ -71,7 +71,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if not IsValueChanged(LastValue, NewValue) then
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
                 return
             end
 
