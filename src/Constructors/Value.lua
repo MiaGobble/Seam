@@ -35,7 +35,7 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         __newindex = function(self, Index : string, NewValue : any)
             if IsValueChanged(Value[Index], NewValue) then
                 Value[Index] = NewValue
-                ChangedSignal:Fire("Value." .. Index)
+                ChangedSignal:Fire("Value")
             end
         end,
 
