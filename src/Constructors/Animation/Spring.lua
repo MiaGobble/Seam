@@ -11,6 +11,9 @@ local Spring = {}
 local EULERS_NUMBER = 2.71828
 local EPSILON = 0.001
 
+-- Services
+local RunService = game:GetService("RunService")
+
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
@@ -77,8 +80,32 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
-    local LastValue = nil
-    local FramesPassed = 1
+    local CurrentValue = CurrentTarget
+    local LastValue = CurrentTarget
+
+    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        local PackedValues = {}
+
+        for Index, Spring in UnpackedSprings do
+            local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+
+			if math.abs(Position) <= EPSILON then
+				Position = 0
+			elseif math.abs(Position - Spring.Position0) <= EPSILON then
+				Position = Spring.Position0
+			end
+
+            PackedValues[Index] = Position
+        end
+
+        CurrentValue = PackType(PackedValues, ValueType)
+
+        if IsValueChanged(LastValue, CurrentValue) then
+            ChangedSignal:Fire("Value")
+        end
+
+        LastValue = CurrentValue
+    end))
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -91,34 +118,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
             if Index == "__SEAM_OBJECT" then
                 return "Spring"
             elseif Index == "Value" then
-                local PackedValues = {}
-
-                for Index, Spring in UnpackedSprings do
-                    local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
-
-					if math.abs(Position) <= EPSILON then
-						Position = 0
-					elseif math.abs(Position - Spring.Position0) <= EPSILON then
-						Position = Spring.Position0
-					end
-
-                    PackedValues[Index] = Position
-                end
-
-                local NewValue = PackType(PackedValues, ValueType)
-
-                -- if LastValue ~= nil and NewValue ~= LastValue then
-                --     ChangedSignal:Fire("Value")
-                -- end
-
-                if FramesPassed > 0 then
-                    FramesPassed = FramesPassed - 1
-                    ChangedSignal:Fire("Value")
-                end
-
-                LastValue = NewValue
-
-                return NewValue
+                return CurrentValue
             elseif Index == "Velocity" then
                 local PackedValues = {}
 
@@ -174,7 +174,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
-                    FramesPassed += 1
+                    ChangedSignal:Fire("Value")
                     return self.Value
                 end,
 
