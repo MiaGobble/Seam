@@ -109,10 +109,6 @@ function Value:__call(ThisValue : any)
 
     ThisValue = GetAttendedTableValue(ThisValue, ChangedSignal)
 
-    -- if typeof(ThisValue) == "table" then
-    --     ThisValue = table.clone(ThisValue)
-    -- end
-
     --[[
         local This = Value(...)
         This.Value = x OR x = This.Value
@@ -161,8 +157,6 @@ function Value:__call(ThisValue : any)
                 else
                     ThisValue = NewValue
                 end
-
-                --ThisValue = NewValue
 
                 ChangedSignal:Fire("Value")
             else

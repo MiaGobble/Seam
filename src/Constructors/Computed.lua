@@ -14,6 +14,7 @@ local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Value = require(script.Parent.Value)
+local GetValue = require(script.Parent.GetValue)
 
 -- Types Extended
 export type ComputedInstance<T> = {} & Types.BaseState<T>
@@ -32,26 +33,20 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local CurrentValue = nil
 
     local function Use(Value : Value.ValueInstance<any>)
-        if not Value then
-            return nil
+        if Value.Changed then
+            if UsedValues[Value] then
+                return GetValue(UsedValues[Value])
+            end
+
+            UsedValues[Value] = Value
+
+            JanitorInstance:Add(Value.Changed:Connect(function()
+                CurrentValue = Callback(Use)
+                ChangedSignal:Fire()
+            end))
         end
 
-        if typeof(Value) ~= "table" or not Value.Value then
-            return Value
-        end
-
-        if UsedValues[Value] then
-            return UsedValues[Value].ValueRaw or UsedValues[Value].Value
-        end
-
-        UsedValues[Value] = Value
-
-        JanitorInstance:Add(Value.Changed:Connect(function()
-            CurrentValue = Callback(Use)
-            ChangedSignal:Fire()
-        end))
-
-        return Value.ValueRaw or Value.Value
+        return GetValue(Value)
     end
 
     CurrentValue = Callback(Use)
