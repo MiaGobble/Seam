@@ -22,6 +22,31 @@ export type ValueInstance<T> = {
 
 export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
 
+local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<string>)
+    if typeof(Value) ~= "table" then
+        return Value
+    end
+
+    local FakeTable = setmetatable({}, {
+        __index = function(self, Index : string)
+            return GetAttendedTableValue(Value[Index], ChangedSignal)
+        end,
+
+        __newindex = function(self, Index : string, NewValue : any)
+            if IsValueChanged(Value[Index], NewValue) then
+                Value[Index] = NewValue
+                ChangedSignal:Fire("Value." .. Index)
+            end
+        end,
+
+        __iter = function(self)
+            return pairs(Value)
+        end
+    })
+
+    return FakeTable
+end
+
 --[=[
     Creates a new value object. Enforces type checking based on initial value type.
 
@@ -52,7 +77,7 @@ function Value:__call(ThisValue : any)
             if Index == "__SEAM_OBJECT" then
                 return "Value"
             elseif Index == "Value" then
-                return ThisValue
+                return GetAttendedTableValue(ThisValue, ChangedSignal)
             elseif Index == "Changed" then
                 return ChangedSignal
             end
