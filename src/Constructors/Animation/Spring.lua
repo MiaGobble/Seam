@@ -106,9 +106,9 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
                 local NewValue = PackType(PackedValues, ValueType)
 
-                if LastValue ~= nil and IsValueChanged(NewValue, LastValue) then
+                --if LastValue ~= nil and IsValueChanged(NewValue, LastValue) then
                     ChangedSignal:Fire("Value")
-                end
+                --end
 
                 LastValue = NewValue
 
@@ -168,7 +168,6 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
-                    ChangedSignal:Fire("Value")
                     return self.Value
                 end,
 
