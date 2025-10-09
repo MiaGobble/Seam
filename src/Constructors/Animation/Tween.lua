@@ -13,6 +13,9 @@ local EPSILON = 0.001
 -- Services
 local TweenService = game:GetService("TweenService")
 
+-- Services
+local RunService = game:GetService("RunService")
+
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local DependenciesManager = require(Modules.DependenciesManager)
@@ -55,6 +58,34 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local CurrentValue = CurrentTarget
+    local LastValue = CurrentTarget
+
+    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        local PackedValues = {}
+
+        for Index, Tween in UnpackedTweens do
+            local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
+            local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
+            local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
+
+            if math.abs(Position) <= EPSILON then
+				Position = 0
+			elseif math.abs(Position - Tween.Position0) <= EPSILON then
+				Position = Tween.Position0
+			end
+
+            PackedValues[Index] = Position
+        end
+
+        CurrentValue = PackType(PackedValues, ValueType)
+
+        if IsValueChanged(LastValue, CurrentValue) then
+            ChangedSignal:Fire("Value")
+        end
+
+        LastValue = CurrentValue
+    end)
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -67,33 +98,8 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
             if Index == "__SEAM_OBJECT" then
                 return "Tween"
             elseif Index == "Value" then
-                local PackedValues = {}
-                local DidChangeValue = false
-
-                for Index, Tween in UnpackedTweens do
-                    local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
-                    local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
-                    local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
-
-                    if not DidChangeValue and IsValueChanged(Position, Tween.Position0) then
-                        DidChangeValue = true
-                    end
-
-                    if math.abs(Position) <= EPSILON then
-						Position = 0
-					elseif math.abs(Position - Tween.Position0) <= EPSILON then
-						Position = Tween.Position0
-					end
-
-                    PackedValues[Index] = Position
-                end
-
-                if DidChangeValue then
-                    ChangedSignal:Fire("Value")
-                end
-
-                return PackType(PackedValues, ValueType)
-             elseif Index == "Changed" then
+                return CurrentValue
+            elseif Index == "Changed" then
                 return ChangedSignal
             end
 
