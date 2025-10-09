@@ -44,11 +44,25 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         end,
 
         __len = function(self)
-            return #Value + 1
+            return #Value
         end,
     })
 
     return FakeTable
+end
+
+local function DeepCopyTable(This : {[any] : any})
+    local NewTable = {}
+
+    for Index, Value in This do
+        if typeof(Value) == "table" then
+            NewTable[Index] = DeepCopyTable(Value)
+        else
+            NewTable[Index] = Value
+        end
+    end
+
+    return NewTable
 end
 
 --[=[
@@ -61,6 +75,8 @@ end
 function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+
+    ThisValue = GetAttendedTableValue(ThisValue, ChangedSignal)
 
     -- if typeof(ThisValue) == "table" then
     --     ThisValue = table.clone(ThisValue)
@@ -81,9 +97,9 @@ function Value:__call(ThisValue : any)
             if Index == "__SEAM_OBJECT" then
                 return "Value"
             elseif Index == "Value" then
-                return GetAttendedTableValue(ThisValue, ChangedSignal)
-            elseif Index == "ValueRaw" then
                 return ThisValue
+            elseif Index == "ValueRaw" then
+                return DeepCopyTable(ThisValue)
             elseif Index == "Changed" then
                 return ChangedSignal
             end
@@ -97,13 +113,21 @@ function Value:__call(ThisValue : any)
                     return
                 end
 
-                -- if typeof(NewValue) == "table" then
-                --     ThisValue = table.clone(NewValue)
-                -- else
-                --     ThisValue = NewValue
-                -- end
+                if typeof(NewValue) == "table" then
+                    for Index, Value in ThisValue do
+                        if NewValue[Index] == nil then
+                            ThisValue[Index] = nil
+                        end
+                    end
 
-                ThisValue = NewValue
+                    for Index, Value in NewValue do
+                        ThisValue[Index] = Value
+                    end
+                else
+                    ThisValue = NewValue
+                end
+
+                --ThisValue = NewValue
 
                 ChangedSignal:Fire("Value")
             else

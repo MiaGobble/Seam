@@ -16,7 +16,7 @@ function GetValue:__call(State : any?) : any?
     end
 
     if typeof(State) == "table" and State.Value then
-        return State.Value
+        return State.ValueRaw or State.Value
     end
 
     return State
