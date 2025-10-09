@@ -41,7 +41,11 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
 
         __iter = function(self)
             return pairs(Value)
-        end
+        end,
+
+        __len = function(self)
+            return #Value
+        end,
     })
 
     return FakeTable
