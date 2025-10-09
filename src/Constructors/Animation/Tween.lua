@@ -34,7 +34,7 @@ local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
     local UnpackedValue = UnpackType(Value, ValueType)
 
-    for Index, Element in ipairs(UnpackedValue) do
+    for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {Position0 = Element, Position1 = Element, Tick0 = os.clock()}
     end
 
@@ -106,7 +106,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 
                 local UnpackedTargetValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Tween in ipairs(UnpackedTweens) do
+                for Index, Tween in UnpackedTweens do
                     Tween.Position0 = Tween.Position1
                     Tween.Position1 = UnpackedTargetValue[Index]
                     Tween.Tick0 = os.clock()
@@ -114,7 +114,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
             elseif Index == "Value" then
                 local UnpackedValue = UnpackType(NewValue, ValueType)
 
-                for Index, Tween in ipairs(UnpackedTweens) do
+                for Index, Tween in UnpackedTweens do
                     Tween.Position0 = UnpackedValue[Index]
                     Tween.Position1 = UnpackedValue[Index]
                     Tween.Tick0 = os.clock()

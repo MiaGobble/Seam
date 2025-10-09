@@ -75,7 +75,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
                 return
             end
 
-            for _, Value in ipairs(Tuple) do
+            for _, Value in Tuple do
                 self.Janitor:Add(Value)
             end
     

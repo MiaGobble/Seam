@@ -56,7 +56,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local ValueType = typeof(Value)
     local UnpackedValue = UnpackType(Value, ValueType)
 
-    for Index, Element in ipairs(UnpackedValue) do
+    for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
     end
 
