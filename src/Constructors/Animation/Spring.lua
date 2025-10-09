@@ -136,7 +136,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     Spring.Tick0, Spring.Position0 = os.clock(), UnpackedNewValue[Index]
@@ -153,7 +153,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
             elseif Index == "Value" then
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     --Spring.Position0 = UnpackedNewValue[Index]
 					Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = UnpackedNewValue[Index] - Spring.Position0, 0, 0
                     Spring.Tick0 = os.clock()
