@@ -42,7 +42,7 @@ function Rendered:__call(Callback : () -> any?)
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "ComputedInstance"
+                return "RenderedInstance"
             elseif Index == "Value" then
                 return Callback()
             end
