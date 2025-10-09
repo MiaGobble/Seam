@@ -103,7 +103,11 @@ function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
 
-    ThisValue = GetAttendedTableValue(table.clone(ThisValue), ChangedSignal)
+    if typeof(ThisValue) == "table" then
+        ThisValue = table.clone(ThisValue)
+    end
+
+    ThisValue = GetAttendedTableValue(ThisValue, ChangedSignal)
 
     -- if typeof(ThisValue) == "table" then
     --     ThisValue = table.clone(ThisValue)
