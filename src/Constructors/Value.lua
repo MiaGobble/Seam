@@ -78,6 +78,8 @@ function Value:__call(ThisValue : any)
                 return "Value"
             elseif Index == "Value" then
                 return GetAttendedTableValue(ThisValue, ChangedSignal)
+            elseif Index == "ValueRaw" then
+                return ThisValue
             elseif Index == "Changed" then
                 return ChangedSignal
             end

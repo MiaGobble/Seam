@@ -41,7 +41,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         end
 
         if UsedValues[Value] then
-            return UsedValues[Value].Value
+            return UsedValues[Value].ValueRaw or UsedValues[Value].Value
         end
 
         UsedValues[Value] = Value
@@ -51,7 +51,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             ChangedSignal:Fire()
         end))
 
-        return Value.Value
+        return Value.ValueRaw
     end
 
     CurrentValue = Callback(Use)
