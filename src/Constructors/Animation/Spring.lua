@@ -106,6 +106,8 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
                 local NewValue = PackType(PackedValues, ValueType)
 
+                print(ValueType)
+
                 if LastValue ~= nil and NewValue ~= LastValue then
                     ChangedSignal:Fire("Value")
                 end
