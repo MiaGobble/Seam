@@ -91,6 +91,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 return "Spring"
             elseif Index == "Value" then
                 local PackedValues = {}
+                local DidChange = false
 
                 for Index, Spring in UnpackedSprings do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
@@ -98,6 +99,10 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 					if math.abs(Position) <= EPSILON then
 						Position = 0
 					elseif math.abs(Position - Spring.Position0) <= EPSILON then
+                        if Position ~= Spring.Position0 then
+                            DidChange = true
+                        end
+
 						Position = Spring.Position0
 					end
 
@@ -106,9 +111,11 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
                 local NewValue = PackType(PackedValues, ValueType)
 
-                print(ValueType)
+                -- if LastValue ~= nil and NewValue ~= LastValue then
+                --     ChangedSignal:Fire("Value")
+                -- end
 
-                if LastValue ~= nil and NewValue ~= LastValue then
+                if DidChange then
                     ChangedSignal:Fire("Value")
                 end
 
