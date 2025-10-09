@@ -25,7 +25,7 @@ function From:__call(ComponentName : string, ... : any)
     local Component = ComponentsManager:GetComponent(ComponentName)
 
     if not Component then
-        error("Component does not exist!")
+        error(`Component "{ComponentName}" does not exist!`)
     end
 
     return {
