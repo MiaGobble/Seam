@@ -168,6 +168,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
+                    ChangedSignal:Fire("Value")
                     return self.Value
                 end,
 

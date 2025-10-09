@@ -127,6 +127,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         __call = function(self, Object, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
+                    ChangedSignal:Fire("Value")
                     return self.Value
                 end,
 
