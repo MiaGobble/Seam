@@ -99,7 +99,11 @@ function Value:__call(ThisValue : any)
             elseif Index == "Value" then
                 return ThisValue
             elseif Index == "ValueRaw" then
-                return DeepCopyTable(ThisValue)
+                if typeof(ThisValue) == "table" then
+                    return DeepCopyTable(ThisValue)
+                else
+                    return ThisValue
+                end
             elseif Index == "Changed" then
                 return ChangedSignal
             end
