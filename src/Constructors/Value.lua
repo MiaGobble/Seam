@@ -27,28 +27,55 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         return Value
     end
 
-    local FakeTable = setmetatable({}, {
+    local FakeTable = {}
+
+    -- table.insert doesn't trigger metamethods for optimization reasons
+    -- so we need to manually correct the table before any reading/writing
+    local function CorrectFakeTable()
+        local LowestIndexForInsert = 1
+
+        for Index, This in pairs(FakeTable) do
+            if Index == LowestIndexForInsert then
+                LowestIndexForInsert += 1
+                table.insert(Value, This)
+            else
+                Value[Index] = This
+            end
+
+            FakeTable[Index] = nil
+        end
+    end
+
+
+    local Proxy = setmetatable(FakeTable, {
         __index = function(self, Index : string)
+            CorrectFakeTable()
+
             return GetAttendedTableValue(Value[Index], ChangedSignal)
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
             if IsValueChanged(Value[Index], NewValue) then
+                CorrectFakeTable()
                 Value[Index] = NewValue
                 ChangedSignal:Fire("Value")
             end
         end,
 
         __iter = function(self)
+            CorrectFakeTable()
+
             return pairs(Value)
         end,
 
         __len = function(self)
+            CorrectFakeTable()
+
             return #Value
         end,
     })
 
-    return FakeTable
+    return Proxy
 end
 
 local function DeepCopyTable(This : {[any] : any})
