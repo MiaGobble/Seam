@@ -27,6 +27,8 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         return Value
     end
 
+    local Size = #Value
+
     local FakeTable = setmetatable({}, {
         __index = function(self, Index : string)
             return GetAttendedTableValue(Value[Index], ChangedSignal)
@@ -35,6 +37,7 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         __newindex = function(self, Index : string, NewValue : any)
             if IsValueChanged(Value[Index], NewValue) then
                 Value[Index] = NewValue
+                Size = #Value
                 ChangedSignal:Fire("Value")
             end
         end,
@@ -44,8 +47,8 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         end,
 
         __len = function(self)
-            print("len:", #Value)
-            return #Value
+            print("len:", Size)
+            return Size
         end,
     })
 
