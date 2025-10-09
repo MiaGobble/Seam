@@ -44,6 +44,7 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         end,
 
         __len = function(self)
+            print("len:", #Value)
             return #Value
         end,
     })
