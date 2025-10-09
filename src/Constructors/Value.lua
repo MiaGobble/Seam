@@ -62,9 +62,9 @@ function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
 
-    if typeof(ThisValue) == "table" then
-        ThisValue = table.clone(ThisValue)
-    end
+    -- if typeof(ThisValue) == "table" then
+    --     ThisValue = table.clone(ThisValue)
+    -- end
 
     --[[
         local This = Value(...)
@@ -97,11 +97,13 @@ function Value:__call(ThisValue : any)
                     return
                 end
 
-                if typeof(NewValue) == "table" then
-                    ThisValue = table.clone(NewValue)
-                else
-                    ThisValue = NewValue
-                end
+                -- if typeof(NewValue) == "table" then
+                --     ThisValue = table.clone(NewValue)
+                -- else
+                --     ThisValue = NewValue
+                -- end
+
+                ThisValue = NewValue
 
                 ChangedSignal:Fire("Value")
             else
