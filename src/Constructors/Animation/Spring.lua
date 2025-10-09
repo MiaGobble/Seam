@@ -78,6 +78,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
     local LastValue = nil
+    local FramesPassed = 1
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -91,7 +92,6 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 return "Spring"
             elseif Index == "Value" then
                 local PackedValues = {}
-                local DidChange = false
 
                 for Index, Spring in UnpackedSprings do
                     local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
@@ -99,10 +99,6 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 					if math.abs(Position) <= EPSILON then
 						Position = 0
 					elseif math.abs(Position - Spring.Position0) <= EPSILON then
-                        if Position ~= Spring.Position0 then
-                            DidChange = true
-                        end
-
 						Position = Spring.Position0
 					end
 
@@ -115,7 +111,8 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 --     ChangedSignal:Fire("Value")
                 -- end
 
-                if DidChange then
+                if FramesPassed > 0 then
+                    FramesPassed = FramesPassed - 1
                     ChangedSignal:Fire("Value")
                 end
 
@@ -177,6 +174,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
+                    FramesPassed += 1
                     return self.Value
                 end,
 
