@@ -85,7 +85,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end
 
         LastValue = CurrentValue
-    end)
+    end))
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
