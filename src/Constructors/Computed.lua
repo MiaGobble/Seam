@@ -51,7 +51,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             ChangedSignal:Fire()
         end))
 
-        return Value.ValueRaw
+        return Value.ValueRaw or Value.Value
     end
 
     CurrentValue = Callback(Use)
