@@ -33,7 +33,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local CurrentValue = nil
 
     local function Use(Value : Value.ValueInstance<any>)
-        if Value.Changed then
+        if Value and typeof(Value) == "table" and Value.Changed then
             if UsedValues[Value] then
                 return GetValue(UsedValues[Value])
             end
