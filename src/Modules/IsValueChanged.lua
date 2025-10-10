@@ -4,6 +4,10 @@ local EPSILON = 0.001
 return function(OldValue : any, NewValue : any) : boolean
     local ValueType = typeof(OldValue)
 
+    if typeof(OldValue) ~= typeof(NewValue) then
+        return true
+    end
+
     if ValueType == "table" then
         for Index, Element in OldValue do
             if not NewValue[Index] then
