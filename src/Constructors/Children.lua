@@ -33,8 +33,15 @@ local function ApplyChildren(Parent : Instance, Children : {Types.Child})
             error("Invalid child type! Expected Instance, got " .. typeof(Child))
         end
 
-        Child.Parent = Parent
-        table.insert(ChildrenCreated, Child)
+        local Success, Issue = pcall(function()
+            Child.Parent = Parent
+        end)
+
+        if Success then
+            table.insert(ChildrenCreated, Child)
+        else
+            warn(Issue)
+        end
     end
 
     return ChildrenCreated
