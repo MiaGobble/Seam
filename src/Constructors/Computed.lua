@@ -46,6 +46,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             end))
         end
 
+        ChangedSignal:Fire()
+
         return GetValue(Value)
     end
 
