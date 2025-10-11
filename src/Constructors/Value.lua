@@ -82,7 +82,7 @@ local function DeepCopyTable(This : {[any] : any})
     local NewTable = {}
 
     for Index, Value in This do
-        if typeof(Value) == "table" then
+        if typeof(Value) == "table" and not Value.__SEAM_INDEX and not Value.__SEAM_OBJECT then
             NewTable[Index] = DeepCopyTable(Value)
         else
             NewTable[Index] = Value
@@ -173,11 +173,19 @@ function Value:__call(ThisValue : any)
                 return
             end
 
-            Object[Index] = ThisValue
+            if typeof(ThisValue) == "table" then
+                Object[Index] = DeepCopyTable(ThisValue)
+            else
+                Object[Index] = ThisValue
+            end
 
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
-                    return ThisValue
+                    if typeof(ThisValue) == "table" then
+                        return DeepCopyTable(ThisValue)
+                    else
+                        return ThisValue
+                    end
                 end,
                 
                 PropertyName = Index
