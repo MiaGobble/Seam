@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 -- Imports
 local Janitor = require(script.Parent.Janitor)
 local IsValueChanged = require(script.Parent.IsValueChanged)
+local GetValue = require(script.Parent.Parent.Constructors.GetValue)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
@@ -48,7 +49,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+            if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
                 return
             end
 
@@ -71,7 +72,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+            if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
                 return
             end
 

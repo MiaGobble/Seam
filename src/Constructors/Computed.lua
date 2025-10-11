@@ -33,7 +33,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local CurrentValue = nil
 
     local function Use(Value : Value.ValueInstance<any>)
-        if Value and typeof(Value) == "table" and Value.Changed then
+        if Value and typeof(Value) == "table" and Value.__SEAM_OBJECT then
             if UsedValues[Value] then
                 return GetValue(UsedValues[Value])
             end
@@ -42,7 +42,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             JanitorInstance:Add(Value.Changed:Connect(function()
                 CurrentValue = Callback(Use)
-                ChangedSignal:Fire()
+                ChangedSignal:Fire("Value")
             end))
         end
 
