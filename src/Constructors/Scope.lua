@@ -62,7 +62,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
             end
         end
     
-        return function(self, ...)
+        return function(_, ...)
             local Tuple = nil
 
             if typeof(Object) == "function" then
