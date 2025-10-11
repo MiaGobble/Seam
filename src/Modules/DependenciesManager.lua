@@ -78,6 +78,8 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
         end))
+    else
+        error("Attempted to attach non-state to object", debug.traceback())
     end
 
     return JanitorInstance
