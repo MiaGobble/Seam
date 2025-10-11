@@ -88,11 +88,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
             NewScopedObjects = {}
         end
 
-        for Index, Value in ScopedObjects do
-            if NewScopedObjects[Index] then
-                continue
-            end
-
+        for Index, Value in self.ScopedObjects do
             NewScopedObjects[Index] = Value
         end
 
