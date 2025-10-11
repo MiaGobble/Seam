@@ -63,7 +63,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             end
         end))
     elseif ObjectType == "SeamObject" then
-        local LastValue = StateInstance.Value
+        local LastValue = nil --StateInstance.Value
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = StateInstance.Value
