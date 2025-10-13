@@ -49,9 +49,9 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            -- if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
-            --     return
-            -- end
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+                return
+            end
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
@@ -68,15 +68,15 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         local LastValue = nil
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
-            local NewValue = StateInstance.Value
+            local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
             end
 
-            -- if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
-            --     return
-            -- end
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+                return
+            end
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
