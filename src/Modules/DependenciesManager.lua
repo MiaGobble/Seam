@@ -43,7 +43,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         local LastValue = nil
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
-            local NewValue = StateInstance.Value
+            local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
@@ -57,13 +57,15 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             LastValue = NewValue
         end))
 
-        JanitorInstance:Add(Object.AncestryChanged:Connect(function()
-            task.defer(function()
-                if not Object:IsDescendantOf(game) then
-                    JanitorInstance:Destroy()
-                end
-            end)
-        end))
+        task.defer(function()
+            JanitorInstance:Add(Object.AncestryChanged:Connect(function()
+                task.defer(function()
+                    if not Object:IsDescendantOf(game) and JanitorInstance.Destroy then
+                        JanitorInstance:Destroy()
+                    end
+                end)
+            end))
+        end)
     elseif ObjectType == "SeamObject" then
         local LastValue = nil
 
