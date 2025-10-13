@@ -61,6 +61,7 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             JanitorInstance:Add(Object.AncestryChanged:Connect(function()
                 task.defer(function()
                     if not Object:IsDescendantOf(game) and JanitorInstance.Destroy then
+                        print("destroyed from:", Object.Name)
                         JanitorInstance:Destroy()
                     end
                 end)
