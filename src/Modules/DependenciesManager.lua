@@ -49,9 +49,9 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
-                return
-            end
+            -- if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
+            --     return
+            -- end
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
@@ -59,12 +59,10 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
 
         task.defer(function()
             JanitorInstance:Add(Object.AncestryChanged:Connect(function()
-                task.defer(function()
-                    if not Object:IsDescendantOf(game) and JanitorInstance.Destroy then
-                        print("destroyed from:", Object.Name)
-                        JanitorInstance:Destroy()
-                    end
-                end)
+                if not Object:IsDescendantOf(game) then
+                    print("destroyed from:", Object.Name)
+                    JanitorInstance:Destroy()
+                end
             end))
         end)
     elseif ObjectType == "SeamObject" then
