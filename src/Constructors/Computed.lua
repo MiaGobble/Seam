@@ -31,6 +31,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local ChangedSignal = Signal.new()
     local UsedValues = {}
     local CurrentValue = nil
+    local IsInitialized = false
 
     local function Use(Value : Value.ValueInstance<any>)
         if Value and typeof(Value) == "table" and Value.__SEAM_OBJECT then
@@ -48,8 +49,6 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
         return GetValue(Value)
     end
-
-    CurrentValue = Callback(Use)
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -72,6 +71,11 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             if Index == "__SEAM_OBJECT" then
                 return "ComputedInstance"
             elseif Index == "Value" then
+                if not IsInitialized then
+                    CurrentValue = Callback(Use)
+                    IsInitialized = true
+                end
+
                 return CurrentValue
             elseif Index == "Changed" then
                 return ChangedSignal
