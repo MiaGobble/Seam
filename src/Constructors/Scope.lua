@@ -48,10 +48,14 @@ function Scope:__call(ScopedObjects : {[string] : any})
     local selfMeta = {}
 
     function selfMeta:__index(Key : string)
+        if Key == "__SEAM_OBJECT" then
+            return "Scope"
+        end
+
         local Object = self.ScopedObjects and self.ScopedObjects[Key]
 
-        if not Object then
-            return self[Key]
+        if Object == nil then
+            return nil
         end
     
         if typeof(Object) ~= "function" and (typeof(Object) ~= "table" or not Object.__SEAM_CAN_BE_SCOPED) then

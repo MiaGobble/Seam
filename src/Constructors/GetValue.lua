@@ -16,7 +16,13 @@ function GetValue:__call(State : any?) : any?
     end
 
     if typeof(State) == "table" and State.Value then
-        return State.ValueRaw or State.Value
+        local RawValue = State.ValueRaw
+
+        if RawValue ~= nil then
+            return RawValue
+        end
+
+        return State.Value
     end
 
     return State
