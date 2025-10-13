@@ -140,10 +140,6 @@ function Value:__call(ThisValue : any)
 
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
-                if not IsValueChanged(ThisValue, NewValue) then
-                    return
-                end
-
                 if typeof(NewValue) == "table" then
                     for Index, Value in ThisValue do
                         if NewValue[Index] == nil then
@@ -155,6 +151,10 @@ function Value:__call(ThisValue : any)
                         ThisValue[Index] = Value
                     end
                 else
+                    if not IsValueChanged(ThisValue, NewValue) then
+                        return
+                    end
+
                     ThisValue = NewValue
                 end
 
