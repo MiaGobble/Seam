@@ -60,7 +60,6 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         task.defer(function()
             JanitorInstance:Add(Object.AncestryChanged:Connect(function()
                 if not Object:IsDescendantOf(game) then
-                    print("destroyed from:", Object.Name)
                     JanitorInstance:Destroy()
                 end
             end))
@@ -75,9 +74,9 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
                 NewValue = NewValue()
             end
 
-            if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
-                return
-            end
+            -- if LastValue ~= nil and not IsValueChanged(GetValue(LastValue), GetValue(NewValue)) then
+            --     return
+            -- end
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
