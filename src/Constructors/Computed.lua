@@ -58,6 +58,11 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         __call = function(_, Object : Instance, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
+                    if not IsInitialized then
+                        CurrentValue = Callback(Use)
+                        IsInitialized = true
+                    end
+                    
                     return CurrentValue
                 end,
 
