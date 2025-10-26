@@ -12,7 +12,6 @@ local Modules = script.Parent.Parent.Modules
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 local Computed = require(script.Parent.Computed)
-local New = require(script.Parent.New)
 local Rendered = require(script.Parent.Rendered)
 local Value = require(script.Parent.Value)
 local Spring = require(script.Parent.Animation.Spring)
@@ -71,6 +70,10 @@ function Scope:__call(ScopedObjects : {[string] : any})
 
             if typeof(Object) == "function" then
                 Tuple = {Object(self, ...)}
+            elseif Object.__SEAM_OBJECT == "New" then
+                local Args = {...}
+                table.insert(Args, self)
+                Tuple = {Object(unpack(Args))}
             else
                 Tuple = {Object(...)}
             end
