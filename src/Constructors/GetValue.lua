@@ -11,10 +11,12 @@ local GetValue = {}
 export type GetValue = (State : any?) -> any?
 
 function GetValue:__call(State : any?) : any?
+    -- Nothing exists? No problem.
     if not State then
         return nil
     end
 
+    -- Is it a state? Return the value of that state.
     if typeof(State) == "table" and State.Value then
         local RawValue = State.ValueRaw
 
@@ -25,6 +27,7 @@ function GetValue:__call(State : any?) : any?
         return State.Value
     end
 
+    -- Just normal userdata? That's cool too.
     return State
 end
 

@@ -24,27 +24,32 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
     local Object = nil
 
     if typeof(Class) == "Instance" then
+        -- Hydration
         Object = Class
     elseif typeof(Class) == "string" then
+        -- Construction
         Object = Instance.new(Class)
     elseif typeof(Class) == "function" then
-        Object = nil -- Setting it to nil declares it's custom
+        -- Custom component
+        Object = nil
     else
+        -- Invalid class
         error("Invalid class type! Expected string or instance, got " .. typeof(Class))
     end
 
     if Object then
         -- Normal construction or hydration
-
         for Index, Property in Properties do
             if typeof(Index) == "table" then
                 if Index.__SEAM_INDEX then
+                    -- A seam index is something like Attribute, Children, or Lifetime
                     Index(Object, Property)
                 else
                     error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()})`)
                 end
             elseif typeof(Property) == "table" then
                 if Property.__SEAM_OBJECT then
+                    -- A seam object is something like Computed, Value, or Spring
                     Property(Object, Index)
                 else
                     error("Invalid property type! Expected Seam object or string, got table")
@@ -55,7 +60,6 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
         end
     else
         -- Custom component
-
         Object = Class(ThisScope, Properties)
     end
 

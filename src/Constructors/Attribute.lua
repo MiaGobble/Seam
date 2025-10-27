@@ -23,8 +23,10 @@ export type Attribute = (AttributeName : string) -> (Object : Instance, Attribut
 function Attribute:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {
         __call = function(self, Object : Instance, AttributeValue : any)
-            -- Add support for states
             if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
+                -- If we are using a state, then let's connect to it
+                -- When it changes, update the attribute
+
                 AttributeValue.Changed:Connect(function()
                     Object:SetAttribute(AttributeName, AttributeValue.Value)
                 end)
@@ -34,6 +36,7 @@ function Attribute:__call(AttributeName : string)
                 return
             end
 
+            -- If we're not using a state, just set the attribute directly
             Object:SetAttribute(AttributeName, AttributeValue)
         end,
 
@@ -51,6 +54,7 @@ end
 
 function Attribute:__index(Index : string)
     if Index == "__SEAM_CAN_BE_SCOPED" then
+        -- This cannot be scoped
         return false
     else
         return nil

@@ -12,6 +12,8 @@ export type Component = ({[any] : any}) -> (Scope.ScopeInstance?, {[string] : an
 local Scope = require(script.Parent.Scope)
 
 local function Component(ComponentModule : {[any] : any})
+    -- This function just validates what we have and turns the module into a class
+    
     if not ComponentModule.Init then
         error("Component requires an Init() method")
     end
@@ -23,7 +25,7 @@ local function Component(ComponentModule : {[any] : any})
     ComponentModule.__index = ComponentModule
 
     return function(ThisScope : Scope.ScopeInstance?, Properties : {[string] : any}) : any
-        local ClassInstance = setmetatable({}, ComponentModule)
+        local ClassInstance = setmetatable({}, ComponentModule) -- OOP but only kinda
 
         ClassInstance:Init(ThisScope, Properties)
 

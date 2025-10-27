@@ -24,6 +24,8 @@ export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance
 ]=]
 
 function Rendered:__call(Callback : () -> any?)
+    -- This is MUCH simpler than computed, since it just force-updates every frame
+
     local JanitorInstance = Janitor.new()
 
     local ActiveComputation; ActiveComputation = setmetatable({
@@ -32,6 +34,8 @@ function Rendered:__call(Callback : () -> any?)
         end
     }, {
         __call = function(_, Object : Instance, Index : string)
+            -- Every frame, update the value
+
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index

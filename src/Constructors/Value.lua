@@ -24,14 +24,19 @@ export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
 
 local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<string>)
     if typeof(Value) ~= "table" then
+        -- If not a table, don't bother running this function
         return Value
     end
 
-    local FakeTable = {}
+    -- We're pretty much making a proxy table so that we know when things change.
+    -- This is kinna hacky and weird, but hey, it works. I'll find a better
+    -- solution in the future.
 
-    -- table.insert doesn't trigger metamethods for optimization reasons
-    -- so we need to manually correct the table before any reading/writing
+    local FakeTable = {}
+    
     local function CorrectFakeTable()
+        -- table.insert doesn't trigger metamethods for optimization reasons
+        -- so we need to manually correct the table before any reading/writing
         local LowestIndexForInsert = 1
 
         for Index, This in pairs(FakeTable) do
@@ -49,13 +54,16 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
 
     local Proxy = setmetatable(FakeTable, {
         __index = function(self, Index : string)
-            CorrectFakeTable()
+            CorrectFakeTable() -- Before anything, the fake table should be fixed
 
             return GetAttendedTableValue(Value[Index], ChangedSignal)
         end,
 
         __newindex = function(self, Index : string, NewValue : any)
             if IsValueChanged(Value[Index], NewValue) then
+                -- If the value changed, correct the table, update the
+                -- value, and finally fire the changed signal
+
                 CorrectFakeTable()
                 Value[Index] = NewValue
                 ChangedSignal:Fire("Value")
@@ -63,13 +71,13 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         end,
 
         __iter = function(self)
-            CorrectFakeTable()
+            CorrectFakeTable() -- You can't iterate properly unless this is called first
 
             return pairs(Value)
         end,
 
         __len = function(self)
-            CorrectFakeTable()
+            CorrectFakeTable() -- Same as __iter, you can't get length without correction
 
             return #Value
         end,
@@ -79,6 +87,7 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
 end
 
 local function DeepCopyTable(This : {[any] : any})
+    -- Copy copy copy
     local NewTable = {}
 
     for Index, Value in This do
@@ -104,9 +113,11 @@ function Value:__call(ThisValue : any)
     local ChangedSignal = Signal.new()
 
     if typeof(ThisValue) == "table" then
+        -- Seam values clone tables before using them
         ThisValue = table.clone(ThisValue)
     end
 
+    -- Make a proxy table if it's a table, otherwise it's just a value
     ThisValue = GetAttendedTableValue(ThisValue, ChangedSignal)
 
     --[[
@@ -126,6 +137,8 @@ function Value:__call(ThisValue : any)
             elseif Index == "Value" then
                 return ThisValue
             elseif Index == "ValueRaw" then
+                -- Use ValueRaw if Value ever has issues!
+
                 if typeof(ThisValue) == "table" then
                     return DeepCopyTable(ThisValue)
                 else
@@ -141,6 +154,8 @@ function Value:__call(ThisValue : any)
         __newindex = function(self, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
                 if typeof(NewValue) == "table" then
+                    -- Is the value a table? If so, update each table value individually
+
                     for Index, Value in ThisValue do
                         if NewValue[Index] == nil then
                             ThisValue[Index] = nil
@@ -151,6 +166,8 @@ function Value:__call(ThisValue : any)
                         ThisValue[Index] = Value
                     end
                 else
+                    -- If the value isn't a table, update it normally
+
                     if not IsValueChanged(ThisValue, NewValue) then
                         return
                     end
@@ -158,6 +175,7 @@ function Value:__call(ThisValue : any)
                     ThisValue = NewValue
                 end
 
+                -- Make sure to fire the changed signal for other states
                 ChangedSignal:Fire("Value")
             else
                 error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))

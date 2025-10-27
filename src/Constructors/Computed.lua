@@ -27,6 +27,7 @@ export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T
 ]=]
 
 function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
+    -- This shit has caused me so much pain
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
     local UsedValues = {}
@@ -34,6 +35,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local IsInitialized = false
 
     local function Use(Value : Value.ValueInstance<any>)
+        -- Is Use connecting to a state? If not, just get the value
+
         if Value and typeof(Value) == "table" and Value.__SEAM_OBJECT then
             if UsedValues[Value] then
                 return GetValue(UsedValues[Value])
@@ -43,7 +46,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             JanitorInstance:Add(Value.Changed:Connect(function()
                 CurrentValue = Callback(Use)
-                ChangedSignal:Fire("Value")
+                ChangedSignal:Fire("Value") -- When the state changes, fire the changed signal for computed
             end))
         end
 
@@ -58,6 +61,9 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         __call = function(_, Object : Instance, Index : string)
             JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
                 Value = function()
+                    -- We don't want to re-calculate the computed when the states haven't changed,
+                    -- so let's just force-calculate only when it's first checked
+
                     if not IsInitialized then
                         CurrentValue = Callback(Use)
                         IsInitialized = true
@@ -76,6 +82,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             if Index == "__SEAM_OBJECT" then
                 return "ComputedInstance"
             elseif Index == "Value" then
+                -- Same as above, let's not re-calculate
+
                 if not IsInitialized then
                     CurrentValue = Callback(Use)
                     IsInitialized = true

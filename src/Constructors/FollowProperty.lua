@@ -21,6 +21,8 @@ export type FollowProperty = (PropertyName : string) -> (Object : Instance, Valu
 function FollowProperty:__call(PropertyName : string)
     return setmetatable({}, {
         __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
+            -- Literally just a simple connection and value update
+
             Object:GetPropertyChangedSignal(PropertyName):Connect(function()
                 if Object[PropertyName] ~= ValueState.Value then
                     ValueState.Value = Object[PropertyName]

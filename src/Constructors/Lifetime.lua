@@ -18,6 +18,9 @@ local DebrisService = game:GetService("Debris")
 ]=]
 
 function Lifetime:__call(Object : Instance, CleanupTime : number)
+    -- This is really simple, but the reason I use Debris service
+    -- over a task.delay() is because it guarantees error-free cleanup
+
     DebrisService:AddItem(Object, CleanupTime)
 end
 

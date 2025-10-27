@@ -21,6 +21,8 @@ export type FollowAttribute = (AttributeName : string) -> (Object : Instance, Va
 function FollowAttribute:__call(AttributeName : string)
     return setmetatable({}, {
         __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
+            -- Literally just a simple connection and value update
+            
             Object:GetAttributeChangedSignal(AttributeName):Connect(function()
                 if Object:GetAttribute(AttributeName) ~= ValueState.Value then
                     ValueState.Value = Object:GetAttribute(AttributeName)
