@@ -9,7 +9,7 @@ local Value = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
@@ -197,7 +197,7 @@ function Value:__call(ThisValue : any)
                 Object[Index] = ThisValue
             end
 
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     if typeof(ThisValue) == "table" then
                         return DeepCopyTable(ThisValue)

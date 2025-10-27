@@ -9,7 +9,7 @@ local Computed = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
@@ -59,7 +59,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         end,
     }, {
         __call = function(_, Object : Instance, Index : string)
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     -- We don't want to re-calculate the computed when the states haven't changed,
                     -- so let's just force-calculate only when it's first checked

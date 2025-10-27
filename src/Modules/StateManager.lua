@@ -1,11 +1,11 @@
 -- Author: iGottic
 
 --[=[
-    @class DependenciesManager
+    @class StateManager
     @since 0.0.1
 ]=]
 
-local DependenciesManager = {}
+local StateManager = {}
 
 -- Services
 local RunService = game:GetService("RunService")
@@ -35,7 +35,7 @@ end
     @return Janitor -- A Janitor instance managing the connections
 ]=]
 
-function DependenciesManager:AttachStateToObject(Object : any, StateInstance : any)
+function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
     local JanitorInstance = Janitor.new()
 
@@ -88,4 +88,4 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
     return JanitorInstance
 end
 
-return DependenciesManager
+return StateManager

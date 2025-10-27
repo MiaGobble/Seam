@@ -9,7 +9,7 @@ local Rendered = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 
@@ -36,7 +36,7 @@ function Rendered:__call(Callback : () -> any?)
         __call = function(_, Object : Instance, Index : string)
             -- Every frame, update the value
 
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
             }))
