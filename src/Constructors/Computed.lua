@@ -91,6 +91,13 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
                 return CurrentValue
             elseif Index == "Changed" then
+                -- We need to connect the Use() functions here to track changes
+
+                if not IsInitialized then
+                    CurrentValue = Callback(Use)
+                    IsInitialized = true
+                end
+
                 return ChangedSignal
             end
 
