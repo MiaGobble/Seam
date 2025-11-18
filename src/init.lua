@@ -5,7 +5,7 @@
 
     Some credits for internal modules:
     - iGottic (creator of this framework)
-    - Elttob (UnpackType, PackType, Janitor)
+    - Elttob (UnpackType, PackType)
     - Validark, pobammer, codesenseAye (Janitor)
     - bottosson (Oklab color space)
 
@@ -17,7 +17,6 @@
 -- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage
 local Constructors = script:WaitForChild("Constructors")
 local Modules = script:WaitForChild("Modules")
-local InitPresetComponents = require(Modules:WaitForChild("InitPresetComponents"))
 local Types = require(Modules:WaitForChild("Types"))
 
 local New = require(Constructors:WaitForChild("New"))
@@ -29,8 +28,6 @@ local Tween = require(Constructors.Animation:WaitForChild("Tween"))
 local Scope = require(Constructors:WaitForChild("Scope"))
 local OnEvent = require(Constructors:WaitForChild("OnEvent"))
 local OnChanged = require(Constructors:WaitForChild("OnChanged"))
-local DeclareComponent = require(Constructors:WaitForChild("DeclareComponent"))
-local From = require(Constructors:WaitForChild("From"))
 local Attribute = require(Constructors:WaitForChild("Attribute"))
 local OnAttributeChanged = require(Constructors:WaitForChild("OnAttributeChanged"))
 local Lifetime = require(Constructors:WaitForChild("Lifetime"))
@@ -38,6 +35,7 @@ local Rendered = require(Constructors:WaitForChild("Rendered"))
 local FollowProperty = require(Constructors:WaitForChild("FollowProperty"))
 local FollowAttribute = require(Constructors:WaitForChild("FollowAttribute"))
 local GetValue = require(Constructors:WaitForChild("GetValue"))
+local Component = require(Constructors:WaitForChild("Component"))
 
 -- Types extended (private)
 type Seam = {
@@ -59,10 +57,6 @@ type Seam = {
     onEvent : OnEvent.OnEvent,
     OnChanged : OnChanged.OnChanged,
     onChanged : OnChanged.OnChanged,
-    DeclareComponent : DeclareComponent.DeclareComponent,
-    declareComponent : DeclareComponent.DeclareComponent,
-    From : From.From,
-    from : From.From,
     Attribute : Attribute.Attribute,
     attribute : Attribute.Attribute,
     OnAttributeChanged : OnAttributeChanged.OnAttributeChanged,
@@ -77,6 +71,8 @@ type Seam = {
     followAttribute : FollowAttribute.FollowAttribute,
     GetValue : GetValue.GetValue,
     getValue : GetValue.GetValue,
+    Component : Component.Component,
+    component : Component.Component,
 }
 
 -- Types exported (public)
@@ -94,8 +90,6 @@ export type Scope = Scope.ScopeInstance
 export type ScopeConstructor = Scope.ScopeConstructor
 export type OnEvent = OnEvent.OnEvent
 export type OnChanged = OnChanged.OnChanged
-export type DeclareComponent = DeclareComponent.DeclareComponent
-export type From = From.From
 export type Attribute = Attribute.Attribute
 export type OnAttributeChanged = OnAttributeChanged.OnAttributeChanged
 export type Lifetime = Lifetime.Lifetime
@@ -118,8 +112,6 @@ local function Init()
         -- There is this weird bug where, when loaded from ReplicatedFirst, the framework loads *too* fast and animations don't work on the frontend.
         -- This is a hacky workaround for this while I figure out a better solution.
     end
-
-    InitPresetComponents()
 end
 
 --[=[
@@ -199,16 +191,22 @@ Seam.onChanged = OnChanged
     @within Seam
 ]=]
 
-Seam.DeclareComponent = DeclareComponent
-Seam.declareComponent = DeclareComponent
+Seam.DeclareComponent = function()
+    error("DeclareComponent has been removed in favor of the new component system. See documentation for more details.")
+end
+
+Seam.declareComponent = Seam.DeclareComponent
 
 --[=[
     @prop From From
     @within Seam
 ]=]
 
-Seam.From = From
-Seam.from = From
+Seam.From = function()
+    error("From has been removed in favor of the new component system. See documentation for more details.")
+end
+
+Seam.from = Seam.From
 
 --[=[
     @prop Attribute Attribute
@@ -263,6 +261,14 @@ Seam.followAttribute = FollowAttribute
 
 Seam.GetValue = GetValue
 Seam.getValue = GetValue
+
+--[=[
+    @prop Component Component
+    @within Seam
+]=]
+
+Seam.Component = Component
+Seam.component = Component
 
 Init()
 

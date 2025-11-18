@@ -11,14 +11,18 @@ local Spring = {}
 local EULERS_NUMBER = 2.71828
 local EPSILON = 0.001
 
+-- Services
+local RunService = game:GetService("RunService")
+
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
+local IsValueChanged = require(Modules.IsValueChanged)
 
 -- Types Extended
 export type SpringInstance<T> = {
@@ -55,7 +59,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local ValueType = typeof(Value)
     local UnpackedValue = UnpackType(Value, ValueType)
 
-    for Index, Element in ipairs(UnpackedValue) do
+    for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
     end
 
@@ -76,6 +80,32 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local CurrentValue = CurrentTarget
+    local LastValue = CurrentTarget
+
+    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        local PackedValues = {}
+
+        for Index, Spring in UnpackedSprings do
+            local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+
+			if math.abs(Position) <= EPSILON then
+				Position = 0
+			elseif math.abs(Position - Spring.Position0) <= EPSILON then
+				Position = Spring.Position0
+			end
+
+            PackedValues[Index] = Position
+        end
+
+        CurrentValue = PackType(PackedValues, ValueType)
+
+        if IsValueChanged(LastValue, CurrentValue) then
+            ChangedSignal:Fire("Value")
+        end
+
+        LastValue = CurrentValue
+    end))
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -88,27 +118,11 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
             if Index == "__SEAM_OBJECT" then
                 return "Spring"
             elseif Index == "Value" then
-                local PackedValues = {}
-
-                for Index, Spring in ipairs(UnpackedSprings) do
-                    local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
-
-					if math.abs(Position) <= EPSILON then
-						Position = 0
-					elseif math.abs(Position - Spring.Position0) <= EPSILON then
-						Position = Spring.Position0
-					end
-
-                    PackedValues[Index] = Position
-                end
-
-                ChangedSignal:Fire("Value")
-
-                return PackType(PackedValues, ValueType)
+                return CurrentValue
             elseif Index == "Velocity" then
                 local PackedValues = {}
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     local _, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     PackedValues[Index] = Velocity
@@ -128,7 +142,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     Spring.Tick0, Spring.Position0 = os.clock(), UnpackedNewValue[Index]
@@ -145,7 +159,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
             elseif Index == "Value" then
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
-                for Index, Spring in ipairs(UnpackedSprings) do
+                for Index, Spring in UnpackedSprings do
                     --Spring.Position0 = UnpackedNewValue[Index]
 					Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = UnpackedNewValue[Index] - Spring.Position0, 0, 0
                     Spring.Tick0 = os.clock()
@@ -158,8 +172,9 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         end,
 
         __call = function(self, Object, Index : string)
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
+                    ChangedSignal:Fire("Value")
                     return self.Value
                 end,
 

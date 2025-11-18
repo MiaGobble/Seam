@@ -13,14 +13,18 @@ local EPSILON = 0.001
 -- Services
 local TweenService = game:GetService("TweenService")
 
+-- Services
+local RunService = game:GetService("RunService")
+
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
+local IsValueChanged = require(Modules.IsValueChanged)
 
 -- Types Extended
 export type TweenInstance<T> = {
@@ -33,7 +37,7 @@ local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
     local UnpackedValue = UnpackType(Value, ValueType)
 
-    for Index, Element in ipairs(UnpackedValue) do
+    for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {Position0 = Element, Position1 = Element, Tick0 = os.clock()}
     end
 
@@ -54,6 +58,34 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local CurrentValue = CurrentTarget
+    local LastValue = CurrentTarget
+
+    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        local PackedValues = {}
+
+        for Index, Tween in UnpackedTweens do
+            local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
+            local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
+            local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
+
+            if math.abs(Position) <= EPSILON then
+				Position = 0
+			elseif math.abs(Position - Tween.Position0) <= EPSILON then
+				Position = Tween.Position0
+			end
+
+            PackedValues[Index] = Position
+        end
+
+        CurrentValue = PackType(PackedValues, ValueType)
+
+        if IsValueChanged(LastValue, CurrentValue) then
+            ChangedSignal:Fire("Value")
+        end
+
+        LastValue = CurrentValue
+    end))
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
@@ -66,26 +98,8 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
             if Index == "__SEAM_OBJECT" then
                 return "Tween"
             elseif Index == "Value" then
-                local PackedValues = {}
-
-                for Index, Tween in ipairs(UnpackedTweens) do
-                    local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
-                    local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
-                    local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
-
-                    if math.abs(Position) <= EPSILON then
-						Position = 0
-					elseif math.abs(Position - Tween.Position0) <= EPSILON then
-						Position = Tween.Position0
-					end
-
-                    PackedValues[Index] = Position
-                end
-
-                ChangedSignal:Fire("Value")
-
-                return PackType(PackedValues, ValueType)
-             elseif Index == "Changed" then
+                return CurrentValue
+            elseif Index == "Changed" then
                 return ChangedSignal
             end
 
@@ -98,7 +112,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 
                 local UnpackedTargetValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Tween in ipairs(UnpackedTweens) do
+                for Index, Tween in UnpackedTweens do
                     Tween.Position0 = Tween.Position1
                     Tween.Position1 = UnpackedTargetValue[Index]
                     Tween.Tick0 = os.clock()
@@ -106,7 +120,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
             elseif Index == "Value" then
                 local UnpackedValue = UnpackType(NewValue, ValueType)
 
-                for Index, Tween in ipairs(UnpackedTweens) do
+                for Index, Tween in UnpackedTweens do
                     Tween.Position0 = UnpackedValue[Index]
                     Tween.Position1 = UnpackedValue[Index]
                     Tween.Tick0 = os.clock()
@@ -117,7 +131,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end,
 
         __call = function(self, Object, Index : string)
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     return self.Value
                 end,

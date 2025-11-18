@@ -9,11 +9,12 @@ local Computed = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
-local Value = require(script.Parent.Value)
 local Types = require(Modules.Types)
+local Value = require(script.Parent.Value)
+local GetValue = require(script.Parent.GetValue)
 
 -- Types Extended
 export type ComputedInstance<T> = {} & Types.BaseState<T>
@@ -26,39 +27,31 @@ export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T
 ]=]
 
 function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
+    -- This shit has caused me so much pain
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
     local UsedValues = {}
     local CurrentValue = nil
+    local IsInitialized = false
 
     local function Use(Value : Value.ValueInstance<any>)
-        if not Value then
-            return nil
+        -- Is Use connecting to a state? If not, just get the value
+
+        if Value ~= nil and typeof(Value) == "table" and Value.__SEAM_OBJECT then
+            if UsedValues[Value] ~= nil then
+                return GetValue(UsedValues[Value])
+            end
+
+            UsedValues[Value] = Value
+
+            JanitorInstance:Add(Value.Changed:Connect(function()
+                CurrentValue = Callback(Use)
+                ChangedSignal:Fire("Value") -- When the state changes, fire the changed signal for computed
+            end))
         end
 
-        if typeof(Value) ~= "table" or not Value.Value then
-            return Value
-        end
-
-        if UsedValues[Value] then
-            return UsedValues[Value].Value
-        end
-
-        if not Value.Changed then
-            return
-        end
-
-        UsedValues[Value] = Value
-
-        JanitorInstance:Add(Value.Changed:Connect(function()
-            CurrentValue = Callback(Use)
-            ChangedSignal:Fire()
-        end))
-
-        return Value.Value
+        return GetValue(Value)
     end
-
-    CurrentValue = Callback(Use)
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -66,8 +59,16 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         end,
     }, {
         __call = function(_, Object : Instance, Index : string)
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
+                    -- We don't want to re-calculate the computed when the states haven't changed,
+                    -- so let's just force-calculate only when it's first checked
+
+                    if not IsInitialized then
+                        CurrentValue = Callback(Use)
+                        IsInitialized = true
+                    end
+                    
                     return CurrentValue
                 end,
 
@@ -81,8 +82,22 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             if Index == "__SEAM_OBJECT" then
                 return "ComputedInstance"
             elseif Index == "Value" then
+                -- Same as above, let's not re-calculate
+
+                if not IsInitialized then
+                    CurrentValue = Callback(Use)
+                    IsInitialized = true
+                end
+
                 return CurrentValue
             elseif Index == "Changed" then
+                -- We need to connect the Use() functions here to track changes
+
+                if not IsInitialized then
+                    CurrentValue = Callback(Use)
+                    IsInitialized = true
+                end
+
                 return ChangedSignal
             end
 

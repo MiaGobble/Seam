@@ -15,7 +15,11 @@ export type OnChanged = (Object : any, Callback : (PropertyChanged : string, New
 ]=]
 
 function OnChanged:__call(Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil)
+    -- Fortunately, states also have a Changed signal, so this works out perfectly 
+    -- for states as well!
+
     return (Object.Changed :: RBXScriptSignal):Connect(function(PropertyName : string)
+        -- When something changes, call the callback function
         Callback(PropertyName, Object[PropertyName])
     end)
 end

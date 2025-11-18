@@ -1,17 +1,19 @@
 -- Author: iGottic
 
 --[=[
-    @class DependenciesManager
+    @class StateManager
     @since 0.0.1
 ]=]
 
-local DependenciesManager = {}
+local StateManager = {}
 
 -- Services
 local RunService = game:GetService("RunService")
 
 -- Imports
 local Janitor = require(script.Parent.Janitor)
+local IsValueChanged = require(script.Parent.IsValueChanged)
+local GetValue = require(script.Parent.Parent.Constructors.GetValue)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
@@ -33,7 +35,7 @@ end
     @return Janitor -- A Janitor instance managing the connections
 ]=]
 
-function DependenciesManager:AttachStateToObject(Object : any, StateInstance : any)
+function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
     local JanitorInstance = Janitor.new()
 
@@ -41,13 +43,13 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
         local LastValue = nil
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
-            local NewValue = StateInstance.Value
+            local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
             end
 
-            if LastValue == NewValue then
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
                 return
             end
 
@@ -55,31 +57,35 @@ function DependenciesManager:AttachStateToObject(Object : any, StateInstance : a
             LastValue = NewValue
         end))
 
-        JanitorInstance:Add(Object.AncestryChanged:Connect(function()
-            if not Object:IsDescendantOf(game) then
-                JanitorInstance:Destroy()
-            end
-        end))
+        task.defer(function()
+            JanitorInstance:Add(Object.AncestryChanged:Connect(function()
+                if not Object:IsDescendantOf(game) then
+                    JanitorInstance:Destroy()
+                end
+            end))
+        end)
     elseif ObjectType == "SeamObject" then
-        local LastValue = StateInstance.Value
+        local LastValue = nil
 
         JanitorInstance:Add(RunService.RenderStepped:Connect(function()
-            local NewValue = StateInstance.Value
+            local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
             end
 
-            if LastValue == NewValue then
+            if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
                 return
             end
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
         end))
+    else
+        error("Attempted to attach non-state to object", debug.traceback())
     end
 
     return JanitorInstance
 end
 
-return DependenciesManager
+return StateManager

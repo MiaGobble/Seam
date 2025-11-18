@@ -19,6 +19,9 @@ export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScri
 function OnAttributeChanged:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {
         __call = function(self, Object : Instance, Callback : (...any?) -> nil)
+            -- I feel like there is something I'm missing, and this might be a disaster
+            -- for memory? I'll keep an eye peeled.
+            
             return Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
         end,
 

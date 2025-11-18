@@ -9,7 +9,7 @@ local Rendered = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
-local DependenciesManager = require(Modules.DependenciesManager)
+local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 
@@ -24,6 +24,8 @@ export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance
 ]=]
 
 function Rendered:__call(Callback : () -> any?)
+    -- This is MUCH simpler than computed, since it just force-updates every frame
+
     local JanitorInstance = Janitor.new()
 
     local ActiveComputation; ActiveComputation = setmetatable({
@@ -32,7 +34,9 @@ function Rendered:__call(Callback : () -> any?)
         end
     }, {
         __call = function(_, Object : Instance, Index : string)
-            JanitorInstance:Add(DependenciesManager:AttachStateToObject(Object, {
+            -- Every frame, update the value
+
+            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
             }))
@@ -42,7 +46,7 @@ function Rendered:__call(Callback : () -> any?)
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "ComputedInstance"
+                return "RenderedInstance"
             elseif Index == "Value" then
                 return Callback()
             end
