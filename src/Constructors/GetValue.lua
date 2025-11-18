@@ -17,7 +17,7 @@ function GetValue:__call(State : any?) : any?
     end
 
     -- Is it a state? Return the value of that state.
-    if typeof(State) == "table" and State.__SEAM_OBJECT ~= nil then
+    if typeof(State) == "table" and State.Value ~= nil then
         local RawValue = State.ValueRaw
 
         if RawValue ~= nil then
