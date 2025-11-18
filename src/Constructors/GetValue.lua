@@ -12,12 +12,12 @@ export type GetValue = (State : any?) -> any?
 
 function GetValue:__call(State : any?) : any?
     -- Nothing exists? No problem.
-    if not State then
+    if State == nil then
         return nil
     end
 
     -- Is it a state? Return the value of that state.
-    if typeof(State) == "table" and State.Value then
+    if typeof(State) == "table" and State.__SEAM_OBJECT ~= nil then
         local RawValue = State.ValueRaw
 
         if RawValue ~= nil then

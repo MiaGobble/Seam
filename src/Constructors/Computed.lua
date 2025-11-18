@@ -37,8 +37,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local function Use(Value : Value.ValueInstance<any>)
         -- Is Use connecting to a state? If not, just get the value
 
-        if Value and typeof(Value) == "table" and Value.__SEAM_OBJECT then
-            if UsedValues[Value] then
+        if Value ~= nil and typeof(Value) == "table" and Value.__SEAM_OBJECT then
+            if UsedValues[Value] ~= nil then
                 return GetValue(UsedValues[Value])
             end
 
