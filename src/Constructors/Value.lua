@@ -176,7 +176,7 @@ function Value:__call(ThisValue : any)
                 end
 
                 -- Make sure to fire the changed signal for other states
-                ChangedSignal:Fire("Value")
+                ChangedSignal:Fire("Value", ThisValue)
             else
                 error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))
             end
