@@ -36,6 +36,7 @@ local FollowProperty = require(Constructors:WaitForChild("FollowProperty"))
 local FollowAttribute = require(Constructors:WaitForChild("FollowAttribute"))
 local GetValue = require(Constructors:WaitForChild("GetValue"))
 local Component = require(Constructors:WaitForChild("Component"))
+local Tags = require(Constructors:WaitForChild("Tags"))
 
 -- Types extended (private)
 type Seam = {
@@ -73,6 +74,8 @@ type Seam = {
     getValue : GetValue.GetValue,
     Component : Component.Component,
     component : Component.Component,
+    Tags : Tags.Tags,
+    tags : Tags.Tags,
 }
 
 -- Types exported (public)
@@ -98,6 +101,8 @@ export type RenderedConstructor<T> = Rendered.RenderedConstructor<T>
 export type FollowProperty = FollowProperty.FollowProperty
 export type FollowAttribute = FollowAttribute.FollowAttribute
 export type GetValue = GetValue.GetValue
+export type Component = Component.Component
+export type Tags = Tags.Tags
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -269,6 +274,14 @@ Seam.getValue = GetValue
 
 Seam.Component = Component
 Seam.component = Component
+
+--[=[
+    @prop Tags Tags
+    @within Seam
+]=]
+
+Seam.Tags = Tags
+Seam.tags = Tags
 
 Init()
 
