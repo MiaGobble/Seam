@@ -46,7 +46,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             JanitorInstance:Add(Value.Changed:Connect(function()
                 CurrentValue = Callback(Use)
-                ChangedSignal:Fire("Value") -- When the state changes, fire the changed signal for computed
+                ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
             end))
         end
 
