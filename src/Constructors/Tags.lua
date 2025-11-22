@@ -11,11 +11,11 @@ local Tags = {}
 export type Tags = (Object : Instance, AddedTags : {string}) -> nil
 
 --[=[
-    Sets a lifetime for an object
+    Adds tags to an instance
 ]=]
 
 function Tags:__call(Object : Instance, AddedTags : {string})
-    for _, Tag in AddedTags do
+    for _, Tag in AddedTags do -- Super simple iteration through strings
         Object:AddTag(Tag)
     end
 end
