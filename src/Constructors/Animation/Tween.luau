@@ -61,7 +61,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
 
-    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+    JanitorInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
 
         for Index, Tween in UnpackedTweens do

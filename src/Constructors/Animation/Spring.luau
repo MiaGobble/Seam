@@ -83,7 +83,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
 
-    JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+    JanitorInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
 
         for Index, Spring in UnpackedSprings do
