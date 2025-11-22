@@ -15,7 +15,7 @@
 ]]
 
 local Package = script.Parent
-local Oklab = require(Package.Colour.Oklab)
+local Oklab = require(Package.Oklab)
 
 local function unpackType(value: any, typeString: string): {number}
 	if typeString == "number" then

@@ -12,7 +12,7 @@
 ]]
 
 local Package = script.Parent
-local Oklab = require(Package.Colour.Oklab)
+local Oklab = require(Package.Oklab)
 
 local function packType(numbers: {number}, typeString: string)
 	if typeString == "number" then
