@@ -19,7 +19,7 @@ local Tween = require(script.Parent.Animation.Tween)
 
 -- Extended types
 export type ScopeInstance = {
-    New : (self : ScopeInstance, Class : string | Instance, Properties : {[any] : any}, From : any?) -> Instance,
+    New : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
     Rendered : (self : ScopeInstance, Callback : () -> any?) -> Rendered.RenderedInstance<any>,
     Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
     Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
