@@ -14,13 +14,6 @@ local Types = require(Modules.Types)
 -- Types Extended
 export type Children = (Object : Instance, Children : {Types.Child}) -> nil
 
---[=[
-    Sets the parent of the given children to the given object. To be used in New()
-
-    @param Object Instance -- The object to parent the children to
-    @param Children {[any] : any} -- The children to parent to the object
-]=]
-
 local function ApplyChildren(Parent : Instance, Children : {Types.Child})
     -- This function just goes through the table and sets the parent of
     -- every thing in there to the determined parent.
@@ -48,6 +41,26 @@ local function ApplyChildren(Parent : Instance, Children : {Types.Child})
     return ChildrenCreated
 end
 
+local function GetOldChildren(OldChildren : {Instance}, NewChildren : {Instance})
+    local DifferenceSet = {}
+
+    for _, OldChild in OldChildren do
+        if not table.find(NewChildren, OldChild) then
+            table.insert(DifferenceSet, OldChild)
+            continue
+        end
+    end
+
+    return DifferenceSet
+end
+
+--[=[
+    Sets the parent of the given children to the given object. To be used in New()
+
+    @param Object Instance -- The object to parent the children to
+    @param Children {[any] : any} -- The children to parent to the object
+]=]
+
 function Children:__call(Object : Instance, Children : Types.BaseState<any> | {any})
     if typeof(Children) ~= "table" then
         -- Children will either be an array or Computed instance, so it must be a table
@@ -60,10 +73,9 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
         local Connection = Children.Changed:Connect(function()
             -- When computed updates, update the children
             
-            -- In the future I would like to make this more optimized, since destroying
-            -- and reconstructing isn't the best thing in the world.
+            local DifferenceSet = GetOldChildren(ActiveChildren, Children.Value)
 
-            for _, Child in ActiveChildren do
+            for _, Child in DifferenceSet do
                 Child:Destroy()
             end
 
