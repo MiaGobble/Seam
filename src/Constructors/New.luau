@@ -8,7 +8,7 @@
 local New = {}
 
 -- Types
-export type NewConstructor = (Class : string | Instance, Properties : {[any] : any}) -> Instance
+export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
 
 -- Imports
 local Scope = require(script.Parent.Scope)
