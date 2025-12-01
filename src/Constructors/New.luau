@@ -1,16 +1,14 @@
 -- Author: iGottic
 
 --[=[
-    @class Create
+    @class New
     @since 0.0.1
 ]=]
 
--- Note: This was previously named "New", changed in v0.3.2
-
-local Create = {}
+local New = {}
 
 -- Types
-export type CreateConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
+export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
 
 -- Imports
 local Scope = require(script.Parent.Scope)
@@ -22,7 +20,7 @@ local Scope = require(script.Parent.Scope)
     @return ({[any] : any})) -> Instance -- The function to hydrate the instance properties
 ]=]
 
-function Create:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}, ThisScope : Scope.ScopeInstance?)
+function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}, ThisScope : Scope.ScopeInstance?)
     local Object = nil
 
     if typeof(Class) == "Instance" then
@@ -51,7 +49,7 @@ function Create:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any]
                 end
             elseif typeof(Property) == "table" then
                 if Property.__SEAM_OBJECT then
-                    -- A seam object is something like Reaction, Value, or Spring
+                    -- A seam object is something like Computed, Value, or Spring
                     Property(Object, Index)
                 else
                     error("Invalid property type! Expected Seam object or string, got table")
@@ -72,9 +70,9 @@ end
     @ignore
 ]=]
 
-function Create:__index(Index : string)
+function New:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
-        return "Create"
+        return "New"
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return true
     else
@@ -82,6 +80,6 @@ function Create:__index(Index : string)
     end
 end
 
-local Meta = setmetatable({}, Create)
+local Meta = setmetatable({}, New)
 
-return Meta :: CreateConstructor
+return Meta :: NewConstructor

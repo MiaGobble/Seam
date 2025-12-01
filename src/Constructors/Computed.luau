@@ -1,13 +1,11 @@
 -- Author: iGottic
 
 --[=[
-    @class Reaction
+    @class Computed
     @since 0.0.1
 ]=]
 
--- Note: This was previously named "Computed", changed in v0.3.2
-
-local Reaction = {}
+local Computed = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Modules
@@ -19,16 +17,16 @@ local Value = require(script.Parent.Value)
 local GetValue = require(script.Parent.GetValue)
 
 -- Types Extended
-export type ReactionInstance<T> = {} & Types.BaseState<T>
-export type ReactionConstructor<T> = (Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ReactionInstance<T>
+export type ComputedInstance<T> = {} & Types.BaseState<T>
+export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ComputedInstance<T>
 
 --[=[
-    Constructs a Reaction instance, which actively computes a value based on a given function.
+    Constructs a Computed instance, which actively computes a value based on a given function.
 
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
 
-function Reaction:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
+function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
     -- This shit has caused me so much pain
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
@@ -82,7 +80,7 @@ function Reaction:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "ReactionInstance"
+                return "ComputedInstance"
             elseif Index == "Value" then
                 -- Same as above, let's not re-calculate
 
@@ -107,16 +105,16 @@ function Reaction:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         end
     })
 
-    return ActiveComputation :: ReactionInstance<any>
+    return ActiveComputation :: ComputedInstance<any>
 end
 
 --[=[
     @ignore
 ]=]
 
-function Reaction:__index(Key : string)
+function Computed:__index(Key : string)
     if Key == "__SEAM_INDEX" then
-        return "Reaction"
+        return "Computed"
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else
@@ -124,6 +122,6 @@ function Reaction:__index(Key : string)
     end
 end
 
-local Meta = setmetatable({}, Reaction)
+local Meta = setmetatable({}, Computed)
 
-return Meta :: ReactionConstructor<any>
+return Meta :: ComputedConstructor<any>

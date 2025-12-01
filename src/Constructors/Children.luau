@@ -63,11 +63,11 @@ end
 
 function Children:__call(Object : Instance, Children : Types.BaseState<any> | {any})
     if typeof(Children) ~= "table" then
-        -- Children will either be an array or Reaction instance, so it must be a table
+        -- Children will either be an array or Computed instance, so it must be a table
         error("Invalid children type! Expected table, got " .. typeof(Children))
     end
 
-    if Children.__SEAM_OBJECT == "ReactionInstance" then -- Since 0.1.0, you can use computed as the children
+    if Children.__SEAM_OBJECT == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
         local ActiveChildren = ApplyChildren(Object, Children.Value)
 
         local Connection = Children.Changed:Connect(function()
