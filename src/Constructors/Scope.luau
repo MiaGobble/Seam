@@ -11,7 +11,7 @@ local Scope = {}
 local Modules = script.Parent.Parent.Modules
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
-local Computed = require(script.Parent.Computed)
+local Reaction = require(script.Parent.Reaction)
 local Rendered = require(script.Parent.Rendered)
 local Value = require(script.Parent.Value)
 local Spring = require(script.Parent.Animation.Spring)
@@ -19,12 +19,12 @@ local Tween = require(script.Parent.Animation.Tween)
 
 -- Extended types
 export type ScopeInstance = {
-    New : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
+    Create : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
     Rendered : (self : ScopeInstance, Callback : () -> any?) -> Rendered.RenderedInstance<any>,
     Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
     Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
-    Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
+    Reaction : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Reaction.ReactionInstance<any>,
 
     InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
     AddObject : (self : ScopeInstance, Object : any) -> (),
@@ -35,7 +35,7 @@ export type ScopeInstance = {
 export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
 
 --[=[
-    Constructs a Computed instance, which actively computes a value based on a given function.
+    Constructs a Reaction instance, which actively computes a value based on a given function.
 
     @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
 ]=]
@@ -82,8 +82,8 @@ function Scope:__call(ScopedObjects : {[string] : any})
                 -- If it's a non-Seam function, let's pass the scope as the first parameter,
                 -- then pass in everything else
                 Tuple = {Object(self, ...)}
-            elseif Object.__SEAM_OBJECT == "New" then
-                -- For New specifically, we want to actually put scope at the end. In the
+            elseif Object.__SEAM_OBJECT == "Create" then
+                -- For Create specifically, we want to actually put scope at the end. In the
                 -- future, if seam requires scopes, this will change
                 local Args = {...}
                 table.insert(Args, self)

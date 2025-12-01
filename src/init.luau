@@ -19,10 +19,10 @@ local Constructors = script:WaitForChild("Constructors")
 local Modules = script:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 
-local New = require(Constructors:WaitForChild("New"))
+local Create = require(Constructors:WaitForChild("Create"))
 local Children = require(Constructors:WaitForChild("Children"))
 local Value = require(Constructors:WaitForChild("Value"))
-local Computed = require(Constructors:WaitForChild("Computed"))
+local Reaction = require(Constructors:WaitForChild("Reaction"))
 local Spring = require(Constructors.Animation:WaitForChild("Spring"))
 local Tween = require(Constructors.Animation:WaitForChild("Tween"))
 local Scope = require(Constructors:WaitForChild("Scope"))
@@ -41,14 +41,14 @@ local SetValue = require(Constructors:WaitForChild("SetValue"))
 
 -- Types extended (private)
 type Seam = {
-    New : New.NewConstructor,
-    new : New.NewConstructor,
+    Create : Create.CreateConstructor,
+    new : Create.CreateConstructor,
     Children : Children.Children,
     children : Children.Children,
     Value : Value.ValueConstructor<any>,
     value : Value.ValueConstructor<any>,
-    Computed : Computed.ComputedConstructor<any>,
-    computed : Computed.ComputedConstructor<any>,
+    Reaction : Reaction.ReactionConstructor<any>,
+    computed : Reaction.ReactionConstructor<any>,
     Spring : Spring.SpringConstructor<any>,
     spring : Spring.SpringConstructor<any>,
     Tween : Tween.TweenConstructor<any>,
@@ -82,12 +82,12 @@ type Seam = {
 }
 
 -- Types exported (public)
-export type NewConstructor = New.NewConstructor
+export type CreateConstructor = Create.CreateConstructor
 export type Children = Children.Children
 export type Value<T> = Value.ValueInstance<T>
 export type ValueConstructor<T> = Value.ValueConstructor<T>
-export type Computed<T> = Computed.ComputedInstance<T>
-export type ComputedConstructor<T> = Computed.ComputedConstructor<T>
+export type Reaction<T> = Reaction.ReactionInstance<T>
+export type ReactionConstructor<T> = Reaction.ReactionConstructor<T>
 export type Spring<T> = Spring.SpringInstance<T>
 export type SpringConstructor<T> = Spring.SpringConstructor<T>
 export type Tween<T> = Tween.TweenInstance<T>
@@ -124,12 +124,12 @@ local function Init()
 end
 
 --[=[
-    @prop New New
+    @prop Create Create
     @within Seam
 ]=]
 
-Seam.New = New
-Seam.new = New
+Seam.Create = Create
+Seam.create = Create
 
 --[=[
     @prop Children Children
@@ -148,12 +148,12 @@ Seam.Value = Value
 Seam.value = Value
 
 --[=[
-    @prop Computed Computed
+    @prop Reaction Reaction
     @within Seam
 ]=]
 
-Seam.Computed = Computed
-Seam.computed = Computed
+Seam.Reaction = Reaction
+Seam.reaction = Reaction
 
 --[=[
     @prop Spring Spring
