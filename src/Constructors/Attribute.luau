@@ -10,6 +10,10 @@ local Attribute = {}
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variable
+local ClassSymbol = Symbol.new("Attribute")
 
 -- Types Extended
 export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
@@ -42,7 +46,7 @@ function Attribute:__call(AttributeName : string)
 
         __index = function(self, Index : string)
             if Index == "__SEAM_INDEX" then
-                return "Attribute"
+                return ClassSymbol
             else
                 return nil
             end

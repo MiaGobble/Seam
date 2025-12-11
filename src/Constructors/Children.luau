@@ -10,6 +10,10 @@ local Children = {}
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Children")
 
 -- Types Extended
 export type Children = (Object : Instance, Children : {Types.Child}) -> nil
@@ -67,7 +71,7 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
         error("Invalid children type! Expected table, got " .. typeof(Children))
     end
 
-    if Children.__SEAM_OBJECT == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
+    if Children.__SEAM_OBJECT and tostring(Children.__SEAM_OBJECT) == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
         local ActiveChildren = ApplyChildren(Object, Children.Value)
 
         local Connection = Children.Changed:Connect(function()
@@ -104,7 +108,7 @@ end
 
 function Children:__index(Index : string)
     if Index == "__SEAM_INDEX" then
-        return "Children"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return false
     else

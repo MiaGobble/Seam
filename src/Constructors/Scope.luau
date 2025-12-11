@@ -11,11 +11,15 @@ local Scope = {}
 local Modules = script.Parent.Parent.Modules
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
 local Computed = require(script.Parent.Computed)
 local Rendered = require(script.Parent.Rendered)
 local Value = require(script.Parent.Value)
 local Spring = require(script.Parent.Animation.Spring)
 local Tween = require(script.Parent.Animation.Tween)
+
+-- Variables
+local ClassSymbol = Symbol.new("Scope")
 
 -- Extended types
 export type ScopeInstance = {
@@ -47,12 +51,13 @@ function Scope:__call(ScopedObjects : {[string] : any})
 
     local selfClass = {}
     local selfMeta = {}
+    local InstanceSymbol = Symbol.new("Scope")
 
     function selfMeta:__index(Key : string)
         if Key == "__SEAM_OBJECT" then
             -- Some things check if something is a seam object, so
             -- this is the first thing we should try to return
-            return "Scope"
+            return InstanceSymbol
         end
 
         local Object = self.ScopedObjects and self.ScopedObjects[Key]
@@ -66,7 +71,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
             if Object.__SEAM_OBJECT or Object.__SEAM_INDEX then
                 -- If something from seam has __SEAM_CAN_BE_SCOPED (meaning it can't be scoped) as false,
                 -- then we should error what specifically the user tried to use
-                error((Object.__SEAM_OBJECT or Object.__SEAM_INDEX) .. " is not a valid scopable Seam object")
+                error(tostring(Object.__SEAM_OBJECT or Object.__SEAM_INDEX) .. " is not a valid scopable Seam object")
             else
                 -- Idk just error
                 error("Object is not a valid scopable Seam object")
@@ -82,7 +87,7 @@ function Scope:__call(ScopedObjects : {[string] : any})
                 -- If it's a non-Seam function, let's pass the scope as the first parameter,
                 -- then pass in everything else
                 Tuple = {Object(self, ...)}
-            elseif Object.__SEAM_OBJECT == "New" then
+            elseif Object.__SEAM_OBJECT and tostring(Object.__SEAM_OBJECT) == "New" then
                 -- For New specifically, we want to actually put scope at the end. In the
                 -- future, if seam requires scopes, this will change
                 local Args = {...}
@@ -149,7 +154,7 @@ end
 
 function Scope:__index(Key : string)
     if Key == "__SEAM_OBJECT" then
-        return "Scope"
+        return ClassSymbol
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

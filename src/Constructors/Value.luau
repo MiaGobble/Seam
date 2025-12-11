@@ -14,6 +14,10 @@ local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Value")
 
 -- Types Extended
 export type ValueInstance<T> = {
@@ -111,6 +115,7 @@ end
 function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local InstanceSymbol = Symbol.new("Value")
 
     if typeof(ThisValue) == "table" then
         -- Seam values clone tables before using them
@@ -133,7 +138,7 @@ function Value:__call(ThisValue : any)
     }, {
         __index = function(self, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "Value"
+                return InstanceSymbol
             elseif Index == "Value" then
                 return ThisValue
             elseif Index == "ValueRaw" then
@@ -220,7 +225,7 @@ end
 
 function Value:__index(Index : string)
     if Index == "__SEAM_INDEX" then
-        return "Value"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

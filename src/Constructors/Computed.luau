@@ -15,6 +15,10 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Value = require(script.Parent.Value)
 local GetValue = require(script.Parent.GetValue)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Computed")
 
 -- Types Extended
 export type ComputedInstance<T> = {} & Types.BaseState<T>
@@ -33,6 +37,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local UsedValues = {}
     local CurrentValue = nil
     local IsInitialized = false
+    local InstanceSymbol = Symbol.new("ComputedInstance")
 
     local function Use(Value : Value.ValueInstance<any>)
         -- Is Use connecting to a state? If not, just get the value
@@ -80,7 +85,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "ComputedInstance"
+                return InstanceSymbol
             elseif Index == "Value" then
                 -- Same as above, let's not re-calculate
 
@@ -114,7 +119,7 @@ end
 
 function Computed:__index(Key : string)
     if Key == "__SEAM_INDEX" then
-        return "Computed"
+        return ClassSymbol
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

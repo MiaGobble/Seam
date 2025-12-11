@@ -23,6 +23,10 @@ local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Spring")
 
 -- Types Extended
 export type SpringInstance<T> = {
@@ -82,6 +86,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
+    local InstanceSymbol = Symbol.new("Spring")
 
     JanitorInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
@@ -116,7 +121,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     }, {
         __index = function(self, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "Spring"
+                return InstanceSymbol
             elseif Index == "Value" then
                 return CurrentValue
             elseif Index == "Velocity" then
@@ -198,7 +203,7 @@ end
 
 function Spring:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
-        return "Spring"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

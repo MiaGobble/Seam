@@ -13,6 +13,13 @@ export type Lifetime = (Object : Instance, CleanupTime : number) -> nil
 -- Services
 local DebrisService = game:GetService("Debris")
 
+-- Imports
+local Modules = script.Parent.Parent.Modules
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Lifetime")
+
 --[=[
     Sets a lifetime for an object
 ]=]
@@ -26,7 +33,7 @@ end
 
 function Lifetime:__index(Index : string)
     if Index == "__SEAM_INDEX" then
-        return "Lifetime"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return false
     else

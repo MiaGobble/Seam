@@ -10,6 +10,13 @@ local Tags = {}
 -- Types
 export type Tags = (Object : Instance, AddedTags : {string}) -> nil
 
+-- Imports
+local Modules = script.Parent.Parent.Modules
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Tags")
+
 --[=[
     Adds tags to an instance
 ]=]
@@ -22,7 +29,7 @@ end
 
 function Tags:__index(Index : string)
     if Index == "__SEAM_INDEX" then
-        return "Tags"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return false
     else

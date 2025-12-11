@@ -25,6 +25,10 @@ local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Tween")
 
 -- Types Extended
 export type TweenInstance<T> = {
@@ -60,6 +64,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
+    local InstanceSymbol = Symbol.new("Tween")
 
     JanitorInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
@@ -96,7 +101,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     }, {
         __index = function(self, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "Tween"
+                return InstanceSymbol
             elseif Index == "Value" then
                 return CurrentValue
             elseif Index == "Changed" then
@@ -156,7 +161,7 @@ end
 
 function Tween:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
-        return "Tween"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return true
     else
