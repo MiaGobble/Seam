@@ -49,7 +49,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             UsedValues[ThisValue] = ThisValue
 
-            JanitorInstance:Add(Value.Changed:Connect(function()
+            JanitorInstance:Add(ThisValue.Changed:Connect(function()
                 CurrentValue = Callback(Use)
                 ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
             end))
