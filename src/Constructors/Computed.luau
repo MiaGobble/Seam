@@ -15,6 +15,10 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Value = require(script.Parent.Value)
 local GetValue = require(script.Parent.GetValue)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Computed")
 
 -- Types Extended
 export type ComputedInstance<T> = {} & Types.BaseState<T>
@@ -33,24 +37,25 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local UsedValues = {}
     local CurrentValue = nil
     local IsInitialized = false
+    local InstanceSymbol = Symbol.new("ComputedInstance")
 
-    local function Use(Value : Value.ValueInstance<any>)
+    local function Use(ThisValue : Value.ValueInstance<any>)
         -- Is Use connecting to a state? If not, just get the value
 
-        if Value ~= nil and typeof(Value) == "table" and Value.__SEAM_OBJECT then
-            if UsedValues[Value] ~= nil then
-                return GetValue(UsedValues[Value])
+        if ThisValue ~= nil and typeof(ThisValue) == "table" and ThisValue.__SEAM_OBJECT then
+            if UsedValues[ThisValue] ~= nil then
+                return GetValue(UsedValues[ThisValue])
             end
 
-            UsedValues[Value] = Value
+            UsedValues[ThisValue] = ThisValue
 
-            JanitorInstance:Add(Value.Changed:Connect(function()
+            JanitorInstance:Add(ThisValue.Changed:Connect(function()
                 CurrentValue = Callback(Use)
                 ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
             end))
         end
 
-        return GetValue(Value)
+        return GetValue(ThisValue)
     end
 
     local ActiveComputation; ActiveComputation = setmetatable({
@@ -80,7 +85,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "ComputedInstance"
+                return InstanceSymbol
             elseif Index == "Value" then
                 -- Same as above, let's not re-calculate
 
@@ -114,7 +119,7 @@ end
 
 function Computed:__index(Key : string)
     if Key == "__SEAM_INDEX" then
-        return "Computed"
+        return ClassSymbol
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

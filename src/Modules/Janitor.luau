@@ -9,7 +9,7 @@
 -- LinkToInstance fixed by Elttob.
 -- Cleanup edge cases fixed by codesenseAye.
 
-local Promise = if script.Parent:FindFirstChild("Promise") then require(script.Parent.Promise) else nil
+local Promise = nil --if script.Parent:FindFirstChild("Promise") then require(script.Parent.Promise) else nil
 
 local IndicesReference = setmetatable({}, {
 	__tostring = function()

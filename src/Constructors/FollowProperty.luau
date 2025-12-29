@@ -10,6 +10,10 @@ local FollowProperty = {}
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("FollowProperty")
 
 -- Types Extended
 export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
@@ -34,7 +38,7 @@ function FollowProperty:__call(PropertyName : string)
 
         __index = function(_, Index : string)
             if Index == "__SEAM_INDEX" then
-                return "FollowProperty"
+                return ClassSymbol
             elseif Index == "__SEAM_CAN_BE_SCOPED" then
                 return false
             else

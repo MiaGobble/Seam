@@ -7,11 +7,16 @@
 
 local New = {}
 
--- Types
-export type NewConstructor = (Class : string | Instance, Properties : {[any] : any}) -> Instance
-
 -- Imports
+local Modules = script.Parent.Parent.Modules
+local Symbol = require(Modules.Symbol)
 local Scope = require(script.Parent.Scope)
+
+-- Types extended
+export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
+
+-- Variables
+local ClassSymbol = Symbol.new("New")
 
 --[=[
     Constructs a new instance or hydrates an existing one with given properties.
@@ -72,7 +77,7 @@ end
 
 function New:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
-        return "New"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

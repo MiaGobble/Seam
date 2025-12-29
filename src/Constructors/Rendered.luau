@@ -12,6 +12,10 @@ local Modules = script.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Rendered")
 
 -- Types Extended
 export type RenderedInstance<T> = {} & Types.BaseState<T>
@@ -25,8 +29,8 @@ export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance
 
 function Rendered:__call(Callback : () -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
-
     local JanitorInstance = Janitor.new()
+    local InstanceSymbol = Symbol.new("RenderedInstance")
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -46,7 +50,7 @@ function Rendered:__call(Callback : () -> any?)
 
         __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
-                return "RenderedInstance"
+                return InstanceSymbol
             elseif Index == "Value" then
                 return Callback()
             end
@@ -64,7 +68,7 @@ end
 
 function Rendered:__index(Key : string)
     if Key == "__SEAM_INDEX" then
-        return "Rendered"
+        return ClassSymbol
     elseif Key == "__SEAM_CAN_BE_SCOPED" then
         return true
     else

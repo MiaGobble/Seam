@@ -14,7 +14,7 @@
 local Package = script.Parent
 local Oklab = require(Package.Oklab)
 
-local function packType(numbers: {number}, typeString: string)
+local function packType(numbers: {number}, typeString: string) : any
 	if typeString == "number" then
 		return numbers[1]
 

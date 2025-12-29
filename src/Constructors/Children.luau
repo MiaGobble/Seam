@@ -10,16 +10,13 @@ local Children = {}
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variables
+local ClassSymbol = Symbol.new("Children")
 
 -- Types Extended
 export type Children = (Object : Instance, Children : {Types.Child}) -> nil
-
---[=[
-    Sets the parent of the given children to the given object. To be used in New()
-
-    @param Object Instance -- The object to parent the children to
-    @param Children {[any] : any} -- The children to parent to the object
-]=]
 
 local function ApplyChildren(Parent : Instance, Children : {Types.Child})
     -- This function just goes through the table and sets the parent of
@@ -48,22 +45,41 @@ local function ApplyChildren(Parent : Instance, Children : {Types.Child})
     return ChildrenCreated
 end
 
+local function GetOldChildren(OldChildren : {Instance}, NewChildren : {Instance})
+    local DifferenceSet = {}
+
+    for _, OldChild in OldChildren do
+        if not table.find(NewChildren, OldChild) then
+            table.insert(DifferenceSet, OldChild)
+            continue
+        end
+    end
+
+    return DifferenceSet
+end
+
+--[=[
+    Sets the parent of the given children to the given object. To be used in New()
+
+    @param Object Instance -- The object to parent the children to
+    @param Children {[any] : any} -- The children to parent to the object
+]=]
+
 function Children:__call(Object : Instance, Children : Types.BaseState<any> | {any})
     if typeof(Children) ~= "table" then
         -- Children will either be an array or Computed instance, so it must be a table
         error("Invalid children type! Expected table, got " .. typeof(Children))
     end
 
-    if Children.__SEAM_OBJECT == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
+    if Children.__SEAM_OBJECT and tostring(Children.__SEAM_OBJECT) == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
         local ActiveChildren = ApplyChildren(Object, Children.Value)
 
         local Connection = Children.Changed:Connect(function()
             -- When computed updates, update the children
             
-            -- In the future I would like to make this more optimized, since destroying
-            -- and reconstructing isn't the best thing in the world.
+            local DifferenceSet = GetOldChildren(ActiveChildren, Children.Value)
 
-            for _, Child in ActiveChildren do
+            for _, Child in DifferenceSet do
                 Child:Destroy()
             end
 
@@ -92,7 +108,7 @@ end
 
 function Children:__index(Index : string)
     if Index == "__SEAM_INDEX" then
-        return "Children"
+        return ClassSymbol
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
         return false
     else

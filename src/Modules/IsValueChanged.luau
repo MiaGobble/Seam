@@ -1,3 +1,5 @@
+-- Author: iGottic
+
 -- Constants
 local EPSILON = 0.001
 

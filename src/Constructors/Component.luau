@@ -5,11 +5,11 @@
     @since 0.3.0
 ]=]
 
--- Types
-export type Component = ({[any] : any}) -> (Scope.ScopeInstance?, {[string] : any}) -> any
-
 -- Imports
 local Scope = require(script.Parent.Scope)
+
+-- Types extended
+export type Component = ({[any] : any}) -> (Scope.ScopeInstance?, {[string] : any}) -> any
 
 local function Component(ComponentModule : {[any] : any})
     -- This function just validates what we have and turns the module into a class

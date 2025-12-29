@@ -10,6 +10,10 @@ local Attribute = {}
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Symbol = require(Modules.Symbol)
+
+-- Variable
+local ClassSymbol = Symbol.new("Attribute")
 
 -- Types Extended
 export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
@@ -22,7 +26,7 @@ export type Attribute = (AttributeName : string) -> (Object : Instance, Attribut
 
 function Attribute:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {
-        __call = function(self, Object : Instance, AttributeValue : any)
+        __call = function(_, Object : Instance, AttributeValue : any)
             if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
                 -- If we are using a state, then let's connect to it
                 -- When it changes, update the attribute
@@ -40,9 +44,9 @@ function Attribute:__call(AttributeName : string)
             Object:SetAttribute(AttributeName, AttributeValue)
         end,
 
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_INDEX" then
-                return "Attribute"
+                return ClassSymbol
             else
                 return nil
             end

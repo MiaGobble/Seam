@@ -82,7 +82,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
             LastValue = NewValue
         end))
     else
-        error("Attempted to attach non-state to object", debug.traceback())
+        error("Attempted to attach non-state to object:\n" .. debug.traceback())
     end
 
     return JanitorInstance

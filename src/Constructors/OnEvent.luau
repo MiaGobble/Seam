@@ -18,12 +18,12 @@ export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
 
 function OnEvent:__call(EventName : string)
     local EventBinding = setmetatable({}, {
-        __call = function(self, Object : Instance, Callback : (...any?) -> nil)
+        __call = function(_, Object : Instance, Callback : (...any?) -> nil)
             -- So for example, if we do OnEvent "Activated", EventName will equal "Activated"
             return (Object[EventName] :: RBXScriptSignal):Connect(Callback)
         end,
 
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_INDEX" then
                 return "OnEvent"
             else
