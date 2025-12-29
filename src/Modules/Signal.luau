@@ -32,9 +32,9 @@ export type Signal<T...> = {
     @return Connection -- The connection object
 ]=]
 
-function Connection.new(Signal, Callback)
+function Connection.new(ThisSignal, Callback)
     return setmetatable({
-        Signal = Signal,
+        Signal = ThisSignal,
         Callback = Callback
     }, Connection)
 end

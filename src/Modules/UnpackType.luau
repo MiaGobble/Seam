@@ -19,8 +19,8 @@ local Oklab = require(Package.Oklab)
 
 local function unpackType(value: any, typeString: string): {number}
 	if typeString == "number" then
-		local value = value :: number
-		return {value}
+		local thisValue = value :: number
+		return {thisValue}
 
 	elseif typeString == "CFrame" then
 		-- FUTURE: is there a better way of doing this? doing distance

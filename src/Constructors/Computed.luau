@@ -39,15 +39,15 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local IsInitialized = false
     local InstanceSymbol = Symbol.new("ComputedInstance")
 
-    local function Use(Value : Value.ValueInstance<any>)
+    local function Use(ThisValue : Value.ValueInstance<any>)
         -- Is Use connecting to a state? If not, just get the value
 
-        if Value ~= nil and typeof(Value) == "table" and Value.__SEAM_OBJECT then
-            if UsedValues[Value] ~= nil then
-                return GetValue(UsedValues[Value])
+        if ThisValue ~= nil and typeof(ThisValue) == "table" and ThisValue.__SEAM_OBJECT then
+            if UsedValues[ThisValue] ~= nil then
+                return GetValue(UsedValues[ThisValue])
             end
 
-            UsedValues[Value] = Value
+            UsedValues[ThisValue] = ThisValue
 
             JanitorInstance:Add(Value.Changed:Connect(function()
                 CurrentValue = Callback(Use)
@@ -55,7 +55,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
             end))
         end
 
-        return GetValue(Value)
+        return GetValue(ThisValue)
     end
 
     local ActiveComputation; ActiveComputation = setmetatable({

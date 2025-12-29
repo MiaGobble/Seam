@@ -46,7 +46,7 @@ export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any})
 
 local Meta = setmetatable({}, Scope)
 
-function Scope:__call(ScopedObjects : {[string] : any})
+function Scope.__call(_, ScopedObjects : {[string] : any})
     -- Scopes have been a headache to get working, since I'm a dumdum
 
     local selfClass = {}

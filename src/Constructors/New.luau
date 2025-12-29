@@ -7,14 +7,13 @@
 
 local New = {}
 
--- Types
-export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
-
--- Imports
 -- Imports
 local Modules = script.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
 local Scope = require(script.Parent.Scope)
+
+-- Types extended
+export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
 
 -- Variables
 local ClassSymbol = Symbol.new("New")

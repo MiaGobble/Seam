@@ -18,14 +18,14 @@ export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScri
 
 function OnAttributeChanged:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {
-        __call = function(self, Object : Instance, Callback : (...any?) -> nil)
+        __call = function(_, Object : Instance, Callback : (...any?) -> nil)
             -- I feel like there is something I'm missing, and this might be a disaster
             -- for memory? I'll keep an eye peeled.
             
             return Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
         end,
 
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_INDEX" then
                 return "OnAttributeChanged"
             else

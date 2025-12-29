@@ -26,10 +26,10 @@ export type ValueInstance<T> = {
 
 export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
 
-local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<string>)
-    if typeof(Value) ~= "table" then
+local function GetAttendedTableValue(ThisValue : any, ChangedSignal : Signal.Signal<string>)
+    if typeof(ThisValue) ~= "table" then
         -- If not a table, don't bother running this function
-        return Value
+        return ThisValue
     end
 
     -- We're pretty much making a proxy table so that we know when things change.
@@ -46,9 +46,9 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
         for Index, This in pairs(FakeTable) do
             if Index == LowestIndexForInsert then
                 LowestIndexForInsert += 1
-                table.insert(Value, This)
+                table.insert(ThisValue, This)
             else
-                Value[Index] = This
+                ThisValue[Index] = This
             end
 
             FakeTable[Index] = nil
@@ -57,33 +57,33 @@ local function GetAttendedTableValue(Value : any, ChangedSignal : Signal.Signal<
 
 
     local Proxy = setmetatable(FakeTable, {
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             CorrectFakeTable() -- Before anything, the fake table should be fixed
 
-            return GetAttendedTableValue(Value[Index], ChangedSignal)
+            return GetAttendedTableValue(ThisValue[Index], ChangedSignal)
         end,
 
-        __newindex = function(self, Index : string, NewValue : any)
-            if IsValueChanged(Value[Index], NewValue) then
+        __newindex = function(_, Index : string, NewValue : any)
+            if IsValueChanged(ThisValue[Index], NewValue) then
                 -- If the value changed, correct the table, update the
                 -- value, and finally fire the changed signal
 
                 CorrectFakeTable()
-                Value[Index] = NewValue
+                ThisValue[Index] = NewValue
                 ChangedSignal:Fire("Value")
             end
         end,
 
-        __iter = function(self)
+        __iter = function(_)
             CorrectFakeTable() -- You can't iterate properly unless this is called first
 
-            return pairs(Value)
+            return pairs(ThisValue)
         end,
 
-        __len = function(self)
+        __len = function(_)
             CorrectFakeTable() -- Same as __iter, you can't get length without correction
 
-            return #Value
+            return #ThisValue
         end,
     })
 
@@ -94,11 +94,11 @@ local function DeepCopyTable(This : {[any] : any})
     -- Copy copy copy
     local NewTable = {}
 
-    for Index, Value in This do
-        if typeof(Value) == "table" and not Value.__SEAM_INDEX and not Value.__SEAM_OBJECT then
-            NewTable[Index] = DeepCopyTable(Value)
+    for Index, ThisValue in This do
+        if typeof(ThisValue) == "table" and not ThisValue.__SEAM_INDEX and not ThisValue.__SEAM_OBJECT then
+            NewTable[Index] = DeepCopyTable(ThisValue)
         else
-            NewTable[Index] = Value
+            NewTable[Index] = ThisValue
         end
     end
 
@@ -132,11 +132,11 @@ function Value:__call(ThisValue : any)
     --]]
 
     local ActiveValue = setmetatable({
-        Destroy = function(self)
+        Destroy = function(_)
             JanitorInstance:Destroy()
         end
     }, {
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
@@ -156,19 +156,19 @@ function Value:__call(ThisValue : any)
             return nil
         end,
 
-        __newindex = function(self, Index : string, NewValue : any)
+        __newindex = function(_, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
                 if typeof(NewValue) == "table" then
                     -- Is the value a table? If so, update each table value individually
 
-                    for Index, Value in ThisValue do
-                        if NewValue[Index] == nil then
-                            ThisValue[Index] = nil
+                    for SubIndex, _ in ThisValue do
+                        if NewValue[SubIndex] == nil then
+                            ThisValue[SubIndex] = nil
                         end
                     end
 
-                    for Index, Value in NewValue do
-                        ThisValue[Index] = Value
+                    for SubIndex, SubValue in NewValue do
+                        ThisValue[SubIndex] = SubValue
                     end
                 else
                     -- If the value isn't a table, update it normally
@@ -187,7 +187,7 @@ function Value:__call(ThisValue : any)
             end
         end,
 
-        __call = function(self, Object, Index : string)
+        __call = function(_, Object, Index : string)
             if not Object then
                 return
             end
