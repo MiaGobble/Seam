@@ -116,6 +116,7 @@ function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("Value")
+    local IsLocked = false
 
     if typeof(ThisValue) == "table" then
         -- Seam values clone tables before using them
@@ -131,7 +132,7 @@ function Value:__call(ThisValue : any)
         This.Changed -> As rbxscriptsignal
     --]]
 
-    local ActiveValue = setmetatable({
+    local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(_)
             JanitorInstance:Destroy()
         end
@@ -158,6 +159,10 @@ function Value:__call(ThisValue : any)
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
+                if IsLocked then
+                    error("Attempt to modify value when locked.")
+                end
+
                 if typeof(NewValue) == "table" then
                     -- Is the value a table? If so, update each table value individually
 
@@ -182,6 +187,13 @@ function Value:__call(ThisValue : any)
 
                 -- Make sure to fire the changed signal for other states
                 ChangedSignal:Fire("Value", ThisValue)
+            elseif Index == "__LOCKED" then
+                if NewValue == true then
+                    IsLocked = true
+                    ActiveValue:Destroy()
+                else
+                    error("Can not unlock values.")
+                end
             else
                 error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))
             end
