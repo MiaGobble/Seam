@@ -49,6 +49,7 @@ local LockValue = require(Utilities:WaitForChild("LockValue"))
 local MakeSymbol = require(Utilities:WaitForChild("MakeSymbol"))
 local MakeSignal = require(Utilities:WaitForChild("MakeSignal"))
 local Inspect = require(Utilities:WaitForChild("Inspect"))
+local OnAttached = require(Connections:WaitForChild("OnAttached"))
 
 -- Types extended (private)
 type Seam = {
@@ -102,6 +103,8 @@ type Seam = {
     makeSignal : MakeSignal.MakeSignal,
     Inspect : Inspect.Inspect,
     inspect : Inspect.Inspect,
+    OnAttached : OnAttached.OnAttached,
+    onAttached : OnAttached.OnAttached,
 }
 
 -- Types exported (public)
@@ -136,6 +139,7 @@ export type LockValue = LockValue.LockValue
 export type MakeSymbol = MakeSymbol.MakeSymbol
 export type MakeSignal = MakeSignal.MakeSignal
 export type Inspect = Inspect.Inspect
+export type OnAttached = OnAttached.OnAttached
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -371,6 +375,14 @@ Seam.makeSignal = MakeSignal
 
 Seam.Inspect = Inspect
 Seam.inspect = Inspect
+
+--[=[
+    @prop OnAttached OnAttached
+    @within Seam
+]=]
+
+Seam.OnAttached = OnAttached
+Seam.onAttached = OnAttached
 
 Init()
 
