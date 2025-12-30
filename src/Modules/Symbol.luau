@@ -7,6 +7,9 @@
 
 local Symbol = {}
 
+-- Types
+export type Symbol = typeof(newproxy(true))
+
 function Symbol.new(Name : string)
     local self = newproxy(true)
 

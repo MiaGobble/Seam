@@ -46,6 +46,7 @@ local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
 local IsComponent = require(Utilities:WaitForChild("IsComponent"))
 local LockValue = require(Utilities:WaitForChild("LockValue"))
+local MakeSymbol = require(Utilities:WaitForChild("MakeSymbol"))
 
 -- Types extended (private)
 type Seam = {
@@ -93,6 +94,8 @@ type Seam = {
     isComponent : IsComponent.IsComponent,
     LockValue : LockValue.LockValue,
     lockValue : LockValue.LockValue,
+    MakeSymbol : MakeSymbol.MakeSymbol,
+    makeSymbol : MakeSymbol.MakeSymbol,
 }
 
 -- Types exported (public)
@@ -124,6 +127,7 @@ export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
 export type LockValue = LockValue.LockValue
+export type MakeSymbol = MakeSymbol.MakeSymbol
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -335,6 +339,14 @@ Seam.isComponent = IsComponent
 
 Seam.LockValue = LockValue
 Seam.lockValue = LockValue
+
+--[=[
+    @prop MakeSymbol MakeSymbol
+    @within Seam
+]=]
+
+Seam.MakeSymbol = MakeSymbol
+Seam.makeSymbol = MakeSymbol
 
 Init()
 
