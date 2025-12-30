@@ -34,7 +34,7 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
     elseif typeof(Class) == "string" then
         -- Construction
         Object = Instance.new(Class)
-    elseif typeof(Class) == "function" then
+    elseif typeof(Class) == "table" and Class.__SEAM_COMPONENT then
         -- Custom component
         Object = nil
     else
