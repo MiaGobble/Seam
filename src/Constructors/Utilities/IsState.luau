@@ -1,4 +1,3 @@
-local ReflectionService = game:GetService("ReflectionService")
 -- Author: iGottic
 
 --[=[
