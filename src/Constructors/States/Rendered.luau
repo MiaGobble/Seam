@@ -11,6 +11,7 @@ local Rendered = {}
 local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
+local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 
@@ -30,6 +31,7 @@ export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance
 function Rendered:__call(Callback : () -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
     local JanitorInstance = Janitor.new()
+    local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("RenderedInstance")
 
     local ActiveComputation; ActiveComputation = setmetatable({
@@ -38,8 +40,8 @@ function Rendered:__call(Callback : () -> any?)
         end
     }, {
         __call = function(_, Object : Instance, Index : string)
-            -- Every frame, update the value
-
+            AttachedSignal:Fire(Object)
+            
             JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
@@ -53,6 +55,8 @@ function Rendered:__call(Callback : () -> any?)
                 return InstanceSymbol
             elseif Index == "Value" then
                 return Callback()
+            elseif Index == "AttachedToInstance" then
+                return AttachedSignal
             end
 
             return nil

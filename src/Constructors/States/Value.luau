@@ -115,6 +115,7 @@ end
 function Value:__call(ThisValue : any)
     local JanitorInstance = Janitor.new()
     local ChangedSignal = Signal.new()
+    local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("Value")
     local IsLocked = false
 
@@ -152,6 +153,8 @@ function Value:__call(ThisValue : any)
                 end
             elseif Index == "Changed" then
                 return ChangedSignal
+            elseif Index == "AttachedToInstance" then
+                return AttachedSignal
             end
 
             return nil
@@ -213,6 +216,8 @@ function Value:__call(ThisValue : any)
             else
                 Object[Index] = ThisValue
             end
+
+            AttachedSignal:Fire(Object)
 
             JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()

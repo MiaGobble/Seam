@@ -37,6 +37,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local UsedValues = {}
     local CurrentValue = nil
     local IsInitialized = false
+    local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("ComputedInstance")
 
     local function Use(ThisValue : Value.ValueInstance<any>)
@@ -64,6 +65,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         end,
     }, {
         __call = function(_, Object : Instance, Index : string)
+            AttachedSignal:Fire(Object)
+
             JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     -- We don't want to re-calculate the computed when the states haven't changed,
@@ -104,6 +107,8 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
                 end
 
                 return ChangedSignal
+            elseif Index == "AttachedToInstance" then
+                return AttachedSignal
             end
 
             return nil
