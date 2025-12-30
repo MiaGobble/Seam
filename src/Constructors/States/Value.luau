@@ -8,7 +8,7 @@
 local Value = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)

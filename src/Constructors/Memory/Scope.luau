@@ -8,15 +8,15 @@
 local Scope = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Janitor = require(Modules.Janitor)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
-local Computed = require(script.Parent.Computed)
-local Rendered = require(script.Parent.Rendered)
-local Value = require(script.Parent.Value)
-local Spring = require(script.Parent.Animation.Spring)
-local Tween = require(script.Parent.Animation.Tween)
+local Computed = require(script.Parent.Parent.States.Computed)
+local Rendered = require(script.Parent.Parent.States.Rendered)
+local Value = require(script.Parent.Parent.States.Value)
+local Spring = require(script.Parent.Parent.States.Animation.Spring)
+local Tween = require(script.Parent.Parent.States.Animation.Tween)
 
 -- Variables
 local ClassSymbol = Symbol.new("Scope")

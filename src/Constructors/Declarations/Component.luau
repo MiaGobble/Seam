@@ -6,7 +6,7 @@
 ]=]
 
 -- Imports
-local Scope = require(script.Parent.Scope)
+local Scope = require(script.Parent.Parent.Memory.Scope)
 
 -- Types extended
 export type Component = ({[any] : any}) -> (Scope.ScopeInstance?, {[string] : any}) -> any

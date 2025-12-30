@@ -13,7 +13,7 @@ local RunService = game:GetService("RunService")
 -- Imports
 local Janitor = require(script.Parent.Janitor)
 local IsValueChanged = require(script.Parent.IsValueChanged)
-local GetValue = require(script.Parent.Parent.Constructors.GetValue)
+local GetValue = require(script.Parent.Parent.Constructors.Declarations.GetValue)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then

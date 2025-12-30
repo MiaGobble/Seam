@@ -8,14 +8,14 @@
 local Computed = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local Janitor = require(Modules.Janitor)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
-local Value = require(script.Parent.Value)
-local GetValue = require(script.Parent.GetValue)
 local Symbol = require(Modules.Symbol)
+local Value = require(script.Parent.Value)
+local GetValue = require(script.Parent.Parent.Declarations.GetValue)
 
 -- Variables
 local ClassSymbol = Symbol.new("Computed")

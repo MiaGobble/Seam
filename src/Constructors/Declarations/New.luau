@@ -8,9 +8,9 @@
 local New = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
-local Scope = require(script.Parent.Scope)
+local Scope = require(script.Parent.Parent.Memory.Scope)
 
 -- Types extended
 export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance

@@ -15,7 +15,7 @@ local EPSILON = 0.001
 local RunService = game:GetService("RunService")
 
 -- Imports
-local Modules = script.Parent.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
