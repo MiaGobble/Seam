@@ -44,6 +44,7 @@ local Component = require(Declarations:WaitForChild("Component"))
 local Tags = require(Declarations:WaitForChild("Tags"))
 local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
+local IsComponent = require(Utilities:WaitForChild("IsComponent"))
 
 -- Types extended (private)
 type Seam = {
@@ -87,6 +88,8 @@ type Seam = {
     setValue : SetValue.SetValue,
     IsState : IsState.IsState,
     isState : IsState.IsState,
+    IsComponent : IsComponent.IsComponent,
+    isComponent : IsComponent.IsComponent,
 }
 
 -- Types exported (public)
@@ -116,6 +119,7 @@ export type Component = Component.Component
 export type Tags = Tags.Tags
 export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
+export type IsComponent = IsComponent.IsComponent
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -311,6 +315,14 @@ Seam.setValue = SetValue
 
 Seam.IsState = IsState
 Seam.isState = IsState
+
+--[=[
+    @prop IsComponent IsComponent
+    @within Seam
+]=]
+
+Seam.IsComponent = IsComponent
+Seam.isComponent = IsComponent
 
 Init()
 
