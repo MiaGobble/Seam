@@ -8,7 +8,7 @@
 local Children = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 

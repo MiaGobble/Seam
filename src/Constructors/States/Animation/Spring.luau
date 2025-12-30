@@ -15,7 +15,7 @@ local EPSILON = 0.001
 local RunService = game:GetService("RunService")
 
 -- Imports
-local Modules = script.Parent.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
@@ -83,6 +83,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
     local JanitorInstance = Janitor.new()
+    local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
@@ -136,6 +137,8 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 return PackType(PackedValues, ValueType)
             elseif Index == "Changed" then
                 return ChangedSignal
+            elseif Index == "AttachedToInstance" then
+                return AttachedSignal
             end
 
             return nil
@@ -177,6 +180,8 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         end,
 
         __call = function(self, Object, Index : string)
+            AttachedSignal:Fire(Object)
+            
             JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     ChangedSignal:Fire("Value")

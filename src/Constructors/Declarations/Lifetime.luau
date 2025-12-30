@@ -14,7 +14,7 @@ export type Lifetime = (Object : Instance, CleanupTime : number) -> nil
 local DebrisService = game:GetService("Debris")
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
 
 -- Variables

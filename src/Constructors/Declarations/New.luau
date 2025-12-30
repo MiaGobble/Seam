@@ -8,9 +8,9 @@
 local New = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
-local Scope = require(script.Parent.Scope)
+local Scope = require(script.Parent.Parent.Memory.Scope)
 
 -- Types extended
 export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
@@ -34,7 +34,7 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
     elseif typeof(Class) == "string" then
         -- Construction
         Object = Instance.new(Class)
-    elseif typeof(Class) == "function" then
+    elseif typeof(Class) == "table" and Class.__SEAM_COMPONENT then
         -- Custom component
         Object = nil
     else

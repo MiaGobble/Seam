@@ -1,38 +1,38 @@
 -- Author: iGottic
 
 --[=[
-    @class FollowAttribute
+    @class FollowProperty
     @since 0.0.3
 ]=]
 
-local FollowAttribute = {}
+local FollowProperty = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 
 -- Variables
-local ClassSymbol = Symbol.new("FollowAttribute")
+local ClassSymbol = Symbol.new("FollowProperty")
 
 -- Types Extended
-export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
+export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
 
 --[=[
     @ignore
 ]=]
 
-function FollowAttribute:__call(AttributeName : string)
+function FollowProperty:__call(PropertyName : string)
     return setmetatable({}, {
         __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
             -- Literally just a simple connection and value update
-            
-            Object:GetAttributeChangedSignal(AttributeName):Connect(function()
-                if Object:GetAttribute(AttributeName) ~= ValueState.Value then
-                    ValueState.Value = Object:GetAttribute(AttributeName)
+
+            Object:GetPropertyChangedSignal(PropertyName):Connect(function()
+                if Object[PropertyName] ~= ValueState.Value then
+                    ValueState.Value = Object[PropertyName]
                 end
 
-                ValueState.Value = Object:GetAttribute(AttributeName)
+                ValueState.Value = Object[PropertyName]
             end)
         end,
 
@@ -48,6 +48,6 @@ function FollowAttribute:__call(AttributeName : string)
     })
 end
 
-local Meta = setmetatable({}, FollowAttribute)
+local Meta = setmetatable({}, FollowProperty)
 
-return Meta :: FollowAttribute
+return Meta :: FollowProperty

@@ -16,28 +16,41 @@
 -- Imports
 -- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage
 local Constructors = script:WaitForChild("Constructors")
+local Connections = Constructors:WaitForChild("Connections")
+local Declarations = Constructors:WaitForChild("Declarations")
+local Memory = Constructors:WaitForChild("Memory")
+local States = Constructors:WaitForChild("States")
+local Utilities = Constructors:WaitForChild("Utilities")
 local Modules = script:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 
-local New = require(Constructors:WaitForChild("New"))
-local Children = require(Constructors:WaitForChild("Children"))
-local Value = require(Constructors:WaitForChild("Value"))
-local Computed = require(Constructors:WaitForChild("Computed"))
-local Spring = require(Constructors.Animation:WaitForChild("Spring"))
-local Tween = require(Constructors.Animation:WaitForChild("Tween"))
-local Scope = require(Constructors:WaitForChild("Scope"))
-local OnEvent = require(Constructors:WaitForChild("OnEvent"))
-local OnChanged = require(Constructors:WaitForChild("OnChanged"))
-local Attribute = require(Constructors:WaitForChild("Attribute"))
-local OnAttributeChanged = require(Constructors:WaitForChild("OnAttributeChanged"))
-local Lifetime = require(Constructors:WaitForChild("Lifetime"))
-local Rendered = require(Constructors:WaitForChild("Rendered"))
-local FollowProperty = require(Constructors:WaitForChild("FollowProperty"))
-local FollowAttribute = require(Constructors:WaitForChild("FollowAttribute"))
-local GetValue = require(Constructors:WaitForChild("GetValue"))
-local Component = require(Constructors:WaitForChild("Component"))
-local Tags = require(Constructors:WaitForChild("Tags"))
-local SetValue = require(Constructors:WaitForChild("SetValue"))
+local New = require(Declarations:WaitForChild("New"))
+local Children = require(Declarations:WaitForChild("Children"))
+local Value = require(States:WaitForChild("Value"))
+local Computed = require(States:WaitForChild("Computed"))
+local Spring = require(States.Animation:WaitForChild("Spring"))
+local Tween = require(States.Animation:WaitForChild("Tween"))
+local Scope = require(Memory:WaitForChild("Scope"))
+local OnEvent = require(Connections:WaitForChild("OnEvent"))
+local OnChanged = require(Connections:WaitForChild("OnChanged"))
+local Attribute = require(Declarations:WaitForChild("Attribute"))
+local OnAttributeChanged = require(Connections:WaitForChild("OnAttributeChanged"))
+local Lifetime = require(Declarations:WaitForChild("Lifetime"))
+local Rendered = require(States:WaitForChild("Rendered"))
+local FollowProperty = require(Declarations:WaitForChild("FollowProperty"))
+local FollowAttribute = require(Declarations:WaitForChild("FollowAttribute"))
+local GetValue = require(Utilities:WaitForChild("GetValue"))
+local Component = require(Declarations:WaitForChild("Component"))
+local Tags = require(Declarations:WaitForChild("Tags"))
+local SetValue = require(Utilities:WaitForChild("SetValue"))
+local IsState = require(Utilities:WaitForChild("IsState"))
+local IsComponent = require(Utilities:WaitForChild("IsComponent"))
+local LockValue = require(Utilities:WaitForChild("LockValue"))
+local MakeSymbol = require(Utilities:WaitForChild("MakeSymbol"))
+local MakeSignal = require(Utilities:WaitForChild("MakeSignal"))
+local Inspect = require(Utilities:WaitForChild("Inspect"))
+local OnAttached = require(Connections:WaitForChild("OnAttached"))
+local Destroyed = require(Declarations:WaitForChild("Destroyed"))
 
 -- Types extended (private)
 type Seam = {
@@ -79,6 +92,22 @@ type Seam = {
     tags : Tags.Tags,
     SetValue : SetValue.SetValue,
     setValue : SetValue.SetValue,
+    IsState : IsState.IsState,
+    isState : IsState.IsState,
+    IsComponent : IsComponent.IsComponent,
+    isComponent : IsComponent.IsComponent,
+    LockValue : LockValue.LockValue,
+    lockValue : LockValue.LockValue,
+    MakeSymbol : MakeSymbol.MakeSymbol,
+    makeSymbol : MakeSymbol.MakeSymbol,
+    MakeSignal : MakeSignal.MakeSignal,
+    makeSignal : MakeSignal.MakeSignal,
+    Inspect : Inspect.Inspect,
+    inspect : Inspect.Inspect,
+    OnAttached : OnAttached.OnAttached,
+    onAttached : OnAttached.OnAttached,
+    Destroyed : Destroyed.Destroyed,
+    destroyed : Destroyed.Destroyed,
 }
 
 -- Types exported (public)
@@ -107,6 +136,14 @@ export type GetValue = GetValue.GetValue
 export type Component = Component.Component
 export type Tags = Tags.Tags
 export type SetValue = SetValue.SetValue
+export type IsState = IsState.IsState
+export type IsComponent = IsComponent.IsComponent
+export type LockValue = LockValue.LockValue
+export type MakeSymbol = MakeSymbol.MakeSymbol
+export type MakeSignal = MakeSignal.MakeSignal
+export type Inspect = Inspect.Inspect
+export type OnAttached = OnAttached.OnAttached
+export type Destroyed = Destroyed.Destroyed
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -294,6 +331,70 @@ Seam.tags = Tags
 
 Seam.SetValue = SetValue
 Seam.setValue = SetValue
+
+--[=[
+    @prop IsState IsState
+    @within Seam
+]=]
+
+Seam.IsState = IsState
+Seam.isState = IsState
+
+--[=[
+    @prop IsComponent IsComponent
+    @within Seam
+]=]
+
+Seam.IsComponent = IsComponent
+Seam.isComponent = IsComponent
+
+--[=[
+    @prop LockValue LockValue
+    @within Seam
+]=]
+
+Seam.LockValue = LockValue
+Seam.lockValue = LockValue
+
+--[=[
+    @prop MakeSymbol MakeSymbol
+    @within Seam
+]=]
+
+Seam.MakeSymbol = MakeSymbol
+Seam.makeSymbol = MakeSymbol
+
+--[=[
+    @prop MakeSignal MakeSignal
+    @within Seam
+]=]
+
+Seam.MakeSignal = MakeSignal
+Seam.makeSignal = MakeSignal
+
+--[=[
+    @prop Inspect Inspect
+    @within Seam
+]=]
+
+Seam.Inspect = Inspect
+Seam.inspect = Inspect
+
+--[=[
+    @prop OnAttached OnAttached
+    @within Seam
+]=]
+
+Seam.OnAttached = OnAttached
+Seam.onAttached = OnAttached
+
+--[=[
+    @prop Destroyed Destroyed
+    @within Seam
+]=]
+
+Seam.Destroyed = Destroyed
+Seam.destroyed = Destroyed
 
 Init()
 

@@ -11,7 +11,7 @@ local Tags = {}
 export type Tags = (Object : Instance, AddedTags : {string}) -> nil
 
 -- Imports
-local Modules = script.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
 
 -- Variables

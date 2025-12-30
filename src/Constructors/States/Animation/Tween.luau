@@ -17,7 +17,7 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
 -- Imports
-local Modules = script.Parent.Parent.Parent.Modules
+local Modules = script.Parent.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
@@ -61,6 +61,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
     local JanitorInstance = Janitor.new()
+    local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
@@ -106,6 +107,8 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 return CurrentValue
             elseif Index == "Changed" then
                 return ChangedSignal
+            elseif Index == "AttachedToInstance" then
+                return AttachedSignal
             end
 
             return nil
@@ -136,6 +139,8 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
         end,
 
         __call = function(self, Object, Index : string)
+            AttachedSignal:Fire(Object)
+            
             JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     return self.Value
