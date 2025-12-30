@@ -15,7 +15,7 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 local Value = require(script.Parent.Value)
-local GetValue = require(script.Parent.Parent.Declarations.GetValue)
+local GetValue = require(script.Parent.Parent.Utilities.GetValue)
 
 -- Variables
 local ClassSymbol = Symbol.new("Computed")
