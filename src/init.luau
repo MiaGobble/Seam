@@ -51,6 +51,7 @@ local MakeSignal = require(Utilities:WaitForChild("MakeSignal"))
 local Inspect = require(Utilities:WaitForChild("Inspect"))
 local OnAttached = require(Connections:WaitForChild("OnAttached"))
 local Destroyed = require(Declarations:WaitForChild("Destroyed"))
+local EventSequence = require(Declarations:WaitForChild("EventSequence"))
 
 -- Types extended (private)
 type Seam = {
@@ -108,6 +109,8 @@ type Seam = {
     onAttached : OnAttached.OnAttached,
     Destroyed : Destroyed.Destroyed,
     destroyed : Destroyed.Destroyed,
+    EventSequence : EventSequence.EventSequence,
+    eventSequence : EventSequence.EventSequence
 }
 
 -- Types exported (public)
@@ -144,6 +147,7 @@ export type MakeSignal = MakeSignal.MakeSignal
 export type Inspect = Inspect.Inspect
 export type OnAttached = OnAttached.OnAttached
 export type Destroyed = Destroyed.Destroyed
+export type EventSequence = EventSequence.EventSequence
 
 export type BaseState<T> = Types.BaseState<T>
 export type Child = Types.Child
@@ -395,6 +399,14 @@ Seam.onAttached = OnAttached
 
 Seam.Destroyed = Destroyed
 Seam.destroyed = Destroyed
+
+--[=[
+    @prop EventSequence EventSequence
+    @within Seam
+]=]
+
+Seam.EventSequence = EventSequence
+Seam.eventSequence = EventSequence
 
 Init()
 
