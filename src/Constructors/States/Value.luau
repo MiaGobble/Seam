@@ -10,7 +10,7 @@ local Value = {}
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
@@ -113,7 +113,7 @@ end
 ]=]
 
 function Value:__call(ThisValue : any)
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("Value")
@@ -135,7 +135,7 @@ function Value:__call(ThisValue : any)
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(_)
-            JanitorInstance:Destroy()
+            TroveInstance:Destroy()
         end
     }, {
         __index = function(_, Index : string)
@@ -219,7 +219,7 @@ function Value:__call(ThisValue : any)
 
             AttachedSignal:Fire(Object)
 
-            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
+            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     if typeof(ThisValue) == "table" then
                         return DeepCopyTable(ThisValue)

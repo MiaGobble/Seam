@@ -10,7 +10,7 @@ local Computed = {}
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
@@ -32,7 +32,7 @@ export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T
 
 function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
     -- This shit has caused me so much pain
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
     local UsedValues = {}
     local CurrentValue = nil
@@ -50,7 +50,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             UsedValues[ThisValue] = ThisValue
 
-            JanitorInstance:Add(ThisValue.Changed:Connect(function()
+            TroveInstance:Add(ThisValue.Changed:Connect(function()
                 CurrentValue = Callback(Use)
                 ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
             end))
@@ -61,13 +61,13 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
-            JanitorInstance:Destroy()
+            TroveInstance:Destroy()
         end,
     }, {
         __call = function(_, Object : Instance, Index : string)
             AttachedSignal:Fire(Object)
 
-            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
+            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     -- We don't want to re-calculate the computed when the states haven't changed,
                     -- so let's just force-calculate only when it's first checked

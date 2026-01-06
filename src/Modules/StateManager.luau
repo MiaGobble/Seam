@@ -11,7 +11,7 @@ local StateManager = {}
 local RunService = game:GetService("RunService")
 
 -- Imports
-local Janitor = require(script.Parent.Janitor)
+local Trove = require(script.Parent.Trove)
 local IsValueChanged = require(script.Parent.IsValueChanged)
 local GetValue = require(script.Parent.Parent.Constructors.Utilities.GetValue)
 
@@ -32,17 +32,17 @@ end
     
     @param Object any -- The object to attach the state to
     @param StateInstance any -- The state instance containing the value and property name
-    @return Janitor -- A Janitor instance managing the connections
+    @return Trove -- A Trove instance managing the connections
 ]=]
 
 function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
 
     if ObjectType == "Instance" then
         local LastValue = nil
 
-        JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        TroveInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
@@ -58,16 +58,16 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
         end))
 
         task.defer(function()
-            JanitorInstance:Add(Object.AncestryChanged:Connect(function()
+            TroveInstance:Add(Object.AncestryChanged:Connect(function()
                 if not Object:IsDescendantOf(game) then
-                    JanitorInstance:Destroy()
+                    TroveInstance:Destroy()
                 end
             end))
         end)
     elseif ObjectType == "SeamObject" then
         local LastValue = nil
 
-        JanitorInstance:Add(RunService.RenderStepped:Connect(function()
+        TroveInstance:Add(RunService.RenderStepped:Connect(function()
             local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
@@ -85,7 +85,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
         error("Attempted to attach non-state to object:\n" .. debug.traceback())
     end
 
-    return JanitorInstance
+    return TroveInstance
 end
 
 return StateManager

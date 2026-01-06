@@ -6,7 +6,7 @@
     Some credits for internal modules:
     - iGottic (creator of this framework)
     - Elttob (UnpackType, PackType)
-    - Validark, pobammer, codesenseAye (Janitor)
+    - Sleitnick (Trove)
     - bottosson (Oklab color space)
 
     @class Seam

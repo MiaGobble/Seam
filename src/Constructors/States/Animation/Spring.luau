@@ -19,7 +19,7 @@ local Modules = script.Parent.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
@@ -82,14 +82,14 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Spring")
 
-    JanitorInstance:Add(RunService.PreRender:Connect(function()
+    TroveInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
 
         for Index, Spring in UnpackedSprings do
@@ -116,8 +116,8 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function(self)
             UnpackedSprings = nil
-            JanitorInstance:Destroy()
-            JanitorInstance = nil
+            TroveInstance:Destroy()
+            TroveInstance = nil
         end
     }, {
         __index = function(self, Index : string)
@@ -186,7 +186,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             AttachedSignal:Fire(Object)
             
-            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
+            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     ChangedSignal:Fire("Value")
                     return self.Value
