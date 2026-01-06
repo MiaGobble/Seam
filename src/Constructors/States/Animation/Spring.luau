@@ -42,8 +42,8 @@ local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, C
 
 	local Time = os.clock() - Tick0
 
-	if (Dampening >= 1) then -- When overdamped or critically damped
-		local EulersFastTime = math.pow(EULERS_NUMBER, (Speed * Time))
+	if Dampening >= 1 then -- When overdamped or critically dampened
+		local EulersFastTime = math.pow(EULERS_NUMBER, Speed * Time)
 
 		return ((Coordinate1 + Coordinate2 * Speed * Time) / EulersFastTime + Position0), -- POSITION
 			((Coordinate2 * Speed * (1 - Time) - Coordinate1) / EulersFastTime) -- VELOCITY
@@ -151,6 +151,10 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
                 for Index, Spring in UnpackedSprings do
+                    if Spring.Position0 == UnpackedNewValue[Index] then
+                        continue
+                    end
+
                     local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
 
                     Spring.Tick0, Spring.Position0 = os.clock(), UnpackedNewValue[Index]
