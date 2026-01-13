@@ -6,7 +6,7 @@
     Some credits for internal modules:
     - iGottic (creator of this framework)
     - Elttob (UnpackType, PackType)
-    - Sleitnick (Trove)
+    - Sleitnick (Trove, Signal)
     - bottosson (Oklab color space)
 
     @class Seam
@@ -235,28 +235,6 @@ Seam.onEvent = OnEvent
 
 Seam.OnChanged = OnChanged
 Seam.onChanged = OnChanged
-
---[=[
-    @prop DeclareComponent DeclareComponent
-    @within Seam
-]=]
-
-Seam.DeclareComponent = function()
-    error("DeclareComponent has been removed in favor of the new component system. See documentation for more details.")
-end
-
-Seam.declareComponent = Seam.DeclareComponent
-
---[=[
-    @prop From From
-    @within Seam
-]=]
-
-Seam.From = function()
-    error("From has been removed in favor of the new component system. See documentation for more details.")
-end
-
-Seam.from = Seam.From
 
 --[=[
     @prop Attribute Attribute
