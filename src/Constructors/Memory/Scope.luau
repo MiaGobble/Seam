@@ -9,7 +9,7 @@ local Scope = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 local Computed = require(script.Parent.Parent.States.Computed)
@@ -80,7 +80,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     
         return function(_, ...)
             -- Seam things are called as functions, so this is a wrapper
-            -- function that puts any created instances into the janitor
+            -- function that puts any created instances into the trove
             local Tuple = nil
 
             if typeof(Object) == "function" then
@@ -103,9 +103,9 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
                 return
             end
 
-            -- But yeah, let's add created things to the janitor
+            -- But yeah, let's add created things to the trove
             for _, Value in Tuple do
-                self.Janitor:Add(Value)
+                self.Trove:Add(Value)
             end
     
             -- Unpack the tuple and return it ALLLLLLLL
@@ -125,29 +125,29 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
 
         local NewScope = Meta(NewScopedObjects) -- Make a new scope
-        self.Janitor:Add(NewScope) -- Add the new sub-scope to the parent janitor
+        self.Trove:Add(NewScope) -- Add the new sub-scope to the parent trove
 
         return NewScope
     end
 
     function selfClass:AddObject(Object : any)
-        self.Janitor:Add(Object)
+        self.Trove:Add(Object)
     end
 
     function selfClass:RemoveObject(Object : any)
         Object:Destroy()
-        self.Janitor[Object] = nil
+        self.Trove[Object] = nil
     end
 
     function selfClass:Destroy()
-        self.Janitor:Destroy()
-        self.Janitor = nil
+        self.Trove:Destroy()
+        self.Trove = nil
     end
 
     local Object = setmetatable(selfClass, selfMeta)
 
     Object.ScopedObjects = ScopedObjects
-    Object.Janitor = Janitor.new()
+    Object.Trove = Trove.new()
 
     return Object
 end

@@ -1,4 +1,4 @@
--- Author: Unknown, modified by iGottic
+-- Author: Sleitnick, modified by iGottic
 
 --[=[
     @class Signal

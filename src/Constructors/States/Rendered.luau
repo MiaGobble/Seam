@@ -10,7 +10,7 @@ local Rendered = {}
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
@@ -30,19 +30,19 @@ export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance
 
 function Rendered:__call(Callback : () -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("RenderedInstance")
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
-            JanitorInstance:Destroy()
+            TroveInstance:Destroy()
         end
     }, {
         __call = function(_, Object : Instance, Index : string)
             AttachedSignal:Fire(Object)
             
-            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
+            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = Callback,
                 PropertyName = Index
             }))

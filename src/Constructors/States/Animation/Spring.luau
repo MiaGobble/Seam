@@ -8,7 +8,6 @@
 local Spring = {}
 
 -- Constants
-local EULERS_NUMBER = 2.71828
 local EPSILON = 0.001
 
 -- Services
@@ -19,7 +18,7 @@ local Modules = script.Parent.Parent.Parent.Parent.Modules
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
-local Janitor = require(Modules.Janitor)
+local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
@@ -36,27 +35,54 @@ export type SpringInstance<T> = {
 
 export type SpringConstructor<T> = (Value : Types.BaseState<T> | any, Speed : number, Dampening : number) -> SpringInstance<T>
 
-local function GetPositionDerivative(Speed, Dampening, Position0, Coordinate1, Coordinate2, Tick0)
-    -- I copied this spring math from another module I did a long time ago,
-    -- so let's hope it doesn't explode.
+local function GetPositionAndVelocity(OldPosition : number, OldVelocity : number, Target : number, Dampening : number, Speed : number, TimeStarted : number) : (number, number)
+    local TimePassed = os.clock() - TimeStarted
+    local TimeValue = TimePassed * Speed
+    local DampeningSquared = Dampening ^ 2
+    local HighSpeedTime = nil
+    local Cosine = nil
+    local Sine = nil
 
-	local Time = os.clock() - Tick0
+    if DampeningSquared < 1 then
+        -- Under dampened
 
-	if (Dampening >= 1) then -- When overdamped or critically damped
-		local EulersFastTime = math.pow(EULERS_NUMBER, (Speed * Time))
+        HighSpeedTime = (1 - DampeningSquared) ^ 0.5
 
-		return ((Coordinate1 + Coordinate2 * Speed * Time) / EulersFastTime + Position0), -- POSITION
-			((Coordinate2 * Speed * (1 - Time) - Coordinate1) / EulersFastTime) -- VELOCITY
-	else -- When underdamped
-		local High = math.sqrt(1 - Dampening ^ 2)
+        local EulersFastTime = math.exp(-Dampening * TimeValue) / HighSpeedTime
+        Cosine = EulersFastTime * math.cos(HighSpeedTime * TimeValue)
+        Sine = EulersFastTime * math.sin(HighSpeedTime * TimeValue)
+    elseif DampeningSquared == 1 then
+        -- Critically dampened
 
-		local HighSpeedTime = Speed * High * Time
-		local DampenedSpeedTime = math.pow(EULERS_NUMBER, Speed * Dampening * Time)
-		local SineHighSpeedTime, CosineHighSpeedTime = math.sin(HighSpeedTime), math.cos(HighSpeedTime)
+        HighSpeedTime = 1
 
-		return ((Coordinate1 * CosineHighSpeedTime + Coordinate2 * SineHighSpeedTime) / DampenedSpeedTime + Position0),  -- POSITION
-			(Speed * ((High * Coordinate2 - Dampening * Coordinate1) * CosineHighSpeedTime - (High * Coordinate1 + Dampening * Coordinate1) * SineHighSpeedTime) / DampenedSpeedTime) -- VELOCITY
-	end
+        local EulersFastTime = math.exp(-Dampening * TimeValue)
+        Cosine = EulersFastTime
+        Sine = EulersFastTime * TimeValue
+    else
+        -- Over dampened
+
+        HighSpeedTime = (DampeningSquared - 1) ^ 0.5
+        Cosine = math.exp((-Dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) + math.exp((-Dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
+        Sine = math.exp((-Dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) - math.exp((-Dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
+    end
+
+    local Value0 = {
+        HighSpeedTime * Cosine + Dampening * Sine,
+        1 - (HighSpeedTime * Cosine + Dampening * Sine),
+        Sine / Speed,
+    }
+
+    local Value1 = {
+        -Speed * Sine,
+        Speed * Sine,
+        HighSpeedTime * Cosine - Dampening * Sine,
+    }
+
+    local Position = Value0[1] * OldPosition + Value0[2] * Target + Value0[3] * OldVelocity
+    local Velocity = Value1[1] * OldPosition + Value1[2] * Target + Value1[3] * OldVelocity
+
+    return Position, Velocity
 end
 
 local function ConvertValueToUnpackedSprings(Value : any)
@@ -64,7 +90,12 @@ local function ConvertValueToUnpackedSprings(Value : any)
     local UnpackedValue = UnpackType(Value, ValueType)
 
     for Index, Element in UnpackedValue do
-        UnpackedValue[Index] = {Position0 = Element, Coordinate1 = 0, Coordinate2 = 0, Velocity = 0, Tick0 = os.clock()}
+        UnpackedValue[Index] = {
+            StartingPosition = Element,
+            Velocity = 0,
+            StartingTime = os.clock(),
+            Target = Element,
+        }
     end
 
     return UnpackedValue
@@ -82,23 +113,23 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
-    local JanitorInstance = Janitor.new()
+    local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Spring")
 
-    JanitorInstance:Add(RunService.PreRender:Connect(function()
+    TroveInstance:Add(RunService.PreRender:Connect(function()
         local PackedValues = {}
 
         for Index, Spring in UnpackedSprings do
-            local Position, _ = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+            local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
 
 			if math.abs(Position) <= EPSILON then
 				Position = 0
-			elseif math.abs(Position - Spring.Position0) <= EPSILON then
-				Position = Spring.Position0
+			elseif math.abs(Position - Spring.Target) <= EPSILON then
+				Position = Spring.Target
 			end
 
             PackedValues[Index] = Position
@@ -114,13 +145,13 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     end))
 
     local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function(self)
+        Destroy = function()
             UnpackedSprings = nil
-            JanitorInstance:Destroy()
-            JanitorInstance = nil
+            TroveInstance:Destroy()
+            TroveInstance = nil
         end
     }, {
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
@@ -129,7 +160,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local PackedValues = {}
 
                 for Index, Spring in UnpackedSprings do
-                    local _, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
 
                     PackedValues[Index] = Velocity
                 end
@@ -151,26 +182,22 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
                 for Index, Spring in UnpackedSprings do
-                    local Position, Velocity = GetPositionDerivative(Speed, Dampening, Spring.Position0, Spring.Coordinate1, Spring.Coordinate2, Spring.Tick0)
+                    local Position, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
 
-                    Spring.Tick0, Spring.Position0 = os.clock(), UnpackedNewValue[Index]
-                    Spring.Coordinate1 = Position - Spring.Position0
-
-                    if (Dampening >= 1) then
-                        Spring.Coordinate2 = Spring.Coordinate1 + Velocity / Speed
-                    else
-                        local High = math.sqrt(1 - Dampening * Dampening)
-
-                        Spring.Coordinate2 = Dampening / High * Spring.Coordinate1 + Velocity / (Speed * High)
-                    end
+                    Spring.StartingPosition = Position
+                    Spring.Velocity = Velocity
+                    Spring.StartingTime = os.clock()
+                    Spring.Target = UnpackedNewValue[Index]
                 end
             elseif Index == "Value" then
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
                 for Index, Spring in UnpackedSprings do
-                    --Spring.Position0 = UnpackedNewValue[Index]
-					Spring.Coordinate1, Spring.Coordinate2, Spring.Velocity = UnpackedNewValue[Index] - Spring.Position0, 0, 0
-                    Spring.Tick0 = os.clock()
+                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+
+                    Spring.StartingPosition = UnpackedNewValue[Index]
+                    Spring.Velocity = Velocity
+                    Spring.StartingTime = os.clock()
                 end
             elseif Index == "Dampening" then
                 Dampening = NewValue
@@ -182,7 +209,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         __call = function(self, Object, Index : string)
             AttachedSignal:Fire(Object)
             
-            JanitorInstance:Add(StateManager:AttachStateToObject(Object, {
+            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     ChangedSignal:Fire("Value")
                     return self.Value
