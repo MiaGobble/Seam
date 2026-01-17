@@ -23,6 +23,7 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
+local UpdateSignals = require(Modules.UpdateSignals)
 
 -- Variables
 local ClassSymbol = Symbol.new("Spring")
@@ -120,7 +121,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Spring")
 
-    TroveInstance:Add(RunService.PreRender:Connect(function()
+    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         local PackedValues = {}
 
         for Index, Spring in UnpackedSprings do

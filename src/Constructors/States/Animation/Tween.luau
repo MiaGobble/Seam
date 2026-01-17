@@ -26,6 +26,7 @@ local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
+local UpdateSignals = require(Modules.UpdateSignals)
 
 -- Variables
 local ClassSymbol = Symbol.new("Tween")
@@ -67,7 +68,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Tween")
 
-    TroveInstance:Add(RunService.PreRender:Connect(function()
+    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         local PackedValues = {}
 
         for Index, Tween in UnpackedTweens do

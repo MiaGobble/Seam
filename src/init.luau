@@ -46,8 +46,6 @@ local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
 local IsComponent = require(Utilities:WaitForChild("IsComponent"))
 local LockValue = require(Utilities:WaitForChild("LockValue"))
-local MakeSymbol = require(Utilities:WaitForChild("MakeSymbol"))
-local MakeSignal = require(Utilities:WaitForChild("MakeSignal"))
 local Inspect = require(Utilities:WaitForChild("Inspect"))
 local OnAttached = require(Connections:WaitForChild("OnAttached"))
 local Destroyed = require(Declarations:WaitForChild("Destroyed"))
@@ -99,10 +97,6 @@ type Seam = {
     isComponent : IsComponent.IsComponent,
     LockValue : LockValue.LockValue,
     lockValue : LockValue.LockValue,
-    MakeSymbol : MakeSymbol.MakeSymbol,
-    makeSymbol : MakeSymbol.MakeSymbol,
-    MakeSignal : MakeSignal.MakeSignal,
-    makeSignal : MakeSignal.MakeSignal,
     Inspect : Inspect.Inspect,
     inspect : Inspect.Inspect,
     OnAttached : OnAttached.OnAttached,
@@ -142,8 +136,6 @@ export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
 export type LockValue = LockValue.LockValue
-export type MakeSymbol = MakeSymbol.MakeSymbol
-export type MakeSignal = MakeSignal.MakeSignal
 export type Inspect = Inspect.Inspect
 export type OnAttached = OnAttached.OnAttached
 export type Destroyed = Destroyed.Destroyed
@@ -337,22 +329,6 @@ Seam.isComponent = IsComponent
 
 Seam.LockValue = LockValue
 Seam.lockValue = LockValue
-
---[=[
-    @prop MakeSymbol MakeSymbol
-    @within Seam
-]=]
-
-Seam.MakeSymbol = MakeSymbol
-Seam.makeSymbol = MakeSymbol
-
---[=[
-    @prop MakeSignal MakeSignal
-    @within Seam
-]=]
-
-Seam.MakeSignal = MakeSignal
-Seam.makeSignal = MakeSignal
 
 --[=[
     @prop Inspect Inspect
