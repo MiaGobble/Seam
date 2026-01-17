@@ -14,6 +14,7 @@ local RunService = game:GetService("RunService")
 local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
 local Trove = require(Modules.Trove)
+local UpdateSignals = require(Modules.UpdateSignals)
 local Value = require(script.Parent.Parent.States.Value)
 
 -- Types extended
@@ -67,7 +68,7 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
         CurrentlyPaused = false
         PlayingTrove = Trove.new()
 
-        PlayingTrove:Add(RunService.RenderStepped:Connect(function(Delta : number)
+        PlayingTrove:Add(UpdateSignals.OnFrameUpdate:Connect(function(Delta : number)
             if CurrentlyPaused then
                 return
             end

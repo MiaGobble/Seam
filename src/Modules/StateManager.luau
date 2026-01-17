@@ -14,6 +14,7 @@ local RunService = game:GetService("RunService")
 local Trove = require(script.Parent.Trove)
 local IsValueChanged = require(script.Parent.IsValueChanged)
 local GetValue = require(script.Parent.Parent.Constructors.Utilities.GetValue)
+local UpdateSignals = require(script.Parent.UpdateSignals)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
@@ -42,7 +43,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     if ObjectType == "Instance" then
         local LastValue = nil
 
-        TroveInstance:Add(RunService.RenderStepped:Connect(function()
+        TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
             local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
@@ -67,7 +68,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     elseif ObjectType == "SeamObject" then
         local LastValue = nil
 
-        TroveInstance:Add(RunService.RenderStepped:Connect(function()
+        TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
             local NewValue = GetValue(StateInstance)
 
             if typeof(NewValue) == "function" then
