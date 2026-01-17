@@ -15,6 +15,8 @@
 
 -- Imports
 -- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage
+local RunService = game:GetService("RunService")
+
 local Constructors = script:WaitForChild("Constructors")
 local Connections = Constructors:WaitForChild("Connections")
 local Declarations = Constructors:WaitForChild("Declarations")
@@ -148,6 +150,10 @@ export type Child = Types.Child
 local Seam : Seam = {} :: Seam
 
 local function Init()
+    if RunService:IsServer() then
+        return -- Don't wait on server
+    end
+
     if not game:IsLoaded() then
         game.Loaded:Wait()
 
