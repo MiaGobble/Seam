@@ -17,18 +17,14 @@ local Trove = require(Modules.Trove)
 local Value = require(script.Parent.Parent.States.Value)
 
 -- Types extended
-export type SequenceKeyframe = {
-    Time : number,
-    ValueSource : Value.ValueInstance<any>?,
-    NewValue : any?,
-    Callback : () -> nil?,
-}
+export type SequenceKeyframe = {number | () -> nil}
 
 export type EventSequenceInstance = {
     Play : (EventSequenceInstance) -> nil,
     Stop : (EventSequenceInstance) -> nil,
     Pause : (EventSequenceInstance) -> nil,
     Resume : (EventSequenceInstance) -> nil,
+    Looped : boolean,
 }
 
 export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
@@ -52,22 +48,16 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
             error("Attmped to pass dictionary for sequence keyframes")
         end
 
-        if not Keyframe.Time then
-            error(`No keyframe time provided for index: {Index}`)
+        if typeof(Keyframe[1]) ~= "number" then
+            error("EventSequenceKeypoint needs a time")
         end
 
-        if Keyframe.ValueSource and Keyframe.NewValue == nil then
-            error(`NewValue was not provided in response to ValueSource for index: {Index}`)
-        end
-
-        if Keyframe.NewValue ~= nil and not Keyframe.ValueSource then
-            error(`ValueSource not provided for NewValue on index: {Index}`)
-        end
-
-        if not Keyframe.ValueSource and not Keyframe.Callback and Keyframe.NewValue == nil then
-            error(`No event data provided for index: {Index}`)
+        if typeof(Keyframe[2]) ~= "function" then
+            error("EventSequenceKeypoint needs callback")
         end
     end
+
+    EventSequenceInstance.Looped = false
 
     function EventSequenceInstance.Play()
         if PlayingTrove then
@@ -89,21 +79,19 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
                     continue
                 end
 
-                if CurrentTime >= Keyframe.Time then
+                if CurrentTime >= Keyframe[1] then
                     PlayedIndexes[Index] = true
-
-                    if Keyframe.ValueSource then
-                        Keyframe.ValueSource.Value = Keyframe.NewValue
-                    end
-
-                    if Keyframe.Callback then
-                        task.spawn(Keyframe.Callback)
-                    end
+                    task.spawn(Keyframe[2])
                 end
             end
 
             if #SequenceKeyframes == #PlayedIndexes then
-                PlayingTrove:Destroy()
+                if EventSequenceInstance.Looped then
+                    CurrentTime = 0
+                    table.clear(PlayedIndexes)
+                else
+                    PlayingTrove:Destroy()
+                end
             end
         end))
 
