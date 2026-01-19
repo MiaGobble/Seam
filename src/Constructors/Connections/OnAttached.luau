@@ -1,18 +1,9 @@
 -- Author: iGottic
 
---[=[
-    @class OnAttached
-    @since 0.3.3
-]=]
-
 local OnAttached = {}
 
 -- Types
 export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
-
---[=[
-    Connects to a changed event from an instance.
-]=]
 
 function OnAttached:__call(Object : any, Callback : (AttachedInstance : Instance) -> nil)
     return (Object.AttachedToInstance :: RBXScriptSignal):Connect(function(...)

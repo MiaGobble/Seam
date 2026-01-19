@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class IsState
-    @since 0.3.3
-]=]
-
 local IsState = {}
 
 -- Types

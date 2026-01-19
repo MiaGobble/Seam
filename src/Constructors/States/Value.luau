@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Value
-    @since 0.0.1
-]=]
-
 local Value = {}
 
 -- Imports
@@ -104,13 +99,6 @@ local function DeepCopyTable(This : {[any] : any})
 
     return NewTable
 end
-
---[=[
-    Creates a new value object. Enforces type checking based on initial value type.
-
-    @param Value any -- The initial value
-    @return {Value : any} -- The value object
-]=]
 
 function Value:__call(ThisValue : any)
     local TroveInstance = Trove.new()
@@ -235,10 +223,6 @@ function Value:__call(ThisValue : any)
 
     return ActiveValue :: ValueInstance<any>
 end
-
---[=[
-    @ignore
-]=]
 
 function Value:__index(Index : string)
     if Index == "__SEAM_INDEX" then

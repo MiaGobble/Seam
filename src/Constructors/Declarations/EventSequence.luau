@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class EventSequence
-    @since 0.3.4
-]=]
-
 local EventSequence = {}
 
 -- Services
@@ -32,10 +27,6 @@ export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
 
 -- Variables
 local ClassSymbol = Symbol.new("EventSequence")
-
---[=[
-    Adds tags to an instance
-]=]
 
 function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSequenceInstance
     local CurrentTime = 0

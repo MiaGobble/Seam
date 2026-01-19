@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Computed
-    @since 0.0.1
-]=]
-
 local Computed = {}
 
 -- Imports
@@ -23,12 +18,6 @@ local ClassSymbol = Symbol.new("Computed")
 -- Types Extended
 export type ComputedInstance<T> = {} & Types.BaseState<T>
 export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ComputedInstance<T>
-
---[=[
-    Constructs a Computed instance, which actively computes a value based on a given function.
-
-    @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
-]=]
 
 function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
     -- This shit has caused me so much pain
@@ -117,10 +106,6 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
     return ActiveComputation :: ComputedInstance<any>
 end
-
---[=[
-    @ignore
-]=]
 
 function Computed:__index(Key : string)
     if Key == "__SEAM_INDEX" then

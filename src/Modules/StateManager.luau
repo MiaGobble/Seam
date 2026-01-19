@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class StateManager
-    @since 0.0.1
-]=]
-
 local StateManager = {}
 
 -- Services
@@ -27,14 +22,6 @@ local function GetObjectType(Object : any) : string
 
     return "unknown"
 end
-
---[=[
-    Attaches a state instance to a given object, updating the object's property on each render step.
-    
-    @param Object any -- The object to attach the state to
-    @param StateInstance any -- The state instance containing the value and property name
-    @return Trove -- A Trove instance managing the connections
-]=]
 
 function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)

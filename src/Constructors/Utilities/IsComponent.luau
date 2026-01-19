@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class IsComponent
-    @since 0.3.3
-]=]
-
 local IsComponent = {}
 
 -- Types

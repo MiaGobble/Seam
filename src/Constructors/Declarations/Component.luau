@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Component
-    @since 0.3.0
-]=]
-
 -- Imports
 local Scope = require(script.Parent.Parent.Memory.Scope)
 local Symbol = require(script.Parent.Parent.Parent.Modules.Symbol)

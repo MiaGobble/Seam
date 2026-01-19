@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Scope
-    @since 0.0.1
-]=]
-
 local Scope = {}
 
 -- Imports
@@ -37,12 +32,6 @@ export type ScopeInstance = {
 }
 
 export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
-
---[=[
-    Constructs a Computed instance, which actively computes a value based on a given function.
-
-    @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
-]=]
 
 local Meta = setmetatable({}, Scope)
 

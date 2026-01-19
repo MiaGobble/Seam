@@ -1,20 +1,9 @@
 -- Author: iGottic
 
---[=[
-    @class OnAttributeChanged
-    @since 0.0.3
-]=]
-
 local OnAttributeChanged = {}
 
 -- Types
 export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
-
---[=[
-    Connects to an attribute change from an instance.
-
-    @param AttributeName string -- The name of the event to connect to
-]=]
 
 function OnAttributeChanged:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {

@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Spring
-    @since 0.0.1
-]=]
-
 local Spring = {}
 
 -- Constants
@@ -229,10 +224,6 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
 
     return ActiveValue :: SpringInstance<any>
 end
-
---[=[
-    @ignore
-]=]
 
 function Spring:__index(Index : string)
     if Index == "__SEAM_OBJECT" then
