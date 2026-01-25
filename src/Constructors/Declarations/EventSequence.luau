@@ -17,6 +17,7 @@ export type EventSequenceInstance = {
     Pause : (EventSequenceInstance) -> nil,
     Resume : (EventSequenceInstance) -> nil,
     Looped : boolean,
+    LoopDelayTime : number,
 }
 
 export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
