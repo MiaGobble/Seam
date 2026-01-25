@@ -1,18 +1,9 @@
 -- Author: iGottic
 
---[=[
-    @class OnChanged
-    @since 0.0.1
-]=]
-
 local OnChanged = {}
 
 -- Types
 export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
-
---[=[
-    Connects to a changed event from an instance.
-]=]
 
 function OnChanged:__call(Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil)
     -- Fortunately, states also have a Changed signal, so this works out perfectly 

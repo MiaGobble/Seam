@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Attribute
-    @since 0.0.3
-]=]
-
 local Attribute = {}
 
 -- Imports
@@ -17,12 +12,6 @@ local ClassSymbol = Symbol.new("Attribute")
 
 -- Types Extended
 export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
-
---[=[
-    Sets an attribute
-
-    @param AttributeName string -- The name of the event to connect to
-]=]
 
 function Attribute:__call(AttributeName : string)
     local EventBinding = setmetatable({}, {

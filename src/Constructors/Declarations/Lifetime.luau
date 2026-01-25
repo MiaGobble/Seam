@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Lifetime
-    @since 0.0.3
-]=]
-
 local Lifetime = {}
 
 -- Types
@@ -19,10 +14,6 @@ local Symbol = require(Modules.Symbol)
 
 -- Variables
 local ClassSymbol = Symbol.new("Lifetime")
-
---[=[
-    Sets a lifetime for an object
-]=]
 
 function Lifetime:__call(Object : Instance, CleanupTime : number)
     -- This is really simple, but the reason I use Debris service

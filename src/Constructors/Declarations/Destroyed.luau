@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Destroyed
-    @since 0.3.3
-]=]
-
 local Destroyed = {}
 
 -- Types
@@ -16,10 +11,6 @@ local Symbol = require(Modules.Symbol)
 
 -- Variables
 local ClassSymbol = Symbol.new("Destroyed")
-
---[=[
-    Sets a lifetime for an object
-]=]
 
 function Destroyed:__call(Object : Instance, Callback : () -> nil)
     Object.Destroying:Once(Callback)

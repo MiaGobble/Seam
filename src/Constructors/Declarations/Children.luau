@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Children
-    @since 0.0.1
-]=]
-
 local Children = {}
 
 -- Imports
@@ -58,13 +53,6 @@ local function GetOldChildren(OldChildren : {Instance}, NewChildren : {Instance}
     return DifferenceSet
 end
 
---[=[
-    Sets the parent of the given children to the given object. To be used in New()
-
-    @param Object Instance -- The object to parent the children to
-    @param Children {[any] : any} -- The children to parent to the object
-]=]
-
 function Children:__call(Object : Instance, Children : Types.BaseState<any> | {any})
     if typeof(Children) ~= "table" then
         -- Children will either be an array or Computed instance, so it must be a table
@@ -101,10 +89,6 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
     -- If it's not a computed instance, just apply the array of children to the parent
     ApplyChildren(Object, Children)
 end
-
---[=[
-    @ignore
-]=]
 
 function Children:__index(Index : string)
     if Index == "__SEAM_INDEX" then

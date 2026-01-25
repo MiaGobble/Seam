@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Rendered
-    @since 0.0.3
-]=]
-
 local Rendered = {}
 
 -- Imports
@@ -21,12 +16,6 @@ local ClassSymbol = Symbol.new("Rendered")
 -- Types Extended
 export type RenderedInstance<T> = {} & Types.BaseState<T>
 export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance<T>
-
---[=[
-    Constructs a Rendered instance, which actively computes a value based on a given function.
-
-    @param Callback (self : Instance, PropertyName : string) -> any? -- The function to compute the value
-]=]
 
 function Rendered:__call(Callback : () -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
@@ -65,10 +54,6 @@ function Rendered:__call(Callback : () -> any?)
 
     return ActiveComputation :: RenderedInstance<any>
 end
-
---[=[
-    @ignore
-]=]
 
 function Rendered:__index(Key : string)
     if Key == "__SEAM_INDEX" then

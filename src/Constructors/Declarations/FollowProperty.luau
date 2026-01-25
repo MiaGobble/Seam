@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class FollowProperty
-    @since 0.0.3
-]=]
-
 local FollowProperty = {}
 
 -- Imports
@@ -17,10 +12,6 @@ local ClassSymbol = Symbol.new("FollowProperty")
 
 -- Types Extended
 export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
-
---[=[
-    @ignore
-]=]
 
 function FollowProperty:__call(PropertyName : string)
     return setmetatable({}, {

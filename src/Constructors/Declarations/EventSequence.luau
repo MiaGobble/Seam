@@ -1,21 +1,12 @@
 -- Author: iGottic
 
---[=[
-    @class EventSequence
-    @since 0.3.4
-]=]
-
 local EventSequence = {}
-
--- Services
-local RunService = game:GetService("RunService")
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
 local Trove = require(Modules.Trove)
 local UpdateSignals = require(Modules.UpdateSignals)
-local Value = require(script.Parent.Parent.States.Value)
 
 -- Types extended
 export type SequenceKeyframe = {number | () -> nil}
@@ -32,10 +23,6 @@ export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
 
 -- Variables
 local ClassSymbol = Symbol.new("EventSequence")
-
---[=[
-    Adds tags to an instance
-]=]
 
 function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSequenceInstance
     local CurrentTime = 0
@@ -59,6 +46,7 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
     end
 
     EventSequenceInstance.Looped = false
+    EventSequenceInstance.LoopDelayTime = 0
 
     function EventSequenceInstance.Play()
         if PlayingTrove then
@@ -88,7 +76,7 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
 
             if #SequenceKeyframes == #PlayedIndexes then
                 if EventSequenceInstance.Looped then
-                    CurrentTime = 0
+                    CurrentTime = -EventSequenceInstance.LoopDelayTime
                     table.clear(PlayedIndexes)
                 else
                     PlayingTrove:Destroy()

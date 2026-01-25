@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class SetValue
-    @since 0.3.1
-]=]
-
 local SetValue = {}
 
 -- Types

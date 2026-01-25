@@ -1,10 +1,5 @@
 -- Author: Sleitnick, modified by iGottic
 
---[=[
-    @class Signal
-    @since 0.0.1
-]=]
-
 local Signal = {}
 Signal.__index = Signal
 
@@ -24,14 +19,6 @@ export type Signal<T...> = {
     DisconnectAll: (self: any) -> ()
 }
 
---[=[
-    Creates a new connection object.
-    
-    @param Signal Signal -- The signal to connect to
-    @param Callback function -- The callback function to call when the signal fires
-    @return Connection -- The connection object
-]=]
-
 function Connection.new(ThisSignal, Callback)
     return setmetatable({
         Signal = ThisSignal,
@@ -39,40 +26,17 @@ function Connection.new(ThisSignal, Callback)
     }, Connection)
 end
 
---[=[
-    Disconnects the connection from the signal.
-    
-    @return nil
-]=]
-
 function Connection.Disconnect(self)
     self.Signal[self] = nil
 end
-
---[=[
-    @ignore
-]=]
 
 function Connection.Destroy(self, ...)
     Connection.Disconnect(self, ...)
 end
 
---[=[
-    Creates a new signal object.
-    
-    @return Signal -- The signal object
-]=]
-
 function Signal.new()
     return setmetatable({} :: any, Signal)
 end
-
---[=[
-    Connects a callback function to the signal.
-    
-    @param Callback function -- The callback function to call when the signal fires
-    @return Connection -- The connection object
-]=]
 
 function Signal.Connect(self, Callback)
     local SelfConnection = Connection.new(self, Callback)
@@ -80,13 +44,6 @@ function Signal.Connect(self, Callback)
     
     return SelfConnection
 end
-
---[=[
-    Connects a callback function to the signal that will only be called once.
-    
-    @param Callback function -- The callback function to call when the signal fires
-    @return Connection -- The connection object
-]=]
 
 function Signal.Once(self, Callback)
     local SelfConnection; SelfConnection = Connection.new(self, function(...)
@@ -99,12 +56,6 @@ function Signal.Once(self, Callback)
     return SelfConnection
 end
 
---[=[
-    Waits for the signal to fire and returns the arguments passed to it.
-    
-    @return T... -- The arguments passed to the signal
-]=]
-
 function Signal.Wait(self)
     local WaitingCoroutine = coroutine.running()
     
@@ -116,22 +67,9 @@ function Signal.Wait(self)
     return coroutine.yield()
 end
 
---[=[
-    Disconnects all connections from the signal.
-    
-    @return nil
-]=]
-
 function Signal.DisconnectAll(self)
     table.clear(self)
 end
-
---[=[
-    Fires the signal with the given arguments.
-    
-    @param ... any -- The arguments to pass to the signal
-    @return nil
-]=]
 
 function Signal.Fire(self, ...)
     if next(self) then

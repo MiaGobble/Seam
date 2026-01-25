@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class New
-    @since 0.0.1
-]=]
-
 local New = {}
 
 -- Imports
@@ -17,13 +12,6 @@ export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?,
 
 -- Variables
 local ClassSymbol = Symbol.new("New")
-
---[=[
-    Constructs a new instance or hydrates an existing one with given properties.
-
-    @param Class string | Instance -- The class name of the instance
-    @return ({[any] : any})) -> Instance -- The function to hydrate the instance properties
-]=]
 
 function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}, ThisScope : Scope.ScopeInstance?)
     local Object = nil
@@ -70,10 +58,6 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
 
     return Object
 end
-
---[=[
-    @ignore
-]=]
 
 function New:__index(Index : string)
     if Index == "__SEAM_OBJECT" then

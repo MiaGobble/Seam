@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Tags
-    @since 0.3.1
-]=]
-
 local Tags = {}
 
 -- Types
@@ -16,10 +11,6 @@ local Symbol = require(Modules.Symbol)
 
 -- Variables
 local ClassSymbol = Symbol.new("Tags")
-
---[=[
-    Adds tags to an instance
-]=]
 
 function Tags:__call(Object : Instance, AddedTags : {string})
     for _, Tag in AddedTags do -- Super simple iteration through strings

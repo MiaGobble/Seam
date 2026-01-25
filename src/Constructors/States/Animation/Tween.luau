@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Tween
-    @since 0.0.1
-]=]
-
 local Tween = {}
 
 -- Constants
@@ -160,10 +155,6 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
 
     return ActiveValue :: TweenInstance<any>
 end
-
---[=[
-    @ignore
-]=]
 
 function Tween:__index(Index : string)
     if Index == "__SEAM_OBJECT" then

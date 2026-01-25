@@ -1,20 +1,9 @@
 -- Author: iGottic
 
---[=[
-    @class OnEvent
-    @since 0.0.1
-]=]
-
 local OnEvent = {}
 
 -- Types
 export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
-
---[=[
-    Connects to an event from an instance.
-
-    @param EventName string -- The name of the event to connect to
-]=]
 
 function OnEvent:__call(EventName : string)
     local EventBinding = setmetatable({}, {

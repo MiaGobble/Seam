@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[=[
-    @class Inspect
-    @since 0.3.3
-]=]
-
 local Inspect = {}
 
 -- Types

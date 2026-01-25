@@ -1,16 +1,7 @@
 --[=[
-    Documentation: https://www.seaminterface.com/
-
-    The main framework module for Seam.
-
-    Some credits for internal modules:
-    - iGottic (creator of this framework)
-    - Elttob (UnpackType, PackType)
-    - Sleitnick (Trove, Signal)
-    - bottosson (Oklab color space)
+    Documentation: https://seam.igottic.com/
 
     @class Seam
-    @author iGottic
 ]=]
 
 -- Imports
@@ -163,206 +154,256 @@ local function Init()
 end
 
 --[=[
-    @prop New New
+    @method New
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.New = New
 Seam.new = New
 
 --[=[
-    @prop Children Children
+    @method Children
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Children = Children
 Seam.children = Children
 
 --[=[
-    @prop Value Value
+    @method Value
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Value = Value
 Seam.value = Value
 
 --[=[
-    @prop Computed Computed
+    @method Computed
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Computed = Computed
 Seam.computed = Computed
 
 --[=[
-    @prop Spring Spring
+    @method Spring
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Spring = Spring
 Seam.spring = Spring
 
 --[=[
-    @prop Tween Tween
+    @method Tween
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Tween = Tween
 Seam.tween = Tween
 
 --[=[
-    @prop Scope Scope
+    @method Scope
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Scope = Scope
 Seam.scope = Scope
 
 --[=[
-    @prop OnEvent OnEvent
+    @method OnEvent
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.OnEvent = OnEvent
 Seam.onEvent = OnEvent
 
 --[=[
-    @prop OnChange OnChanged
+    @method OnChange
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.OnChanged = OnChanged
 Seam.onChanged = OnChanged
 
 --[=[
-    @prop Attribute Attribute
+    @method Attribute
     @within Seam
 ]=]
 Seam.Attribute = Attribute
 Seam.attribute = Attribute
 
 --[=[
-    @prop OnAttributeChanged OnAttributeChanged
+    @method OnAttributeChanged
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 Seam.OnAttributeChanged = OnAttributeChanged
 Seam.onAttributeChanged = OnAttributeChanged
 
 --[=[
-    @prop Lifetime Lifetime
+    @method Lifetime
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Lifetime = Lifetime
 Seam.lifetime = Lifetime
 
 --[=[
-    @prop Rendered Rendered
+    @method Rendered
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Rendered = Rendered
 Seam.rendered = Rendered
 
 --[=[
-    @prop FollowProperty FollowProperty
+    @method FollowProperty
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.FollowProperty = FollowProperty
 Seam.followProperty = FollowProperty
 
 --[=[
-    @prop FollowAttribute FollowAttribute
+    @method FollowAttribute
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.FollowAttribute = FollowAttribute
 Seam.followAttribute = FollowAttribute
 
 --[=[
-    @prop GetValue GetValue
+    @method GetValue
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.GetValue = GetValue
 Seam.getValue = GetValue
 
 --[=[
-    @prop Component Component
+    @method Component
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Component = Component
 Seam.component = Component
 
 --[=[
-    @prop Tags Tags
+    @method Tags
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Tags = Tags
 Seam.tags = Tags
 
 --[=[
-    @prop SetValue SetValue
+    @method SetValue
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.SetValue = SetValue
 Seam.setValue = SetValue
 
 --[=[
-    @prop IsState IsState
+    @method IsState
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.IsState = IsState
 Seam.isState = IsState
 
 --[=[
-    @prop IsComponent IsComponent
+    @method IsComponent
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.IsComponent = IsComponent
 Seam.isComponent = IsComponent
 
 --[=[
-    @prop LockValue LockValue
+    @method LockValue
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.LockValue = LockValue
 Seam.lockValue = LockValue
 
 --[=[
-    @prop Inspect Inspect
+    @method Inspect
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Inspect = Inspect
 Seam.inspect = Inspect
 
 --[=[
-    @prop OnAttached OnAttached
+    @method OnAttached
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.OnAttached = OnAttached
 Seam.onAttached = OnAttached
 
 --[=[
-    @prop Destroyed Destroyed
+    @method Destroyed
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Destroyed = Destroyed
 Seam.destroyed = Destroyed
 
 --[=[
-    @prop EventSequence EventSequence
+    @method EventSequence
     @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.EventSequence = EventSequence
