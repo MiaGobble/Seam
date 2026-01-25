@@ -4,10 +4,11 @@
     @class Seam
 ]=]
 
--- Imports
--- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage
+-- Services
 local RunService = game:GetService("RunService")
 
+-- Imports
+-- Note: I opt for WaitForChild to load stuff; this helps prevent edge case errors where children don't load in time, particularly when loading from ReplicatedStorage in a script located in ReplicatedFirst
 local Constructors = script:WaitForChild("Constructors")
 local Connections = Constructors:WaitForChild("Connections")
 local Declarations = Constructors:WaitForChild("Declarations")
@@ -16,7 +17,6 @@ local States = Constructors:WaitForChild("States")
 local Utilities = Constructors:WaitForChild("Utilities")
 local Modules = script:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
-
 local New = require(Declarations:WaitForChild("New"))
 local Children = require(Declarations:WaitForChild("Children"))
 local Value = require(States:WaitForChild("Value"))
@@ -44,7 +44,7 @@ local OnAttached = require(Connections:WaitForChild("OnAttached"))
 local Destroyed = require(Declarations:WaitForChild("Destroyed"))
 local EventSequence = require(Declarations:WaitForChild("EventSequence"))
 
--- Types extended (private)
+-- Types extended
 type Seam = {
     New : New.NewConstructor,
     Children : Children.Children,
@@ -74,7 +74,8 @@ type Seam = {
     EventSequence : EventSequence.EventSequence,
 }
 
--- Types exported (public)
+export type BaseState<T> = Types.BaseState<T>
+export type Child = Types.Child
 export type NewConstructor = New.NewConstructor
 export type Children = Children.Children
 export type Value<T> = Value.ValueInstance<T>
@@ -108,9 +109,6 @@ export type OnAttached = OnAttached.OnAttached
 export type Destroyed = Destroyed.Destroyed
 export type EventSequence = EventSequence.EventSequence
 
-export type BaseState<T> = Types.BaseState<T>
-export type Child = Types.Child
-
 -- Declaration
 local Seam : Seam = {} :: Seam
 
@@ -128,7 +126,7 @@ local function Init()
     end
 
     if RunService:IsServer() then
-        return -- Don't wait on server
+        return -- Don't wait for game.Loaded on server
     end
 
     if not game:IsLoaded() then
@@ -374,12 +372,3 @@ Seam.EventSequence = EventSequence
 Init()
 
 return Seam :: Seam
-
--- DEV NOTES --
-
---[[
-    I made this framework to be as simple as possible behind the scenes, so ideally it should be easy to understand when compared to other frameworks.
-    I'm also trying to integrate this into new and experimental projects of mine to give it a spin, so along the way I'll add features that I think are useful to me.
-
-    If you feel something needs more documentation, please let me know! Find current documentation at https://www.seaminterface.com/
---]]
