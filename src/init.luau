@@ -43,6 +43,7 @@ local Inspect = require(Utilities:WaitForChild("Inspect"))
 local OnAttached = require(Connections:WaitForChild("OnAttached"))
 local Destroyed = require(Declarations:WaitForChild("Destroyed"))
 local EventSequence = require(Declarations:WaitForChild("EventSequence"))
+local ForPairs = require(States:WaitForChild("ForPairs"))
 
 -- Types extended
 type Seam = {
@@ -72,6 +73,7 @@ type Seam = {
     OnAttached : OnAttached.OnAttached,
     Destroyed : Destroyed.Destroyed,
     EventSequence : EventSequence.EventSequence,
+    ForPairs : ForPairs.ForPairsConstructor<any>
 }
 
 export type BaseState<T> = Types.BaseState<T>
@@ -108,6 +110,8 @@ export type Inspect = Inspect.Inspect
 export type OnAttached = OnAttached.OnAttached
 export type Destroyed = Destroyed.Destroyed
 export type EventSequence = EventSequence.EventSequence
+export type ForPairs<T> = ForPairs.ForPairsInstance<T>
+export type ForPairsInstance<T> = ForPairs.ForPairsInstance<T>
 
 -- Declaration
 local Seam : Seam = {} :: Seam
@@ -368,6 +372,15 @@ Seam.Destroyed = Destroyed
 ]=]
 
 Seam.EventSequence = EventSequence
+
+--[=[
+    @method ForPairs
+    @within Seam
+
+    Visit https://seam.igottic.com/ for more info.
+]=]
+
+Seam.ForPairs = ForPairs
 
 Init()
 
