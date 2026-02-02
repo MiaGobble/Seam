@@ -20,6 +20,7 @@ function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((V
     local LastValues = {}
     local OutputtedValues = {}
 
+    -- ForPairs is literally just Computed behind the scenes, with the exception that it checks for key differences
     local ActiveComputation = Computed(function(Use)
         local ThisTable = Use(TrackedValue)
         local ThisOuput = {}
