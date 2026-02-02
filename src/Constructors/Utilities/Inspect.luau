@@ -22,7 +22,7 @@ end
 
 function Inspect:__index(Index : string)
     if Index == "__SEAM_CAN_BE_SCOPED" then
-        return false
+        return true
     else
         return nil
     end
