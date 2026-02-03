@@ -5,6 +5,9 @@ local GetValue = {}
 -- Types
 export type GetValue = (State : any?) -> any?
 
+-- Imports
+local IsState = require(script.Parent.IsState)
+
 function GetValue:__call(State : any?) : any?
     -- Nothing exists? No problem.
     if State == nil then
@@ -12,11 +15,9 @@ function GetValue:__call(State : any?) : any?
     end
 
     -- Is it a state? Return the value of that state.
-    if typeof(State) == "table" and State.Value ~= nil then
-        local RawValue = State.ValueRaw
-
-        if RawValue ~= nil then
-            return RawValue
+    if IsState(State) then
+        if tostring(State.__SEAM_OBJECT) == "Value" then
+            return State.ValueRaw
         end
 
         return State.Value
