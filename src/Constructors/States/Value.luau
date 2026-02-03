@@ -200,6 +200,8 @@ function Value:__call(ThisValue : any)
                 else
                     error("Can not unlock values.")
                 end
+            elseif Index == "__SEAM_OBJECT" then
+                return InstanceSymbol
             else
                 error("Ran into an unexpected error")
             end
