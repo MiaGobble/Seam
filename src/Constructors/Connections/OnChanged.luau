@@ -19,7 +19,7 @@ function OnChanged:__index(Index : string)
     if Index == "__SEAM_INDEX" then
         return "OnChanged"
     elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return false
+        return true
     else
         return nil
     end
