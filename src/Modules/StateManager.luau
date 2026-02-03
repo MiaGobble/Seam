@@ -2,9 +2,6 @@
 
 local StateManager = {}
 
--- Services
-local RunService = game:GetService("RunService")
-
 -- Imports
 local Trove = require(script.Parent.Trove)
 local IsValueChanged = require(script.Parent.IsValueChanged)
@@ -31,7 +28,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
         local LastValue = nil
 
         TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
-            local NewValue = GetValue(StateInstance)
+            local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
@@ -56,7 +53,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
         local LastValue = nil
 
         TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
-            local NewValue = GetValue(StateInstance)
+            local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
                 NewValue = NewValue()
