@@ -11,6 +11,7 @@ local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 local Value = require(script.Parent.Value)
 local GetValue = require(script.Parent.Parent.Utilities.GetValue)
+local IsState = require(script.Parent.Parent.Utilities.IsState)
 
 -- Variables
 local ClassSymbol = Symbol.new("Computed")
@@ -32,7 +33,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local function Use(ThisValue : Value.ValueInstance<any>)
         -- Is Use connecting to a state? If not, just get the value
 
-        if ThisValue ~= nil and typeof(ThisValue) == "table" and ThisValue.__SEAM_OBJECT then
+        if ThisValue ~= nil and IsState(ThisValue) then
             if UsedValues[ThisValue] ~= nil then
                 return GetValue(UsedValues[ThisValue])
             end
