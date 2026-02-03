@@ -80,6 +80,12 @@ local function GetAttendedTableValue(ThisValue : any, ChangedSignal : Signal.Sig
 
             return #ThisValue
         end,
+
+        __tostring = function(_)
+            CorrectFakeTable()
+
+            return "SEAM_PROXY_TABLE (if you see this, try reading the value with Value.ValueRaw or GetValue(Value) instead when using tables)"
+        end
     })
 
     return Proxy
@@ -106,8 +112,9 @@ function Value:__call(ThisValue : any)
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("Value")
     local IsLocked = false
+    local ValueType = if ThisValue ~= nil then typeof(ThisValue) else nil
 
-    if typeof(ThisValue) == "table" then
+    if ValueType == "table" then
         -- Seam values clone tables before using them
         ThisValue = table.clone(ThisValue)
     end
@@ -134,7 +141,7 @@ function Value:__call(ThisValue : any)
             elseif Index == "ValueRaw" then
                 -- Use ValueRaw if Value ever has issues!
 
-                if typeof(ThisValue) == "table" then
+                if ValueType == "table" then
                     return DeepCopyTable(ThisValue)
                 else
                     return ThisValue
@@ -149,12 +156,20 @@ function Value:__call(ThisValue : any)
         end,
 
         __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Value" and typeof(NewValue) == typeof(ThisValue) then
+            if Index == "Value" then
+                if ValueType ~= nil then
+                    if NewValue ~= nil and typeof(NewValue) ~= ValueType then
+                        error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
+                    end
+                else
+                    ValueType = typeof(NewValue)
+                end
+
                 if IsLocked then
                     error("Attempt to modify value when locked.")
                 end
 
-                if typeof(NewValue) == "table" then
+                if ValueType == "table" then
                     -- Is the value a table? If so, update each table value individually
 
                     for SubIndex, _ in ThisValue do
@@ -186,7 +201,7 @@ function Value:__call(ThisValue : any)
                     error("Can not unlock values.")
                 end
             else
-                error("Invalid value type! Expected " .. typeof(ThisValue) .. ", got " .. typeof(NewValue))
+                error("Ran into an unexpected error")
             end
         end,
 
