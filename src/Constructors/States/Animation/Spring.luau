@@ -199,6 +199,16 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 Dampening = NewValue
             elseif Index == "Speed" then
                 Speed = NewValue
+            elseif Index == "Velocity" then
+                local UnpackedNewValue = UnpackType(NewValue, ValueType)
+
+                for Index, Spring in UnpackedSprings do
+                    local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+
+                    Spring.Velocity = UnpackedNewValue[Index]
+                    Spring.StartingPosition = Position
+                    Spring.StartingTime = os.clock()
+                end
             end
         end,
 

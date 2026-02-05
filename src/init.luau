@@ -142,8 +142,9 @@ local function Init()
 end
 
 --[=[
-    @method New
+    @function New
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -151,8 +152,9 @@ end
 Seam.New = New
 
 --[=[
-    @method Children
+    @function Children
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -160,8 +162,9 @@ Seam.New = New
 Seam.Children = Children
 
 --[=[
-    @method Value
+    @function Value
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -169,8 +172,9 @@ Seam.Children = Children
 Seam.Value = Value
 
 --[=[
-    @method Computed
+    @function Computed
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -178,8 +182,9 @@ Seam.Value = Value
 Seam.Computed = Computed
 
 --[=[
-    @method Spring
+    @function Spring
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -187,8 +192,9 @@ Seam.Computed = Computed
 Seam.Spring = Spring
 
 --[=[
-    @method Tween
+    @function Tween
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -196,8 +202,9 @@ Seam.Spring = Spring
 Seam.Tween = Tween
 
 --[=[
-    @method Scope
+    @function Scope
     @within Seam
+    @tag Seam Memory
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -205,8 +212,9 @@ Seam.Tween = Tween
 Seam.Scope = Scope
 
 --[=[
-    @method OnEvent
+    @function OnEvent
     @within Seam
+    @tag Seam Connection
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -214,8 +222,9 @@ Seam.Scope = Scope
 Seam.OnEvent = OnEvent
 
 --[=[
-    @method OnChange
+    @function OnChange
     @within Seam
+    @tag Seam Connection
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -223,15 +232,17 @@ Seam.OnEvent = OnEvent
 Seam.OnChanged = OnChanged
 
 --[=[
-    @method Attribute
+    @function Attribute
     @within Seam
+    @tag Seam Declaration
 ]=]
 
 Seam.Attribute = Attribute
 
 --[=[
-    @method OnAttributeChanged
+    @function OnAttributeChanged
     @within Seam
+    @tag Seam Connection
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -239,8 +250,9 @@ Seam.Attribute = Attribute
 Seam.OnAttributeChanged = OnAttributeChanged
 
 --[=[
-    @method Lifetime
+    @function Lifetime
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -248,8 +260,9 @@ Seam.OnAttributeChanged = OnAttributeChanged
 Seam.Lifetime = Lifetime
 
 --[=[
-    @method Rendered
+    @function Rendered
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -257,8 +270,9 @@ Seam.Lifetime = Lifetime
 Seam.Rendered = Rendered
 
 --[=[
-    @method FollowProperty
+    @function FollowProperty
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -266,8 +280,9 @@ Seam.Rendered = Rendered
 Seam.FollowProperty = FollowProperty
 
 --[=[
-    @method FollowAttribute
+    @function FollowAttribute
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -275,8 +290,9 @@ Seam.FollowProperty = FollowProperty
 Seam.FollowAttribute = FollowAttribute
 
 --[=[
-    @method GetValue
+    @function GetValue
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -284,8 +300,9 @@ Seam.FollowAttribute = FollowAttribute
 Seam.GetValue = GetValue
 
 --[=[
-    @method Component
+    @function Component
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -293,17 +310,19 @@ Seam.GetValue = GetValue
 Seam.Component = Component
 
 --[=[
-    @method Tags
+    @function Tags
     @within Seam
-
+    @tag Seam Declaration
+    
     Visit https://seam.igottic.com/ for more info.
 ]=]
 
 Seam.Tags = Tags
 
 --[=[
-    @method SetValue
+    @function SetValue
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -311,8 +330,9 @@ Seam.Tags = Tags
 Seam.SetValue = SetValue
 
 --[=[
-    @method IsState
+    @function IsState
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -320,8 +340,9 @@ Seam.SetValue = SetValue
 Seam.IsState = IsState
 
 --[=[
-    @method IsComponent
+    @function IsComponent
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -329,8 +350,9 @@ Seam.IsState = IsState
 Seam.IsComponent = IsComponent
 
 --[=[
-    @method LockValue
+    @function LockValue
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -338,8 +360,9 @@ Seam.IsComponent = IsComponent
 Seam.LockValue = LockValue
 
 --[=[
-    @method Inspect
+    @function Inspect
     @within Seam
+    @tag Seam Utility
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -347,8 +370,9 @@ Seam.LockValue = LockValue
 Seam.Inspect = Inspect
 
 --[=[
-    @method OnAttached
+    @function OnAttached
     @within Seam
+    @tag Seam Connection
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -356,8 +380,9 @@ Seam.Inspect = Inspect
 Seam.OnAttached = OnAttached
 
 --[=[
-    @method Destroyed
+    @function Destroyed
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -365,8 +390,9 @@ Seam.OnAttached = OnAttached
 Seam.Destroyed = Destroyed
 
 --[=[
-    @method EventSequence
+    @function EventSequence
     @within Seam
+    @tag Seam Declaration
 
     Visit https://seam.igottic.com/ for more info.
 ]=]
@@ -374,8 +400,9 @@ Seam.Destroyed = Destroyed
 Seam.EventSequence = EventSequence
 
 --[=[
-    @method ForPairs
+    @function ForPairs
     @within Seam
+    @tag Seam State
 
     Visit https://seam.igottic.com/ for more info.
 ]=]

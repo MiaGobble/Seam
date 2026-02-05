@@ -6,12 +6,23 @@ local OnAttributeChanged = {}
 export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
 
 function OnAttributeChanged:__call(AttributeName : string)
-    local EventBinding = setmetatable({}, {
+    local ActiveConnection : RBXScriptConnection = nil
+
+    local EventBinding = setmetatable({
+        Destroy = function()
+            if ActiveConnection and ActiveConnection.Connected then
+                ActiveConnection:Disconnect()
+            end
+        end,
+    }, {
         __call = function(_, Object : Instance, Callback : (...any?) -> nil)
-            -- I feel like there is something I'm missing, and this might be a disaster
-            -- for memory? I'll keep an eye peeled.
+            if ActiveConnection then
+                return
+            end
+
+            ActiveConnection = Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
             
-            return Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
+            return ActiveConnection
         end,
 
         __index = function(_, Index : string)
@@ -28,7 +39,7 @@ end
 
 function OnAttributeChanged:__index(Index : string)
     if Index == "__SEAM_CAN_BE_SCOPED" then
-        return false
+        return true
     else
         return nil
     end
