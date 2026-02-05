@@ -3,15 +3,18 @@
 local Scope = {}
 
 -- Imports
-local Modules = script.Parent.Parent.Parent.Modules
+local Constructors = script.Parent.Parent
+local Modules = Constructors.Parent.Modules
+local States = Constructors.States
 local Trove = require(Modules.Trove)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
-local Computed = require(script.Parent.Parent.States.Computed)
-local Rendered = require(script.Parent.Parent.States.Rendered)
-local Value = require(script.Parent.Parent.States.Value)
-local Spring = require(script.Parent.Parent.States.Animation.Spring)
-local Tween = require(script.Parent.Parent.States.Animation.Tween)
+local Computed = require(States.Computed)
+local Rendered = require(States.Rendered)
+local Value = require(States.Value)
+local Spring = require(States.Animation.Spring)
+local Tween = require(States.Animation.Tween)
+local ForPairs = require(States.ForPairs)
 
 -- Variables
 local ClassSymbol = Symbol.new("Scope")
@@ -24,6 +27,11 @@ export type ScopeInstance = {
     Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
     Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
+    ForPairs : (self : ScopeInstance, TrackedValue : Value.ValueInstance<any>, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> ForPairs.ForPairsInstance<any>,
+    OnChanged : (self : ScopeInstance, Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection,
+    OnAttributeChanged : (self : ScopeInstance, AttributeName : string) -> (...any) -> RBXScriptConnection,
+    OnEvent : (self : ScopeInstance, EventName : string) -> (...any) -> RBXScriptConnection,
+    OnAttached : (self : ScopeInstance, Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection,
 
     InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
     AddObject : (self : ScopeInstance, Object : any) -> (),
