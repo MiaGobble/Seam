@@ -5,11 +5,10 @@ local Spring = {}
 -- Constants
 local EPSILON = 0.001
 
--- Services
-local RunService = game:GetService("RunService")
-
 -- Imports
-local Modules = script.Parent.Parent.Parent.Parent.Modules
+local Constructors = script.Parent.Parent.Parent
+local Modules = Constructors.Parent.Modules
+local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
@@ -95,14 +94,6 @@ local function ConvertValueToUnpackedSprings(Value : any)
     end
 
     return UnpackedValue
-end
-
-local function GetValue(ValueObject)
-    if typeof(ValueObject) == "table" and ValueObject.__SEAM_OBJECT then
-        return ValueObject.Value
-    else
-        return ValueObject
-    end
 end
 
 function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening : number) : SpringInstance<any>

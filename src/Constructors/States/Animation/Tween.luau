@@ -43,14 +43,6 @@ local function ConvertValueToUnpackedTweens(Value : any)
     return UnpackedValue
 end
 
-local function GetValue(ValueObject)
-    if typeof(ValueObject) == "table" and ValueObject.__SEAM_OBJECT then
-        return ValueObject.Value
-    else
-        return ValueObject
-    end
-end
-
 function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | TweenInfo) : TweenInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
