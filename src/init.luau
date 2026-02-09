@@ -116,19 +116,7 @@ export type ForPairsInstance<T> = ForPairs.ForPairsInstance<T>
 -- Declaration
 local Seam : Seam = {} :: Seam
 
-local function GetWrappedWarningCallback(Index : string, Constructor : () -> any?)
-    return function(...)
-        warn(`Seam.{Index} will soon only be available in PascalCase format. All camelCase variants will be removed in a future version`)
-        return Constructor(...)
-    end
-end
-
 local function Init()
-    for Index : string, Constructor : () -> any? in Seam do
-        local LowercaseName = Index:lower()
-        Seam[LowercaseName] = GetWrappedWarningCallback(LowercaseName, Constructor)
-    end
-
     if RunService:IsServer() then
         return -- Don't wait for game.Loaded on server
     end
