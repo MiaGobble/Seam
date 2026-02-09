@@ -15,13 +15,21 @@ local ClassSymbol = Symbol.new("Rendered")
 
 -- Types Extended
 export type RenderedInstance<T> = {} & Types.BaseState<T>
-export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance<T>
+export type RenderedConstructor<T> = (Callback : (number) -> any?) -> RenderedInstance<T>
 
-function Rendered:__call(Callback : () -> any?)
+function Rendered:__call(Callback : (number) -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
     local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("RenderedInstance")
+    local LastFrame = os.clock()
+
+    local WrappedCallback = function()
+        local DeltaTime = os.clock() - LastFrame
+        LastFrame = os.clock()
+
+        return Callback(DeltaTime)
+    end
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
@@ -32,7 +40,7 @@ function Rendered:__call(Callback : () -> any?)
             AttachedSignal:Fire(Object)
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = Callback,
+                Value = WrappedCallback,
                 PropertyName = Index
             }))
 
@@ -43,7 +51,7 @@ function Rendered:__call(Callback : () -> any?)
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
-                return Callback()
+                return WrappedCallback()
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
             end

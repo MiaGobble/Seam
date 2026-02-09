@@ -5,7 +5,6 @@ local StateManager = {}
 -- Imports
 local Trove = require(script.Parent.Trove)
 local IsValueChanged = require(script.Parent.IsValueChanged)
-local GetValue = require(script.Parent.Parent.Constructors.Utilities.GetValue)
 local UpdateSignals = require(script.Parent.UpdateSignals)
 
 local function GetObjectType(Object : any) : string
@@ -35,6 +34,11 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
             end
 
             if LastValue ~= nil and not IsValueChanged(LastValue, NewValue) then
+                return
+            end
+
+            if typeof(Object[StateInstance.PropertyName]) ~= typeof(NewValue) then
+                warn(`{Object:GetFullName()} expected type {typeof(Object[StateInstance.PropertyName])} for attached state value, got a value of type {typeof(NewValue)}{"\n"}{debug.traceback()}`)
                 return
             end
 

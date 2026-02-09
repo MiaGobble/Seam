@@ -50,17 +50,28 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     local selfMeta = {}
     local InstanceSymbol = Symbol.new("Scope")
 
+    if not ScopedObjects then
+        ScopedObjects = {}
+    end
+
+    ScopedObjects = table.clone(ScopedObjects)
+
     function selfMeta:__index(Key : string)
+        if not Key then
+            warn(`Attempt to index a scope with nil{"\n"}{debug.traceback()}`)
+            return
+        end
+
         if Key == "__SEAM_OBJECT" then
             -- Some things check if something is a seam object, so
             -- this is the first thing we should try to return
             return InstanceSymbol
         end
 
-        local Object = self.ScopedObjects and self.ScopedObjects[Key]
+        local Object = ScopedObjects[Key]
 
         if Object == nil then
-            -- If something doesn't exist in the scope, return nil
+            warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{debug.traceback()}`)
             return nil
         end
     
@@ -141,12 +152,11 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         self.Trove = nil
     end
 
-    local Object = setmetatable(selfClass, selfMeta)
+    local ScopeInstance = setmetatable(selfClass, selfMeta)
+    ScopeInstance.ScopedObjects = ScopedObjects
+    ScopeInstance.Trove = Trove.new()
 
-    Object.ScopedObjects = ScopedObjects
-    Object.Trove = Trove.new()
-
-    return Object
+    return ScopeInstance
 end
 
 function Scope:__index(Key : string)

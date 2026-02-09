@@ -8,11 +8,10 @@ local EPSILON = 0.001
 -- Services
 local TweenService = game:GetService("TweenService")
 
--- Services
-local RunService = game:GetService("RunService")
-
 -- Imports
-local Modules = script.Parent.Parent.Parent.Parent.Modules
+local Constructors = script.Parent.Parent.Parent
+local Modules = Constructors.Parent.Modules
+local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local PackType = require(Modules.PackType)
 local UnpackType = require(Modules.UnpackType)
@@ -31,7 +30,7 @@ export type TweenInstance<T> = {
     Target : T
 } & Types.BaseState<T>
 
-export type TweenConstructor<T> = (Value : Types.BaseState<T> | any, TweenInformation : TweenInfo) -> TweenInstance<T>
+export type TweenConstructor<T> = (Value : Types.BaseState<T> | any, TweenInformation : Types.BaseState<T> | TweenInfo) -> TweenInstance<T>
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
@@ -44,15 +43,7 @@ local function ConvertValueToUnpackedTweens(Value : any)
     return UnpackedValue
 end
 
-local function GetValue(ValueObject)
-    if typeof(ValueObject) == "table" and ValueObject.__SEAM_OBJECT then
-        return ValueObject.Value
-    else
-        return ValueObject
-    end
-end
-
-function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance<any>
+function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | TweenInfo) : TweenInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
@@ -65,6 +56,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         local PackedValues = {}
+        local TweenInformation = GetValue(TweenInformation)
 
         for Index, Tween in UnpackedTweens do
             local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
@@ -105,6 +97,8 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                 return ChangedSignal
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
+            elseif Index == "TweenInfo" then
+                return TweenInformation
             end
 
             return nil
@@ -129,7 +123,7 @@ function Tween:__call(Value : any, TweenInformation : TweenInfo) : TweenInstance
                     Tween.Position1 = UnpackedValue[Index]
                     Tween.Tick0 = os.clock()
                 end
-            elseif Index == "TweenInformation" then
+            elseif Index == "TweenInfo" then
                 TweenInformation = NewValue
             end
         end,

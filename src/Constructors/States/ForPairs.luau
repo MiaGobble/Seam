@@ -26,7 +26,7 @@ function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((V
         local ThisOuput = {}
 
         if typeof(ThisTable) ~= "table" then
-            error("ForPairs needs a table value to work")
+            error("ForPairs needs a table value to work\n" .. debug.traceback())
         end
 
         for Index, NewValue in ThisTable do
