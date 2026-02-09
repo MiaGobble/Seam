@@ -28,7 +28,7 @@ export type SpringInstance<T> = {
     Target : T
 } & Types.BaseState<T>
 
-export type SpringConstructor<T> = (Value : Types.BaseState<T> | any, Speed : number, Dampening : number) -> SpringInstance<T>
+export type SpringConstructor<T> = (Value : Types.BaseState<T> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) -> SpringInstance<T>
 
 local function GetPositionAndVelocity(OldPosition : number, OldVelocity : number, Target : number, Dampening : number, Speed : number, TimeStarted : number) : (number, number)
     local TimePassed = os.clock() - TimeStarted
@@ -96,7 +96,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     return UnpackedValue
 end
 
-function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening : number) : SpringInstance<any>
+function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) : SpringInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
@@ -111,7 +111,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
         local PackedValues = {}
 
         for Index, Spring in UnpackedSprings do
-            local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+            local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
 
 			if math.abs(Position) <= EPSILON then
 				Position = 0
@@ -147,7 +147,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local PackedValues = {}
 
                 for Index, Spring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
 
                     PackedValues[Index] = Velocity
                 end
@@ -157,6 +157,10 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 return ChangedSignal
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
+            elseif Index == "Speed" then
+                return Speed
+            elseif Index == "Dampening" then
+                return Dampening
             end
 
             return nil
@@ -169,7 +173,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
                 for Index, Spring in UnpackedSprings do
-                    local Position, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+                    local Position, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
 
                     Spring.StartingPosition = Position
                     Spring.Velocity = Velocity
@@ -180,7 +184,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
                 for Index, Spring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
 
                     Spring.StartingPosition = UnpackedNewValue[Index]
                     Spring.Velocity = Velocity
@@ -194,7 +198,7 @@ function Spring:__call(Value : Types.BaseState<any>, Speed : number, Dampening :
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
                 for Index, Spring in UnpackedSprings do
-                    local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, Dampening, Speed, Spring.StartingTime)
+                    local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
 
                     Spring.Velocity = UnpackedNewValue[Index]
                     Spring.StartingPosition = Position
