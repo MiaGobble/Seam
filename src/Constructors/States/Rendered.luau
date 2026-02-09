@@ -15,9 +15,9 @@ local ClassSymbol = Symbol.new("Rendered")
 
 -- Types Extended
 export type RenderedInstance<T> = {} & Types.BaseState<T>
-export type RenderedConstructor<T> = (Callback : () -> any?) -> RenderedInstance<T>
+export type RenderedConstructor<T> = (Callback : (number) -> any?) -> RenderedInstance<T>
 
-function Rendered:__call(Callback : () -> any?)
+function Rendered:__call(Callback : (number) -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
     local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
