@@ -88,6 +88,10 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
     
         return function(_, ...)
+            if not self.Trove then -- If the trove instance doesn't exist, the scope is likely destroyed
+                return
+            end
+
             -- Seam things are called as functions, so this is a wrapper
             -- function that puts any created instances into the trove
             local Tuple = nil
@@ -113,8 +117,8 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             end
 
             -- But yeah, let's add created things to the trove
-            for _, Value in Tuple do
-                self.Trove:Add(Value)
+            for _, ThisValue in Tuple do
+                self.Trove:Add(ThisValue)
             end
     
             -- Unpack the tuple and return it ALLLLLLLL
