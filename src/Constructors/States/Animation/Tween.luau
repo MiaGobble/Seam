@@ -56,17 +56,17 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         local PackedValues = {}
-        local TweenInformation = GetValue(TweenInformation)
+        local CurrentTweenInformation = GetValue(TweenInformation)
 
-        for Index, Tween in UnpackedTweens do
-            local Alpha = math.clamp((os.clock() - Tween.Tick0) / TweenInformation.Time, 0, 1)
-            local UnitPosition = TweenService:GetValue(Alpha, TweenInformation.EasingStyle, TweenInformation.EasingDirection)
-            local Position = Tween.Position0 + (Tween.Position1 - Tween.Position0) * UnitPosition
+        for Index, ThisTween in UnpackedTweens do
+            local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / CurrentTweenInformation.Time, 0, 1)
+            local UnitPosition = TweenService:GetValue(Alpha, CurrentTweenInformation.EasingStyle, CurrentTweenInformation.EasingDirection)
+            local Position = ThisTween.Position0 + (ThisTween.Position1 - ThisTween.Position0) * UnitPosition
 
             if math.abs(Position) <= EPSILON then
 				Position = 0
-			elseif math.abs(Position - Tween.Position0) <= EPSILON then
-				Position = Tween.Position0
+            elseif math.abs(Position - ThisTween.Position0) <= EPSILON then
+				Position = ThisTween.Position0
 			end
 
             PackedValues[Index] = Position
@@ -82,13 +82,13 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
     end))
 
     local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function(self)
+        Destroy = function()
             UnpackedTweens = nil
             TroveInstance:Destroy()
             TroveInstance = nil
         end
     }, {
-        __index = function(self, Index : string)
+        __index = function(_, Index : string)
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
@@ -104,36 +104,36 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
             return nil
         end,
 
-        __newindex = function(self, Index : string, NewValue : any)
+        __newindex = function(_, Index : string, NewValue : any)
             if Index == "Target" then
                 CurrentTarget = GetValue(NewValue)
                 
                 local UnpackedTargetValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Tween in UnpackedTweens do
-                    Tween.Position0 = Tween.Position1
-                    Tween.Position1 = UnpackedTargetValue[Index]
-                    Tween.Tick0 = os.clock()
+                for ThisIndex, ThisTween in UnpackedTweens do
+                    ThisTween.Position0 = ThisTween.Position1
+                    ThisTween.Position1 = UnpackedTargetValue[ThisIndex]
+                    ThisTween.Tick0 = os.clock()
                 end
             elseif Index == "Value" then
                 local UnpackedValue = UnpackType(NewValue, ValueType)
 
-                for Index, Tween in UnpackedTweens do
-                    Tween.Position0 = UnpackedValue[Index]
-                    Tween.Position1 = UnpackedValue[Index]
-                    Tween.Tick0 = os.clock()
+                for ThisIndex, ThisTween in UnpackedTweens do
+                    ThisTween.Position0 = UnpackedValue[ThisIndex]
+                    ThisTween.Position1 = UnpackedValue[ThisIndex]
+                    ThisTween.Tick0 = os.clock()
                 end
             elseif Index == "TweenInfo" then
                 TweenInformation = NewValue
             end
         end,
 
-        __call = function(self, Object, Index : string)
+        __call = function(This, Object, Index : string)
             AttachedSignal:Fire(Object)
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
-                    return self.Value
+                    return This.Value
                 end,
 
                 PropertyName = Index

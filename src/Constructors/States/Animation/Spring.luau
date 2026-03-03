@@ -146,10 +146,10 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             elseif Index == "Velocity" then
                 local PackedValues = {}
 
-                for Index, Spring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
+                for ThisIndex, ThisSpring in UnpackedSprings do
+                    local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
 
-                    PackedValues[Index] = Velocity
+                    PackedValues[ThisIndex] = Velocity
                 end
 
                 return PackType(PackedValues, ValueType)
@@ -166,29 +166,29 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             return nil
         end,
 
-        __newindex = function(self, Index : string, NewValue : any)
+        __newindex = function(_, Index : string, NewValue : any)
             if Index == "Target" then
                 CurrentTarget = GetValue(NewValue)
 
                 local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
 
-                for Index, Spring in UnpackedSprings do
-                    local Position, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
+                for ThisIndex, ThisSpring in UnpackedSprings do
+                    local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
 
-                    Spring.StartingPosition = Position
-                    Spring.Velocity = Velocity
-                    Spring.StartingTime = os.clock()
-                    Spring.Target = UnpackedNewValue[Index]
+                    ThisSpring.StartingPosition = Position
+                    ThisSpring.Velocity = Velocity
+                    ThisSpring.StartingTime = os.clock()
+                    ThisSpring.Target = UnpackedNewValue[ThisIndex]
                 end
             elseif Index == "Value" then
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
-                for Index, Spring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
+                for ThisIndex, ThisSpring in UnpackedSprings do
+                    local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
 
-                    Spring.StartingPosition = UnpackedNewValue[Index]
-                    Spring.Velocity = Velocity
-                    Spring.StartingTime = os.clock()
+                    ThisSpring.StartingPosition = UnpackedNewValue[ThisIndex]
+                    ThisSpring.Velocity = Velocity
+                    ThisSpring.StartingTime = os.clock()
                 end
             elseif Index == "Dampening" then
                 Dampening = NewValue
@@ -197,23 +197,23 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             elseif Index == "Velocity" then
                 local UnpackedNewValue = UnpackType(NewValue, ValueType)
 
-                for Index, Spring in UnpackedSprings do
-                    local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
+                for ThisIndex, ThisSpring in UnpackedSprings do
+                    local Position, _ = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
 
-                    Spring.Velocity = UnpackedNewValue[Index]
-                    Spring.StartingPosition = Position
-                    Spring.StartingTime = os.clock()
+                    ThisSpring.Velocity = UnpackedNewValue[ThisIndex]
+                    ThisSpring.StartingPosition = Position
+                    ThisSpring.StartingTime = os.clock()
                 end
             end
         end,
 
-        __call = function(self, Object, Index : string)
+        __call = function(This, Object, Index : string)
             AttachedSignal:Fire(Object)
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
                     ChangedSignal:Fire("Value")
-                    return self.Value
+                    return This.Value
                 end,
 
                 PropertyName = Index

@@ -9,6 +9,7 @@ local States = Constructors.States
 local Trove = require(Modules.Trove)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Computed = require(States.Computed)
 local Rendered = require(States.Rendered)
 local Value = require(States.Value)
@@ -58,7 +59,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
 
     function selfMeta:__index(Key : string)
         if not Key then
-            warn(`Attempt to index a scope with nil{"\n"}{debug.traceback()}`)
+            warn(`Attempt to index a scope with nil{"\n"}{CreateDeepTraceback()}`)
             return
         end
 
@@ -71,7 +72,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         local Object = ScopedObjects[Key]
 
         if Object == nil then
-            warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{debug.traceback()}`)
+            warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{CreateDeepTraceback()}`)
             return nil
         end
     
@@ -128,8 +129,8 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
 
         -- Take the current scoped objects and copy them to the new table
-        for Index, Value in self.ScopedObjects do
-            NewScopedObjects[Index] = Value
+        for Index, Object in self.ScopedObjects do
+            NewScopedObjects[Index] = Object
         end
 
         local NewScope = Meta(NewScopedObjects) -- Make a new scope
