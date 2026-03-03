@@ -89,6 +89,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     
         return function(_, ...)
             if not self.Trove then -- If the trove instance doesn't exist, the scope is likely destroyed
+                warn(`Attempted to use something in scope ({Key}) but scope is already destroyed: {CreateDeepTraceback()}`)
                 return
             end
 
