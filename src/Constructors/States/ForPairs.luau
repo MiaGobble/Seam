@@ -6,6 +6,7 @@ local ForPairs = {}
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Computed = require(script.Parent.Computed)
 local Value = require(script.Parent.Value)
 
@@ -26,7 +27,7 @@ function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((V
         local ThisOuput = {}
 
         if typeof(ThisTable) ~= "table" then
-            error("ForPairs needs a table value to work\n" .. debug.traceback())
+            error("ForPairs needs a table value to work\n" .. CreateDeepTraceback())
         end
 
         for Index, NewValue in ThisTable do

@@ -9,6 +9,7 @@ local States = Constructors.States
 local Trove = require(Modules.Trove)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Computed = require(States.Computed)
 local Rendered = require(States.Rendered)
 local Value = require(States.Value)
@@ -58,7 +59,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
 
     function selfMeta:__index(Key : string)
         if not Key then
-            warn(`Attempt to index a scope with nil{"\n"}{debug.traceback()}`)
+            warn(`Attempt to index a scope with nil{"\n"}{CreateDeepTraceback()}`)
             return
         end
 
@@ -71,7 +72,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         local Object = ScopedObjects[Key]
 
         if Object == nil then
-            warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{debug.traceback()}`)
+            warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{CreateDeepTraceback()}`)
             return nil
         end
     
@@ -87,6 +88,11 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
     
         return function(_, ...)
+            if not self.Trove then -- If the trove instance doesn't exist, the scope is likely destroyed
+                warn(`Attempted to use something in scope ({Key}) but scope is already destroyed: {CreateDeepTraceback()}`)
+                return
+            end
+
             -- Seam things are called as functions, so this is a wrapper
             -- function that puts any created instances into the trove
             local Tuple = nil
@@ -112,8 +118,8 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             end
 
             -- But yeah, let's add created things to the trove
-            for _, Value in Tuple do
-                self.Trove:Add(Value)
+            for _, ThisValue in Tuple do
+                self.Trove:Add(ThisValue)
             end
     
             -- Unpack the tuple and return it ALLLLLLLL
@@ -128,8 +134,8 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
 
         -- Take the current scoped objects and copy them to the new table
-        for Index, Value in self.ScopedObjects do
-            NewScopedObjects[Index] = Value
+        for Index, Object in self.ScopedObjects do
+            NewScopedObjects[Index] = Object
         end
 
         local NewScope = Meta(NewScopedObjects) -- Make a new scope

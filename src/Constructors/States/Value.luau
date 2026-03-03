@@ -193,10 +193,12 @@ function Value:__call(ThisValue : any)
 
                 -- Make sure to fire the changed signal for other states
                 ChangedSignal:Fire("Value", ThisValue)
+                return
             elseif Index == "__LOCKED" then
                 if NewValue == true then
                     IsLocked = true
                     ActiveValue:Destroy()
+                    return
                 else
                     error("Can not unlock values.")
                 end

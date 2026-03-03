@@ -6,6 +6,7 @@ local StateManager = {}
 local Trove = require(script.Parent.Trove)
 local IsValueChanged = require(script.Parent.IsValueChanged)
 local UpdateSignals = require(script.Parent.UpdateSignals)
+local CreateDeepTraceback = require(script.Parent.CreateDeepTraceback)
 
 local function GetObjectType(Object : any) : string
     if typeof(Object) == "Instance" then
@@ -38,7 +39,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
             end
 
             if typeof(Object[StateInstance.PropertyName]) ~= typeof(NewValue) then
-                warn(`{Object:GetFullName()} expected type {typeof(Object[StateInstance.PropertyName])} for attached state value, got a value of type {typeof(NewValue)}{"\n"}{debug.traceback()}`)
+                warn(`{Object:GetFullName()} expected type {typeof(Object[StateInstance.PropertyName])} for attached state value, got a value of type {typeof(NewValue)}{"\n"}{CreateDeepTraceback()}`)
                 return
             end
 
@@ -71,7 +72,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
             LastValue = NewValue
         end))
     else
-        error("Attempted to attach non-state to object:\n" .. debug.traceback())
+        error("Attempted to attach non-state to object:\n" .. CreateDeepTraceback())
     end
 
     return TroveInstance

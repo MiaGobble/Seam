@@ -1,3 +1,5 @@
+-- Author: iGottic
+
 local UpdateSignals = {}
 
 -- Types
@@ -12,7 +14,7 @@ local RunService = game:GetService("RunService")
 if RunService:IsClient() then
     UpdateSignals.OnFrameUpdate = RunService.RenderStepped
     UpdateSignals.OnFramePreUpdate = RunService.PreRender
-else
+else -- If we're using the server, always use RunService.Heartbeat
     UpdateSignals.OnFrameUpdate = RunService.Heartbeat
     UpdateSignals.OnFramePreUpdate = RunService.Heartbeat
 end

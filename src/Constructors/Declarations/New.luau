@@ -5,6 +5,7 @@ local New = {}
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Symbol = require(Modules.Symbol)
+local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Scope = require(script.Parent.Parent.Memory.Scope)
 
 -- Types extended
@@ -27,7 +28,7 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
         Object = nil
     else
         -- Invalid class
-        error("Invalid class type! Expected string or instance, got " .. typeof(Class))
+        error(`Invalid class type! Expected string or instance, got {typeof(Class)}: {CreateDeepTraceback()}`)
     end
 
     if Object then
@@ -38,15 +39,17 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
                     -- A seam index is something like Attribute, Children, or Lifetime
                     Index(Object, Property)
                 else
-                    error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()})`)
+                    error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()}); {CreateDeepTraceback()}`)
                 end
             elseif typeof(Property) == "table" then
                 if Property.__SEAM_OBJECT then
                     -- A seam object is something like Computed, Value, or Spring
                     Property(Object, Index)
                 else
-                    error("Invalid property type! Expected Seam object or string, got table")
+                    error(`Invalid property type! Expected Seam object or string, got table: {CreateDeepTraceback()}`)
                 end
+            elseif typeof(Index) == "number" then
+                error(`Error when applying property to object, index is a number; {CreateDeepTraceback()}`)
             else
                 Object[Index] = Property
             end
