@@ -21,91 +21,6 @@ export type ValueInstance<T> = {
 
 export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
 
-local function GetAttendedTableValue(ThisValue : any, ChangedSignal : Signal.Signal<string>)
-    if typeof(ThisValue) ~= "table" then
-        -- If not a table, don't bother running this function
-        return ThisValue
-    end
-
-    -- We're pretty much making a proxy table so that we know when things change.
-    -- This is kinna hacky and weird, but hey, it works. I'll find a better
-    -- solution in the future.
-
-    local FakeTable = {}
-    
-    local function CorrectFakeTable()
-        -- table.insert doesn't trigger metamethods for optimization reasons
-        -- so we need to manually correct the table before any reading/writing
-        local LowestIndexForInsert = 1
-
-        for Index, This in pairs(FakeTable) do
-            if Index == LowestIndexForInsert then
-                LowestIndexForInsert += 1
-                table.insert(ThisValue, This)
-            else
-                ThisValue[Index] = This
-            end
-
-            FakeTable[Index] = nil
-        end
-    end
-
-
-    local Proxy = setmetatable(FakeTable, {
-        __index = function(_, Index : string)
-            CorrectFakeTable() -- Before anything, the fake table should be fixed
-
-            return GetAttendedTableValue(ThisValue[Index], ChangedSignal)
-        end,
-
-        __newindex = function(_, Index : string, NewValue : any)
-            if IsValueChanged(ThisValue[Index], NewValue) then
-                -- If the value changed, correct the table, update the
-                -- value, and finally fire the changed signal
-
-                CorrectFakeTable()
-                ThisValue[Index] = NewValue
-                ChangedSignal:Fire("Value")
-            end
-        end,
-
-        __iter = function(_)
-            CorrectFakeTable() -- You can't iterate properly unless this is called first
-
-            return pairs(ThisValue)
-        end,
-
-        __len = function(_)
-            CorrectFakeTable() -- Same as __iter, you can't get length without correction
-
-            return #ThisValue
-        end,
-
-        __tostring = function(_)
-            CorrectFakeTable()
-
-            return "SEAM_PROXY_TABLE (if you see this, try reading the value with Value.ValueRaw or GetValue(Value) instead when using tables)"
-        end
-    })
-
-    return Proxy
-end
-
-local function DeepCopyTable(This : {[any] : any})
-    -- Copy copy copy
-    local NewTable = {}
-
-    for Index, ThisValue in This do
-        if typeof(ThisValue) == "table" and not ThisValue.__SEAM_INDEX and not ThisValue.__SEAM_OBJECT then
-            NewTable[Index] = DeepCopyTable(ThisValue)
-        else
-            NewTable[Index] = ThisValue
-        end
-    end
-
-    return NewTable
-end
-
 function Value:__call(ThisValue : any)
     local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
@@ -118,9 +33,6 @@ function Value:__call(ThisValue : any)
         -- Seam values clone tables before using them
         ThisValue = table.clone(ThisValue)
     end
-
-    -- Make a proxy table if it's a table, otherwise it's just a value
-    ThisValue = GetAttendedTableValue(ThisValue, ChangedSignal)
 
     --[[
         local This = Value(...)
@@ -141,8 +53,8 @@ function Value:__call(ThisValue : any)
             elseif Index == "ValueRaw" then
                 -- Use ValueRaw if Value ever has issues!
 
-                if ValueType == "table" then
-                    return DeepCopyTable(ThisValue)
+                if ValueType == "table" and ThisValue ~= nil then
+                    return table.clone(ThisValue)
                 else
                     return ThisValue
                 end
@@ -157,6 +69,10 @@ function Value:__call(ThisValue : any)
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Value" then
+                if IsLocked then
+                    error("Attempt to modify value when locked.")
+                end
+
                 if ValueType ~= nil then
                     if NewValue ~= nil and typeof(NewValue) ~= ValueType then
                         error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
@@ -165,31 +81,11 @@ function Value:__call(ThisValue : any)
                     ValueType = typeof(NewValue)
                 end
 
-                if IsLocked then
-                    error("Attempt to modify value when locked.")
+                if not IsValueChanged(ThisValue, NewValue) then
+                    return
                 end
 
-                if ValueType == "table" then
-                    -- Is the value a table? If so, update each table value individually
-
-                    for SubIndex, _ in ThisValue do
-                        if NewValue[SubIndex] == nil then
-                            ThisValue[SubIndex] = nil
-                        end
-                    end
-
-                    for SubIndex, SubValue in NewValue do
-                        ThisValue[SubIndex] = SubValue
-                    end
-                else
-                    -- If the value isn't a table, update it normally
-
-                    if not IsValueChanged(ThisValue, NewValue) then
-                        return
-                    end
-
-                    ThisValue = NewValue
-                end
+                ThisValue = NewValue
 
                 -- Make sure to fire the changed signal for other states
                 ChangedSignal:Fire("Value", ThisValue)
@@ -218,8 +114,8 @@ function Value:__call(ThisValue : any)
                 return
             end
 
-            if typeof(ThisValue) == "table" then
-                Object[Index] = DeepCopyTable(ThisValue)
+            if typeof(ThisValue) == "table" and ThisValue ~= nil then
+                Object[Index] = table.clone(ThisValue)
             else
                 Object[Index] = ThisValue
             end
@@ -228,8 +124,8 @@ function Value:__call(ThisValue : any)
 
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
-                    if typeof(ThisValue) == "table" then
-                        return DeepCopyTable(ThisValue)
+                    if typeof(ThisValue) == "table" and ThisValue ~= nil then
+                        return table.clone(ThisValue)
                     else
                         return ThisValue
                     end
