@@ -161,7 +161,7 @@ function Value:__call(ThisValue : any)
                     if NewValue ~= nil and typeof(NewValue) ~= ValueType then
                         error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
                     end
-                else
+                elseif NewValue ~= nil then
                     ValueType = typeof(NewValue)
                 end
 
