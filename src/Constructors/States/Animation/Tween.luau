@@ -13,8 +13,7 @@ local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
-local PackType = require(Modules.PackType)
-local UnpackType = require(Modules.UnpackType)
+local ValuePacker = require(Modules.ValuePacker)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
@@ -34,7 +33,7 @@ export type TweenConstructor<T> = (Value : Types.BaseState<T> | any, TweenInform
 
 local function ConvertValueToUnpackedTweens(Value : any)
     local ValueType = typeof(Value)
-    local UnpackedValue = UnpackType(Value, ValueType)
+    local UnpackedValue = ValuePacker.UnpackValue(Value, ValueType)
 
     for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {Position0 = Element, Position1 = Element, Tick0 = os.clock()}
@@ -72,7 +71,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
             PackedValues[Index] = Position
         end
 
-        CurrentValue = PackType(PackedValues, ValueType)
+        CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
             ChangedSignal:Fire("Value")
@@ -108,7 +107,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
             if Index == "Target" then
                 CurrentTarget = GetValue(NewValue)
                 
-                local UnpackedTargetValue = UnpackType(CurrentTarget, ValueType)
+                local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
 
                 for ThisIndex, ThisTween in UnpackedTweens do
                     ThisTween.Position0 = ThisTween.Position1
@@ -116,7 +115,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
                     ThisTween.Tick0 = os.clock()
                 end
             elseif Index == "Value" then
-                local UnpackedValue = UnpackType(NewValue, ValueType)
+                local UnpackedValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisTween in UnpackedTweens do
                     ThisTween.Position0 = UnpackedValue[ThisIndex]

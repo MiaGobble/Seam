@@ -10,8 +10,7 @@ local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
-local PackType = require(Modules.PackType)
-local UnpackType = require(Modules.UnpackType)
+local ValuePacker = require(Modules.ValuePacker)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
@@ -82,7 +81,7 @@ end
 
 local function ConvertValueToUnpackedSprings(Value : any)
     local ValueType = typeof(Value)
-    local UnpackedValue = UnpackType(Value, ValueType)
+    local UnpackedValue = ValuePacker.UnpackValue(Value, ValueType)
 
     for Index, Element in UnpackedValue do
         UnpackedValue[Index] = {
@@ -122,7 +121,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             PackedValues[Index] = Position
         end
 
-        CurrentValue = PackType(PackedValues, ValueType)
+        CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
             ChangedSignal:Fire("Value")
@@ -152,7 +151,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
                     PackedValues[ThisIndex] = Velocity
                 end
 
-                return PackType(PackedValues, ValueType)
+                return ValuePacker.PackValue(PackedValues, ValueType)
             elseif Index == "Changed" then
                 return ChangedSignal
             elseif Index == "AttachedToInstance" then
@@ -170,7 +169,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             if Index == "Target" then
                 CurrentTarget = GetValue(NewValue)
 
-                local UnpackedNewValue = UnpackType(CurrentTarget, ValueType)
+                local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
 
                 for ThisIndex, ThisSpring in UnpackedSprings do
                     local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
@@ -181,7 +180,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
                     ThisSpring.Target = UnpackedNewValue[ThisIndex]
                 end
             elseif Index == "Value" then
-                local UnpackedNewValue = UnpackType(NewValue, ValueType)
+                local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisSpring in UnpackedSprings do
                     local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
@@ -195,7 +194,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             elseif Index == "Speed" then
                 Speed = NewValue
             elseif Index == "Velocity" then
-                local UnpackedNewValue = UnpackType(NewValue, ValueType)
+                local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisSpring in UnpackedSprings do
                     local Position, _ = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)

@@ -6,6 +6,5 @@ Read everything you need to know about Seam on the documentation site: https://s
 You can also install Seam from Wally. See info about that [here](https://wally.run/package/miagobble/seam?version=0.4.1).
 
 Some credits for internal modules:
-- Elttob (UnpackType, PackType)
 - Sleitnick (Trove, Signal)
 - bottosson (Oklab color space)
