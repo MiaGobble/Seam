@@ -50,14 +50,6 @@ function Value:__call(ThisValue : any)
                 return InstanceSymbol
             elseif Index == "Value" then
                 return ThisValue
-            elseif Index == "ValueRaw" then
-                -- Use ValueRaw if Value ever has issues!
-
-                if ValueType == "table" and ThisValue ~= nil then
-                    return table.clone(ThisValue)
-                else
-                    return ThisValue
-                end
             elseif Index == "Changed" then
                 return ChangedSignal
             elseif Index == "AttachedToInstance" then

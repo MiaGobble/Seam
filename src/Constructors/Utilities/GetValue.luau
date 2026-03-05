@@ -16,10 +16,6 @@ function GetValue:__call(State : any?) : any?
 
     -- Is it a state? Return the value of that state.
     if IsState(State) then
-        if tostring(State.__SEAM_OBJECT) == "Value" then
-            return State.ValueRaw
-        end
-
         return State.Value
     end
 
