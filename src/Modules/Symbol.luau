@@ -1,10 +1,5 @@
 -- Author: iGottic
 
---[[
-    @class Symbol
-    @since 0.3.2
---]]
-
 local Symbol = {}
 
 -- Types
