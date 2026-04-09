@@ -35,7 +35,7 @@ export type ScopeInstance = {
     OnAttached : (self : ScopeInstance, Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection,
 
     InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
-    AddObject : (self : ScopeInstance, Object : any) -> (),
+    AddObject : <T>(self : ScopeInstance, Object : T) -> (T),
     RemoveObject : (self : ScopeInstance, Object : any) -> (),
     Destroy : (self : ScopeInstance) -> (),
 }
@@ -144,8 +144,8 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         return NewScope
     end
 
-    function selfClass:AddObject(Object : any)
-        self.Trove:Add(Object)
+    function selfClass:AddObject<T>(Object : T)
+        return self.Trove:Add(Object)
     end
 
     function selfClass:RemoveObject(Object : any)
