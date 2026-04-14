@@ -69,7 +69,15 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
                     continue
                 end
 
-                if CurrentTime >= Keyframe[1] then
+                local PreviousTotalTime = 0
+
+                if Index > 1 then
+                    for PreviousIndex = 1, Index - 1 do
+                        PreviousTotalTime += SequenceKeyframes[PreviousIndex][1]
+                    end
+                end
+
+                if CurrentTime >= Keyframe[1] + PreviousTotalTime then
                     PlayedIndexes[Index] = true
                     task.spawn(Keyframe[2])
                 end
