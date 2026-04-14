@@ -23,11 +23,12 @@ end
 function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
     local TroveInstance = Trove.new()
+    local UpdateFunction = nil
 
     if ObjectType == "Instance" then
         local LastValue = nil
 
-        TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
+        UpdateFunction = function()
             local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
@@ -45,7 +46,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
-        end))
+        end
 
         task.defer(function()
             TroveInstance:Add(Object.AncestryChanged:Connect(function()
@@ -57,7 +58,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     elseif ObjectType == "SeamObject" then
         local LastValue = nil
 
-        TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(function()
+        UpdateFunction = function()
             local NewValue = StateInstance.Value
 
             if typeof(NewValue) == "function" then
@@ -70,10 +71,13 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
 
             Object[StateInstance.PropertyName] = NewValue
             LastValue = NewValue
-        end))
+        end
     else
         error("Attempted to attach non-state to object:\n" .. CreateDeepTraceback())
     end
+
+    TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(UpdateFunction))
+    task.spawn(UpdateFunction)
 
     return TroveInstance
 end
