@@ -23,7 +23,7 @@ local ClassSymbol = Symbol.new("Scope")
 -- Extended types
 export type ScopeInstance = {
     New : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
-    Rendered : (self : ScopeInstance, Callback : () -> any?) -> Rendered.RenderedInstance<any>,
+    Rendered : (self : ScopeInstance, Callback : (number) -> any?) -> Rendered.RenderedInstance<any>,
     Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
     Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
