@@ -23,7 +23,7 @@ local ClassSymbol = Symbol.new("Scope")
 -- Extended types
 export type ScopeInstance = {
     New : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
-    Rendered : (self : ScopeInstance, Callback : () -> any?) -> Rendered.RenderedInstance<any>,
+    Rendered : (self : ScopeInstance, Callback : (number) -> any?) -> Rendered.RenderedInstance<any>,
     Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
     Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
@@ -35,7 +35,7 @@ export type ScopeInstance = {
     OnAttached : (self : ScopeInstance, Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection,
 
     InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
-    AddObject : (self : ScopeInstance, Object : any) -> (),
+    AddObject : <T>(self : ScopeInstance, Object : T) -> (T),
     RemoveObject : (self : ScopeInstance, Object : any) -> (),
     Destroy : (self : ScopeInstance) -> (),
 }
@@ -50,6 +50,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     local selfClass = {}
     local selfMeta = {}
     local InstanceSymbol = Symbol.new("Scope")
+    local IsDestroyed = false
 
     if not ScopedObjects then
         ScopedObjects = {}
@@ -58,6 +59,11 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     ScopedObjects = table.clone(ScopedObjects)
 
     function selfMeta:__index(Key : string)
+        if IsDestroyed then
+            warn(`Attempted to index a scope with {Key} but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
         if not Key then
             warn(`Attempt to index a scope with nil{"\n"}{CreateDeepTraceback()}`)
             return
@@ -128,6 +134,11 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     end
 
     function selfClass:InnerScope(NewScopedObjects : {[string] : any}?)
+        if IsDestroyed then
+            warn(`Attempted to create inner scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
         -- Default to a blank table
         if NewScopedObjects == nil then
             NewScopedObjects = {}
@@ -144,16 +155,32 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         return NewScope
     end
 
-    function selfClass:AddObject(Object : any)
-        self.Trove:Add(Object)
+    function selfClass:AddObject<T>(Object : T)
+        if IsDestroyed then
+            warn(`Attempted to add object to scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        return self.Trove:Add(Object)
     end
 
     function selfClass:RemoveObject(Object : any)
+        if IsDestroyed then
+            warn(`Attempted to remove object from scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
         Object:Destroy()
         self.Trove[Object] = nil
     end
 
     function selfClass:Destroy()
+        if IsDestroyed then
+            warn(`Attempted to destroy scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        IsDestroyed = true
         self.Trove:Destroy()
         self.Trove = nil
     end
