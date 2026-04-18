@@ -30,17 +30,17 @@ function Connection.Disconnect(self : Connection)
 
 	self.Connected = false
 
-	if self._signal._handlerListHead == self then
-		self._signal._handlerListHead = self._next
+	if self._Signal._HandlerListHead == self then
+		self._Signal._HandlerListHead = self._Next
 	else
-		local prev = self._signal._handlerListHead
+		local prev = self._Signal._HandlerListHead
 
-		while prev and prev._next ~= self do
-			prev = prev._next
+		while prev and prev._Next ~= self do
+			prev = prev._Next
 		end
 
 		if prev then
-			prev._next = self._next
+			prev._Next = self._Next
 		end
 	end
 end
