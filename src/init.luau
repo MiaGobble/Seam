@@ -1,8 +1,5 @@
---[=[
-    Documentation: https://seam.igottic.com/
-
-    @class Seam
-]=]
+-- Author: iGottic
+-- Documentation: https://seam.igottic.com/
 
 -- Services
 local RunService = game:GetService("RunService")
@@ -129,272 +126,32 @@ local function Init()
     end
 end
 
---[=[
-    @function New
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.New = New
-
---[=[
-    @function Children
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Children = Children
-
---[=[
-    @function Value
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Value = Value
-
---[=[
-    @function Computed
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Computed = Computed
-
---[=[
-    @function Spring
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Spring = Spring
-
---[=[
-    @function Tween
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Tween = Tween
-
---[=[
-    @function Scope
-    @within Seam
-    @tag Seam Memory
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Scope = Scope
-
---[=[
-    @function OnEvent
-    @within Seam
-    @tag Seam Connection
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.OnEvent = OnEvent
-
---[=[
-    @function OnChange
-    @within Seam
-    @tag Seam Connection
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.OnChanged = OnChanged
-
---[=[
-    @function Attribute
-    @within Seam
-    @tag Seam Declaration
-]=]
-
 Seam.Attribute = Attribute
-
---[=[
-    @function OnAttributeChanged
-    @within Seam
-    @tag Seam Connection
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.OnAttributeChanged = OnAttributeChanged
-
---[=[
-    @function Lifetime
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Lifetime = Lifetime
-
---[=[
-    @function Rendered
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Rendered = Rendered
-
---[=[
-    @function FollowProperty
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.FollowProperty = FollowProperty
-
---[=[
-    @function FollowAttribute
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.FollowAttribute = FollowAttribute
-
---[=[
-    @function GetValue
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.GetValue = GetValue
-
---[=[
-    @function Component
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Component = Component
-
---[=[
-    @function Tags
-    @within Seam
-    @tag Seam Declaration
-    
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Tags = Tags
-
---[=[
-    @function SetValue
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.SetValue = SetValue
-
---[=[
-    @function IsState
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.IsState = IsState
-
---[=[
-    @function IsComponent
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.IsComponent = IsComponent
-
---[=[
-    @function LockValue
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.LockValue = LockValue
-
---[=[
-    @function Inspect
-    @within Seam
-    @tag Seam Utility
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Inspect = Inspect
-
---[=[
-    @function OnAttached
-    @within Seam
-    @tag Seam Connection
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.OnAttached = OnAttached
-
---[=[
-    @function Destroyed
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.Destroyed = Destroyed
-
---[=[
-    @function EventSequence
-    @within Seam
-    @tag Seam Declaration
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.EventSequence = EventSequence
-
---[=[
-    @function ForPairs
-    @within Seam
-    @tag Seam State
-
-    Visit https://seam.igottic.com/ for more info.
-]=]
-
 Seam.ForPairs = ForPairs
 
 Init()
