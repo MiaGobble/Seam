@@ -14,6 +14,7 @@ local States = Constructors:WaitForChild("States")
 local Utilities = Constructors:WaitForChild("Utilities")
 local Modules = script:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
+local Batch = require(Modules:WaitForChild("Batch"))
 local New = require(Declarations:WaitForChild("New"))
 local Children = require(Declarations:WaitForChild("Children"))
 local Value = require(States:WaitForChild("Value"))
@@ -46,6 +47,7 @@ local ForPairs = require(States:WaitForChild("ForPairs"))
 
 -- Types extended
 type Seam = {
+    Batch : Batch.Batch,
     New : New.NewConstructor,
     Children : Children.Children,
     Value : Value.ValueConstructor<any>,
@@ -78,6 +80,7 @@ type Seam = {
 }
 
 export type BaseState<T> = Types.BaseState<T>
+export type Batch = Batch.Batch
 export type Child = Types.Child
 export type NewConstructor = New.NewConstructor
 export type Children = Children.Children
@@ -134,6 +137,7 @@ local function Init()
 end
 
 Seam.New = New
+Seam.Batch = Batch
 Seam.Children = Children
 Seam.Value = Value
 Seam.Computed = Computed

@@ -4,6 +4,7 @@ local Computed = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
@@ -42,7 +43,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
             TroveInstance:Add(ThisValue.Changed:Connect(function()
                 CurrentValue = Callback(Use)
-                ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
+                Batch.Fire(ChangedSignal, "Value", CurrentValue) -- When the state changes, fire the changed signal for computed
             end))
         end
 

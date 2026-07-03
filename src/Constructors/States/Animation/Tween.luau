@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 -- Imports
 local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
@@ -84,7 +85,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
         CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
-            ChangedSignal:Fire("Value")
+            Batch.Fire(ChangedSignal, "Value")
         end
 
         LastValue = CurrentValue

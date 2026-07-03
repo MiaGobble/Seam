@@ -4,6 +4,7 @@ local Rendered = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
@@ -38,7 +39,7 @@ function Rendered:__call(Callback : (number) -> any?)
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         CurrentValue = WrappedCallback()
         IsInitialized = true
-        ChangedSignal:Fire("Value", CurrentValue)
+        Batch.Fire(ChangedSignal, "Value", CurrentValue)
     end))
 
     local ActiveComputation; ActiveComputation = setmetatable({

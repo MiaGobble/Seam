@@ -5,6 +5,7 @@ local Bezier = {}
 -- Imports
 local Constructors = script.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
@@ -116,7 +117,7 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
         CurrentValue = GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
-            ChangedSignal:Fire("Value")
+            Batch.Fire(ChangedSignal, "Value")
         end
 
         LastValue = CurrentValue

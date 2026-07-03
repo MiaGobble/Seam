@@ -4,6 +4,7 @@ local Value = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
@@ -134,7 +135,7 @@ function Value:__call(ThisValue : any)
                 ThisValue = NewValue
 
                 -- Make sure to fire the changed signal for other states
-                ChangedSignal:Fire("Value", ThisValue)
+                Batch.Fire(ChangedSignal, "Value", ThisValue)
                 return
             elseif Index == "__LOCKED" then
                 if NewValue == true then

@@ -8,6 +8,7 @@ local EPSILON = 0.001
 -- Imports
 local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
@@ -145,7 +146,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
         CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
-            ChangedSignal:Fire("Value")
+            Batch.Fire(ChangedSignal, "Value")
         end
 
         LastValue = CurrentValue
@@ -241,7 +242,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
-                    ChangedSignal:Fire("Value")
+                    Batch.Fire(ChangedSignal, "Value")
                     return This.Value
                 end,
 
