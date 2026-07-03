@@ -52,10 +52,16 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Tween")
+    local IsSleeping = false
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+        if IsSleeping then
+            return
+        end
+
         local PackedValues = {}
         local CurrentTweenInformation = GetValue(TweenInformation)
+        local IsSettled = true
 
         for Index, ThisTween in UnpackedTweens do
             local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / CurrentTweenInformation.Time, 0, 1)
@@ -68,6 +74,10 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
 				Position = ThisTween.Position0
 			end
 
+            if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
+                IsSettled = false
+            end
+
             PackedValues[Index] = Position
         end
 
@@ -78,6 +88,10 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
         end
 
         LastValue = CurrentValue
+
+        if IsSettled then
+            IsSleeping = true
+        end
     end))
 
     local ActiveValue; ActiveValue = setmetatable({
@@ -105,6 +119,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Target" then
+                IsSleeping = false
                 CurrentTarget = GetValue(NewValue)
                 
                 local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
@@ -115,6 +130,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
                     ThisTween.Tick0 = os.clock()
                 end
             elseif Index == "Value" then
+                IsSleeping = false
                 local UnpackedValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisTween in UnpackedTweens do
@@ -123,6 +139,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
                     ThisTween.Tick0 = os.clock()
                 end
             elseif Index == "TweenInfo" then
+                IsSleeping = false
                 TweenInformation = NewValue
             end
         end,

@@ -85,6 +85,7 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
     local CurrentValue = nil
     local LastValue = nil
     local InstanceSymbol = Symbol.new("Bezier")
+    local IsSleeping = false
 
     if typeof(CurrentAlpha) ~= "number" then
         error("Bezier alpha must resolve to a number")
@@ -95,6 +96,10 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
     end
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+        if IsSleeping then
+            return
+        end
+
         CurrentOrigin = GetValue(Origin)
         CurrentMidpoint = GetValue(Midpoint)
         CurrentTarget = GetValue(Target)
@@ -115,6 +120,7 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
         end
 
         LastValue = CurrentValue
+        IsSleeping = true
     end))
 
     local ActiveValue; ActiveValue = setmetatable({
@@ -152,14 +158,19 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Origin" then
+                IsSleeping = false
                 Origin = NewValue
             elseif Index == "Midpoint" then
+                IsSleeping = false
                 Midpoint = NewValue
             elseif Index == "Target" then
+                IsSleeping = false
                 Target = NewValue
             elseif Index == "Alpha" then
+                IsSleeping = false
                 Alpha = NewValue
             elseif Index == "Value" then
+                IsSleeping = false
                 CurrentValue = NewValue
                 Origin = NewValue
                 Midpoint = NewValue
