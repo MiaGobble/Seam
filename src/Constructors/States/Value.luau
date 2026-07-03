@@ -17,6 +17,8 @@ local ClassSymbol = Symbol.new("Value")
 -- Types Extended
 export type ValueInstance<T> = {
     Changed : RBXScriptSignal,
+    TableInsert : (self : ValueInstance<T>, InsertedValue : any, Path : {string}?) -> (),
+    TableRemove : (self : ValueInstance<T>, RemovedValueIndex : number, Path : {string}?) -> (),
 } & Types.BaseState<T>
 
 export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
@@ -32,6 +34,38 @@ function Value:__call(ThisValue : any)
     if ValueType == "table" then
         -- Seam values clone tables before using them
         ThisValue = table.clone(ThisValue)
+    end
+
+    local function CloneTableToPath(Path : {string}?)
+        if typeof(ThisValue) ~= "table" then
+            error("TableInsert and TableRemove can only be used when Value is a table")
+        end
+
+        local SafePath = if Path ~= nil then Path else {}
+
+        if typeof(SafePath) ~= "table" then
+            error("Path must be a table of keys")
+        end
+
+        local OldRoot = ThisValue
+        local NewRoot = table.clone(OldRoot)
+        local OldCursor = OldRoot
+        local NewCursor = NewRoot
+
+        for _, ThisKey in SafePath do
+            local OldNext = OldCursor[ThisKey]
+
+            if typeof(OldNext) ~= "table" then
+                error("Path points to a non-table value")
+            end
+
+            local NewNext = table.clone(OldNext)
+            NewCursor[ThisKey] = NewNext
+            OldCursor = OldNext
+            NewCursor = NewNext
+        end
+
+        return NewRoot, NewCursor
     end
 
     --[[
@@ -54,6 +88,26 @@ function Value:__call(ThisValue : any)
                 return ChangedSignal
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
+            elseif Index == "TableInsert" then
+                return function(_, InsertedValue : any, Path : {string}?)
+                    local NewRoot, TargetTable = CloneTableToPath(Path)
+
+                    table.insert(TargetTable, InsertedValue)
+
+                    ActiveValue.Value = NewRoot
+                end
+            elseif Index == "TableRemove" then
+                return function(_, RemovedValueIndex : number, Path : {string}?)
+                    if typeof(RemovedValueIndex) ~= "number" then
+                        error("RemovedValueIndex must be a number")
+                    end
+
+                    local NewRoot, TargetTable = CloneTableToPath(Path)
+
+                    table.remove(TargetTable, RemovedValueIndex)
+
+                    ActiveValue.Value = NewRoot
+                end
             end
 
             return nil
