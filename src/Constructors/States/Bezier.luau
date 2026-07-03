@@ -84,7 +84,11 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
 
     local function BindInput(Source : any, TargetState : any)
         if typeof(Source) == "table" and Source.__SEAM_OBJECT then
-            return Source(TargetState, "Value")
+            TargetState.Value = GetValue(Source)
+
+            return Source.Changed:Connect(function()
+                TargetState.Value = GetValue(Source)
+            end)
         end
 
         TargetState.Value = GetValue(Source)
@@ -132,17 +136,14 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
         AttachedSignal:Fire(Object)
     end))
 
-    for _, Connection in BoundInputConnections do
-        if Connection ~= nil then
-            TroveInstance:Add(Connection)
-        end
-    end
-
     local function RebindInput(Key : string, Source : any, TargetState : any)
         local CurrentConnection = BoundInputConnections[Key]
 
         if CurrentConnection ~= nil then
-            CurrentConnection:Destroy()
+            if CurrentConnection.Connected then
+                CurrentConnection:Disconnect()
+            end
+
             BoundInputConnections[Key] = nil
         end
 
@@ -151,6 +152,13 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function()
+            for _, Connection in BoundInputConnections do
+                if Connection ~= nil and Connection.Connected then
+                    Connection:Disconnect()
+                end
+            end
+
+            table.clear(BoundInputConnections)
             TroveInstance:Destroy()
             TroveInstance = nil
         end

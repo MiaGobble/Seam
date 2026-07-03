@@ -120,7 +120,7 @@ end
 
 function StyleSheetMethods:Apply(root: Instance)
     local ActiveStyleSheet = ActiveStylesheets[root]
-    if ActiveStyleSheet and ActiveStyleSheet ~= self then
+    if ActiveStyleSheet then
         ActiveStyleSheet:Unapply(root)
     end
 
@@ -159,6 +159,8 @@ function StyleSheetMethods:Unapply(root: Instance)
         return
     end
 
+    local Connections = self._connections[root]
+
     for InstanceObject, Properties in PropertyLog do
         for PropertyName, Value in Properties do
             pcall(function()
@@ -167,8 +169,10 @@ function StyleSheetMethods:Unapply(root: Instance)
         end
     end
 
-    for _, Connection in self._connections[root] do
-        Connection:Disconnect()
+    if Connections then
+        for _, Connection in Connections do
+            Connection:Disconnect()
+        end
     end
 
     self._logs[root] = nil
