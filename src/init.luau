@@ -32,6 +32,7 @@ local FollowAttribute = require(Declarations:WaitForChild("FollowAttribute"))
 local GetValue = require(Utilities:WaitForChild("GetValue"))
 local Component = require(Declarations:WaitForChild("Component"))
 local Tags = require(Declarations:WaitForChild("Tags"))
+local StyleSheet = require(Declarations:WaitForChild("StyleSheet"))
 local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
 local IsComponent = require(Utilities:WaitForChild("IsComponent"))
@@ -62,6 +63,7 @@ type Seam = {
     GetValue : GetValue.GetValue,
     Component : Component.Component,
     Tags : Tags.Tags,
+    StyleSheet : StyleSheet.StyleSheetDeclaration,
     SetValue : SetValue.SetValue,
     IsState : IsState.IsState,
     IsComponent : IsComponent.IsComponent,
@@ -99,6 +101,7 @@ export type FollowAttribute = FollowAttribute.FollowAttribute
 export type GetValue = GetValue.GetValue
 export type Component = Component.Component
 export type Tags = Tags.Tags
+export type StyleSheet = StyleSheet.StyleSheetDeclaration
 export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
@@ -144,6 +147,7 @@ Seam.FollowAttribute = FollowAttribute
 Seam.GetValue = GetValue
 Seam.Component = Component
 Seam.Tags = Tags
+Seam.StyleSheet = StyleSheet
 Seam.SetValue = SetValue
 Seam.IsState = IsState
 Seam.IsComponent = IsComponent
