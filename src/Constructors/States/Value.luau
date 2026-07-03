@@ -18,8 +18,9 @@ local ClassSymbol = Symbol.new("Value")
 -- Types Extended
 export type ValueInstance<T> = {
     Changed : RBXScriptSignal,
-    TableInsert : (self : ValueInstance<T>, InsertedValue : any, Path : {string}?) -> (),
-    TableRemove : (self : ValueInstance<T>, RemovedValueIndex : number, Path : {string}?) -> (),
+    TableInsert : (self : ValueInstance<T>, InsertedValue : any, Path : {any}?) -> (),
+    TableRemove : (self : ValueInstance<T>, RemovedValueIndex : number, Path : {any}?) -> (),
+    TableSet : (self : ValueInstance<T>, NewTargetValue : any, Path : {any}?) -> (),
 } & Types.BaseState<T>
 
 export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
@@ -37,9 +38,9 @@ function Value:__call(ThisValue : any)
         ThisValue = table.clone(ThisValue)
     end
 
-    local function CloneTableToPath(Path : {string}?)
+    local function CloneTableToPath(Path : {any}?)
         if typeof(ThisValue) ~= "table" then
-            error("TableInsert and TableRemove can only be used when Value is a table")
+            error("TableInsert, TableRemove, and TableSet can only be used when Value is a table")
         end
 
         local SafePath = if Path ~= nil then Path else {}
@@ -69,6 +70,37 @@ function Value:__call(ThisValue : any)
         return NewRoot, NewCursor
     end
 
+    local function CloneTableToParentPath(Path : {any})
+        if typeof(ThisValue) ~= "table" then
+            error("TableSet with a path can only be used when Value is a table")
+        end
+
+        if #Path == 0 then
+            error("Path must contain at least one key")
+        end
+
+        local OldRoot = ThisValue
+        local NewRoot = table.clone(OldRoot)
+        local OldCursor = OldRoot
+        local NewCursor = NewRoot
+
+        for ThisIndex = 1, #Path - 1 do
+            local ThisKey = Path[ThisIndex]
+            local OldNext = OldCursor[ThisKey]
+
+            if typeof(OldNext) ~= "table" then
+                error("Path points to a non-table value")
+            end
+
+            local NewNext = table.clone(OldNext)
+            NewCursor[ThisKey] = NewNext
+            OldCursor = OldNext
+            NewCursor = NewNext
+        end
+
+        return NewRoot, OldCursor, NewCursor, Path[#Path]
+    end
+
     --[[
         local This = Value(...)
         This.Value = x OR x = This.Value
@@ -90,7 +122,7 @@ function Value:__call(ThisValue : any)
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
             elseif Index == "TableInsert" then
-                return function(_, InsertedValue : any, Path : {string}?)
+                return function(_, InsertedValue : any, Path : {any}?)
                     local NewRoot, TargetTable = CloneTableToPath(Path)
 
                     table.insert(TargetTable, InsertedValue)
@@ -98,7 +130,7 @@ function Value:__call(ThisValue : any)
                     ActiveValue.Value = NewRoot
                 end
             elseif Index == "TableRemove" then
-                return function(_, RemovedValueIndex : number, Path : {string}?)
+                return function(_, RemovedValueIndex : number, Path : {any}?)
                     if typeof(RemovedValueIndex) ~= "number" then
                         error("RemovedValueIndex must be a number")
                     end
@@ -107,6 +139,23 @@ function Value:__call(ThisValue : any)
 
                     table.remove(TargetTable, RemovedValueIndex)
 
+                    ActiveValue.Value = NewRoot
+                end
+            elseif Index == "TableSet" then
+                return function(_, NewTargetValue : any, Path : {any}?)
+                    local SafePath = if Path ~= nil then Path else {}
+
+                    if typeof(SafePath) ~= "table" then
+                        error("Path must be a table of keys")
+                    end
+
+                    if #SafePath == 0 then
+                        ActiveValue.Value = NewTargetValue
+                        return
+                    end
+
+                    local NewRoot, _, NewParent, LastKey = CloneTableToParentPath(SafePath)
+                    NewParent[LastKey] = NewTargetValue
                     ActiveValue.Value = NewRoot
                 end
             end
