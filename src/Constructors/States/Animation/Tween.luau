@@ -43,6 +43,20 @@ local function ConvertValueToUnpackedTweens(Value : any)
     return UnpackedValue
 end
 
+local function GetTweenPosition(ThisTween : any, ThisTweenInformation : TweenInfo)
+    local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / ThisTweenInformation.Time, 0, 1)
+    local UnitPosition = TweenService:GetValue(Alpha, ThisTweenInformation.EasingStyle, ThisTweenInformation.EasingDirection)
+    local Position = ThisTween.Position0 + (ThisTween.Position1 - ThisTween.Position0) * UnitPosition
+
+    if math.abs(Position) <= EPSILON then
+        Position = 0
+    elseif math.abs(Position - ThisTween.Position0) <= EPSILON then
+        Position = ThisTween.Position0
+    end
+
+    return Position, Alpha
+end
+
 function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | TweenInfo) : TweenInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
@@ -65,15 +79,7 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
         local IsSettled = true
 
         for Index, ThisTween in UnpackedTweens do
-            local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / CurrentTweenInformation.Time, 0, 1)
-            local UnitPosition = TweenService:GetValue(Alpha, CurrentTweenInformation.EasingStyle, CurrentTweenInformation.EasingDirection)
-            local Position = ThisTween.Position0 + (ThisTween.Position1 - ThisTween.Position0) * UnitPosition
-
-            if math.abs(Position) <= EPSILON then
-				Position = 0
-            elseif math.abs(Position - ThisTween.Position0) <= EPSILON then
-				Position = ThisTween.Position0
-			end
+            local Position, Alpha = GetTweenPosition(ThisTween, CurrentTweenInformation)
 
             if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
                 IsSettled = false
@@ -122,11 +128,13 @@ function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | Twe
             if Index == "Target" then
                 IsSleeping = false
                 CurrentTarget = GetValue(NewValue)
+                local CurrentTweenInformation = GetValue(TweenInformation)
                 
                 local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
 
                 for ThisIndex, ThisTween in UnpackedTweens do
-                    ThisTween.Position0 = ThisTween.Position1
+                    local CurrentPosition = GetTweenPosition(ThisTween, CurrentTweenInformation)
+                    ThisTween.Position0 = CurrentPosition
                     ThisTween.Position1 = UnpackedTargetValue[ThisIndex]
                     ThisTween.Tick0 = os.clock()
                 end
