@@ -5,15 +5,13 @@ local Bezier = {}
 -- Imports
 local Constructors = script.Parent.Parent
 local Modules = Constructors.Parent.Modules
-local Batch = require(Modules.Batch)
+local Computed = require(script.Parent.Computed)
+local Value = require(script.Parent.Value)
 local GetValue = require(Constructors.Utilities.GetValue)
-local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
-local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
-local UpdateSignals = require(Modules.UpdateSignals)
 
 -- Variables
 local ClassSymbol = Symbol.new("Bezier")
@@ -75,36 +73,44 @@ local function GetBezierValue(AlphaValue : number, OriginValue : any, MidpointVa
 end
 
 function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) : BezierInstance<any>
-    local CurrentOrigin = GetValue(Origin)
-    local CurrentMidpoint = GetValue(Midpoint)
-    local CurrentTarget = GetValue(Target)
-    local CurrentAlpha = GetValue(Alpha)
-    local ValueType = typeof(CurrentOrigin)
     local TroveInstance = Trove.new()
     local AttachedSignal = Signal.new()
-    local ChangedSignal = Signal.new()
-    local CurrentValue = nil
-    local LastValue = nil
+    local AlphaValue = Value(GetValue(Alpha))
+    local OriginValue = Value(GetValue(Origin))
+    local MidpointValue = Value(GetValue(Midpoint))
+    local TargetValue = Value(GetValue(Target))
+    local ValueType = typeof(OriginValue.Value)
     local InstanceSymbol = Symbol.new("Bezier")
-    local IsSleeping = false
 
-    if typeof(CurrentAlpha) ~= "number" then
+    local function BindInput(Source : any, TargetState : any)
+        if typeof(Source) == "table" and Source.__SEAM_OBJECT then
+            return Source(TargetState, "Value")
+        end
+
+        TargetState.Value = GetValue(Source)
+        return nil
+    end
+
+    if typeof(AlphaValue.Value) ~= "number" then
         error("Bezier alpha must resolve to a number")
     end
 
-    if typeof(CurrentMidpoint) ~= ValueType or typeof(CurrentTarget) ~= ValueType then
+    if typeof(MidpointValue.Value) ~= ValueType or typeof(TargetValue.Value) ~= ValueType then
         error("Bezier origin, midpoint, and target must resolve to the same type")
     end
 
-    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
-        if IsSleeping then
-            return
-        end
+    local BoundInputConnections = {
+        Alpha = BindInput(Alpha, AlphaValue),
+        Origin = BindInput(Origin, OriginValue),
+        Midpoint = BindInput(Midpoint, MidpointValue),
+        Target = BindInput(Target, TargetValue),
+    }
 
-        CurrentOrigin = GetValue(Origin)
-        CurrentMidpoint = GetValue(Midpoint)
-        CurrentTarget = GetValue(Target)
-        CurrentAlpha = GetValue(Alpha)
+    local ComputedValue = Computed(function(Use)
+        local CurrentAlpha = Use(AlphaValue)
+        local CurrentOrigin = Use(OriginValue)
+        local CurrentMidpoint = Use(MidpointValue)
+        local CurrentTarget = Use(TargetValue)
 
         if typeof(CurrentAlpha) ~= "number" then
             error("Bezier alpha must resolve to a number")
@@ -114,15 +120,34 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
             error("Bezier origin, midpoint, and target must resolve to the same type")
         end
 
-        CurrentValue = GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
+        return GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
+    end)
 
-        if IsValueChanged(LastValue, CurrentValue) then
-            Batch.Fire(ChangedSignal, "Value")
+    TroveInstance:Add(AlphaValue)
+    TroveInstance:Add(OriginValue)
+    TroveInstance:Add(MidpointValue)
+    TroveInstance:Add(TargetValue)
+    TroveInstance:Add(ComputedValue)
+    TroveInstance:Add(ComputedValue.AttachedToInstance:Connect(function(Object)
+        AttachedSignal:Fire(Object)
+    end))
+
+    for _, Connection in BoundInputConnections do
+        if Connection ~= nil then
+            TroveInstance:Add(Connection)
+        end
+    end
+
+    local function RebindInput(Key : string, Source : any, TargetState : any)
+        local CurrentConnection = BoundInputConnections[Key]
+
+        if CurrentConnection ~= nil then
+            CurrentConnection:Destroy()
+            BoundInputConnections[Key] = nil
         end
 
-        LastValue = CurrentValue
-        IsSleeping = true
-    end))
+        BoundInputConnections[Key] = BindInput(Source, TargetState)
+    end
 
     local ActiveValue; ActiveValue = setmetatable({
         Destroy = function()
@@ -134,14 +159,9 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
-                if CurrentValue == nil then
-                    CurrentValue = GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
-                    LastValue = CurrentValue
-                end
-
-                return CurrentValue
+                return ComputedValue.Value
             elseif Index == "Changed" then
-                return ChangedSignal
+                return ComputedValue.Changed
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
             elseif Index == "Origin" then
@@ -159,56 +179,32 @@ function Bezier:__call(Alpha : any, Origin : any, Midpoint : any, Target : any) 
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Origin" then
-                IsSleeping = false
                 Origin = NewValue
+                RebindInput("Origin", NewValue, OriginValue)
             elseif Index == "Midpoint" then
-                IsSleeping = false
                 Midpoint = NewValue
+                RebindInput("Midpoint", NewValue, MidpointValue)
             elseif Index == "Target" then
-                IsSleeping = false
                 Target = NewValue
+                RebindInput("Target", NewValue, TargetValue)
             elseif Index == "Alpha" then
-                IsSleeping = false
                 Alpha = NewValue
+                RebindInput("Alpha", NewValue, AlphaValue)
             elseif Index == "Value" then
-                IsSleeping = false
-                CurrentValue = NewValue
                 Origin = NewValue
                 Midpoint = NewValue
                 Target = NewValue
+                RebindInput("Origin", NewValue, OriginValue)
+                RebindInput("Midpoint", NewValue, MidpointValue)
+                RebindInput("Target", NewValue, TargetValue)
             end
         end,
 
-        __call = function(This, Object, Index : string)
-            AttachedSignal:Fire(Object)
-
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    return This.Value
-                end,
-
-                PropertyName = Index,
-            }))
-
+        __call = function(_, Object, Index : string)
+            ComputedValue(Object, Index)
             return ActiveValue
         end,
     })
-
-    if typeof(Alpha) == "table" and Alpha.__SEAM_OBJECT then
-        Alpha(ActiveValue, "Alpha")
-    end
-
-    if typeof(Origin) == "table" and Origin.__SEAM_OBJECT then
-        Origin(ActiveValue, "Origin")
-    end
-
-    if typeof(Midpoint) == "table" and Midpoint.__SEAM_OBJECT then
-        Midpoint(ActiveValue, "Midpoint")
-    end
-
-    if typeof(Target) == "table" and Target.__SEAM_OBJECT then
-        Target(ActiveValue, "Target")
-    end
 
     return ActiveValue :: BezierInstance<any>
 end
