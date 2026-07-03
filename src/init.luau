@@ -18,6 +18,7 @@ local New = require(Declarations:WaitForChild("New"))
 local Children = require(Declarations:WaitForChild("Children"))
 local Value = require(States:WaitForChild("Value"))
 local Computed = require(States:WaitForChild("Computed"))
+local Bezier = require(States:WaitForChild("Bezier"))
 local Spring = require(States.Animation:WaitForChild("Spring"))
 local Tween = require(States.Animation:WaitForChild("Tween"))
 local Scope = require(Memory:WaitForChild("Scope"))
@@ -49,6 +50,7 @@ type Seam = {
     Children : Children.Children,
     Value : Value.ValueConstructor<any>,
     Computed : Computed.ComputedConstructor<any>,
+    Bezier : Bezier.BezierConstructor<any>,
     Spring : Spring.SpringConstructor<any>,
     Tween : Tween.TweenConstructor<any>,
     Scope : Scope.ScopeConstructor,
@@ -83,6 +85,8 @@ export type Value<T> = Value.ValueInstance<T>
 export type ValueConstructor<T> = Value.ValueConstructor<T>
 export type Computed<T> = Computed.ComputedInstance<T>
 export type ComputedConstructor<T> = Computed.ComputedConstructor<T>
+export type Bezier<T> = Bezier.BezierInstance<T>
+export type BezierConstructor<T> = Bezier.BezierConstructor<T>
 export type Spring<T> = Spring.SpringInstance<T>
 export type SpringConstructor<T> = Spring.SpringConstructor<T>
 export type Tween<T> = Tween.TweenInstance<T>
@@ -133,6 +137,7 @@ Seam.New = New
 Seam.Children = Children
 Seam.Value = Value
 Seam.Computed = Computed
+Seam.Bezier = Bezier
 Seam.Spring = Spring
 Seam.Tween = Tween
 Seam.Scope = Scope

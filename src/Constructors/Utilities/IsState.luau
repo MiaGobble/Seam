@@ -6,7 +6,7 @@ local IsState = {}
 export type IsState = (CheckedValue : any?) -> boolean
 
 -- Constants
-local RECOGNIZED_STATE_SYMBOLS = {"Spring", "Tween", "ComputedInstance", "RenderedInstance", "Value"}
+local RECOGNIZED_STATE_SYMBOLS = {"Spring", "Tween", "Bezier", "ComputedInstance", "RenderedInstance", "Value"}
 
 function IsState:__call(CheckedValue : any?) : boolean
     if typeof(CheckedValue) ~= "table" then
