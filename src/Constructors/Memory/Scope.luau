@@ -16,6 +16,8 @@ local Value = require(States.Value)
 local Spring = require(States.Animation.Spring)
 local Tween = require(States.Animation.Tween)
 local ForPairs = require(States.ForPairs)
+local Bezier = require(States.Bezier)
+local Resource = require(States.Resource)
 
 -- Variables
 local ClassSymbol = Symbol.new("Scope")
@@ -29,6 +31,8 @@ export type ScopeInstance = {
     Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
     Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
     ForPairs : (self : ScopeInstance, TrackedValue : Value.ValueInstance<any>, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> ForPairs.ForPairsInstance<any>,
+    Bezier : (self : ScopeInstance, Alpha : any, Origin : any, Midpoint : any, Target : any) -> Bezier.BezierInstance<any>,
+    Resource : (self : ScopeInstance, Callback : () -> any) -> Resource.ResourceInstance<any>,
     OnChanged : (self : ScopeInstance, Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection,
     OnAttributeChanged : (self : ScopeInstance, AttributeName : string) -> (...any) -> RBXScriptConnection,
     OnEvent : (self : ScopeInstance, EventName : string) -> (...any) -> RBXScriptConnection,

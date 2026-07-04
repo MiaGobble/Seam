@@ -14,15 +14,52 @@ local ClassSymbol = Symbol.new("Attribute")
 export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
 
 function Attribute:__call(AttributeName : string)
-    local EventBinding = setmetatable({}, {
+    local ActiveConnections = setmetatable({}, {__mode = "k"})
+
+    local function CleanupObjectConnection(Object : Instance)
+        local ConnectionBucket = ActiveConnections[Object]
+
+        if ConnectionBucket == nil then
+            return
+        end
+
+        if ConnectionBucket.StateConnection ~= nil and ConnectionBucket.StateConnection.Connected then
+            ConnectionBucket.StateConnection:Disconnect()
+        end
+
+        if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
+            ConnectionBucket.DestroyingConnection:Disconnect()
+        end
+
+        ActiveConnections[Object] = nil
+    end
+
+    local EventBinding = setmetatable({
+        Destroy = function()
+            for Object in ActiveConnections do
+                CleanupObjectConnection(Object)
+            end
+        end,
+    }, {
         __call = function(_, Object : Instance, AttributeValue : any)
+            CleanupObjectConnection(Object)
+
             if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
                 -- If we are using a state, then let's connect to it
                 -- When it changes, update the attribute
 
-                AttributeValue.Changed:Connect(function()
+                local StateConnection = AttributeValue.Changed:Connect(function()
                     Object:SetAttribute(AttributeName, AttributeValue.Value)
                 end)
+
+                local DestroyingConnection = Object.Destroying:Connect(function()
+                    CleanupObjectConnection(Object)
+                end)
+
+                ActiveConnections[Object] = {
+                    StateConnection = StateConnection,
+                    DestroyingConnection = DestroyingConnection,
+                }
 
                 Object:SetAttribute(AttributeName, AttributeValue.Value)
 

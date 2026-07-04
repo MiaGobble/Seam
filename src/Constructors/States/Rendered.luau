@@ -4,11 +4,13 @@ local Rendered = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local UpdateSignals = require(Modules.UpdateSignals)
 
 -- Variables
 local ClassSymbol = Symbol.new("Rendered")
@@ -20,8 +22,11 @@ export type RenderedConstructor<T> = (Callback : (number) -> any?) -> RenderedIn
 function Rendered:__call(Callback : (number) -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
     local TroveInstance = Trove.new()
+    local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("RenderedInstance")
+    local CurrentValue = nil
+    local IsInitialized = false
     local LastFrame = os.clock()
 
     local WrappedCallback = function()
@@ -31,16 +36,24 @@ function Rendered:__call(Callback : (number) -> any?)
         return Callback(DeltaTime)
     end
 
+    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+        CurrentValue = WrappedCallback()
+        IsInitialized = true
+        Batch.Fire(ChangedSignal, "Value", CurrentValue)
+    end))
+
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
             TroveInstance:Destroy()
         end
     }, {
-        __call = function(_, Object : Instance, Index : string)
+        __call = function(This, Object : Instance, Index : string)
             AttachedSignal:Fire(Object)
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = WrappedCallback,
+                Value = function()
+                    return This.Value
+                end,
                 PropertyName = Index
             }))
 
@@ -51,7 +64,14 @@ function Rendered:__call(Callback : (number) -> any?)
             if Index == "__SEAM_OBJECT" then
                 return InstanceSymbol
             elseif Index == "Value" then
-                return WrappedCallback()
+                if not IsInitialized then
+                    CurrentValue = WrappedCallback()
+                    IsInitialized = true
+                end
+
+                return CurrentValue
+            elseif Index == "Changed" then
+                return ChangedSignal
             elseif Index == "AttachedToInstance" then
                 return AttachedSignal
             end

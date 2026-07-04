@@ -4,6 +4,7 @@ local Computed = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
@@ -24,33 +25,77 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     -- This shit has caused me so much pain
     local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
-    local UsedValues = {}
+    local DependencyConnections : {[any] : RBXScriptConnection} = {}
     local CurrentValue = nil
     local IsInitialized = false
     local AttachedSignal = Signal.new()
     local InstanceSymbol = Symbol.new("ComputedInstance")
+    local IsRecomputing = false
+    local RecomputeAndFireChanged
 
-    local function Use(ThisValue : Value.ValueInstance<any>)
-        -- Is Use connecting to a state? If not, just get the value
-
-        if ThisValue ~= nil and IsState(ThisValue) then
-            if UsedValues[ThisValue] ~= nil then
-                return GetValue(UsedValues[ThisValue])
+    local function CleanupDependencyConnections()
+        for _, Connection in DependencyConnections do
+            if Connection.Connected then
+                Connection:Disconnect()
             end
-
-            UsedValues[ThisValue] = ThisValue
-
-            TroveInstance:Add(ThisValue.Changed:Connect(function()
-                CurrentValue = Callback(Use)
-                ChangedSignal:Fire("Value", CurrentValue) -- When the state changes, fire the changed signal for computed
-            end))
         end
 
-        return GetValue(ThisValue)
+        table.clear(DependencyConnections)
+    end
+
+    local function RecomputeCore()
+        if IsRecomputing then
+            return
+        end
+
+        IsRecomputing = true
+
+        local SeenDependencies : {[any] : boolean} = {}
+
+        local function Use(ThisValue : Value.ValueInstance<any>)
+            -- Is Use connecting to a state? If not, just get the value
+
+            if ThisValue ~= nil and IsState(ThisValue) then
+                SeenDependencies[ThisValue] = true
+
+                if DependencyConnections[ThisValue] == nil then
+                    DependencyConnections[ThisValue] = ThisValue.Changed:Connect(function()
+                        RecomputeAndFireChanged()
+                    end)
+                end
+            end
+
+            return GetValue(ThisValue)
+        end
+
+        CurrentValue = Callback(Use)
+        IsInitialized = true
+
+        for Dependency, Connection in DependencyConnections do
+            if not SeenDependencies[Dependency] then
+                if Connection.Connected then
+                    Connection:Disconnect()
+                end
+
+                DependencyConnections[Dependency] = nil
+            end
+        end
+
+        IsRecomputing = false
+    end
+
+    RecomputeAndFireChanged = function()
+        RecomputeCore()
+        Batch.Fire(ChangedSignal, "Value", CurrentValue)
+    end
+
+    local function RecomputeSilently()
+        RecomputeCore()
     end
 
     local ActiveComputation; ActiveComputation = setmetatable({
         Destroy = function()
+            CleanupDependencyConnections()
             TroveInstance:Destroy()
         end,
     }, {
@@ -63,8 +108,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
                     -- so let's just force-calculate only when it's first checked
 
                     if not IsInitialized then
-                        CurrentValue = Callback(Use)
-                        IsInitialized = true
+                        RecomputeSilently()
                     end
                     
                     return CurrentValue
@@ -83,8 +127,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
                 -- Same as above, let's not re-calculate
 
                 if not IsInitialized then
-                    CurrentValue = Callback(Use)
-                    IsInitialized = true
+                    RecomputeSilently()
                 end
 
                 return CurrentValue
@@ -92,8 +135,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
                 -- We need to connect the Use() functions here to track changes
 
                 if not IsInitialized then
-                    CurrentValue = Callback(Use)
-                    IsInitialized = true
+                    RecomputeSilently()
                 end
 
                 return ChangedSignal

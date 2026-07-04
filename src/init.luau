@@ -14,10 +14,13 @@ local States = Constructors:WaitForChild("States")
 local Utilities = Constructors:WaitForChild("Utilities")
 local Modules = script:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
+local Batch = require(Modules:WaitForChild("Batch"))
 local New = require(Declarations:WaitForChild("New"))
 local Children = require(Declarations:WaitForChild("Children"))
 local Value = require(States:WaitForChild("Value"))
 local Computed = require(States:WaitForChild("Computed"))
+local Resource = require(States:WaitForChild("Resource"))
+local Bezier = require(States:WaitForChild("Bezier"))
 local Spring = require(States.Animation:WaitForChild("Spring"))
 local Tween = require(States.Animation:WaitForChild("Tween"))
 local Scope = require(Memory:WaitForChild("Scope"))
@@ -32,6 +35,7 @@ local FollowAttribute = require(Declarations:WaitForChild("FollowAttribute"))
 local GetValue = require(Utilities:WaitForChild("GetValue"))
 local Component = require(Declarations:WaitForChild("Component"))
 local Tags = require(Declarations:WaitForChild("Tags"))
+local StyleSheet = require(Declarations:WaitForChild("StyleSheet"))
 local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
 local IsComponent = require(Utilities:WaitForChild("IsComponent"))
@@ -44,10 +48,13 @@ local ForPairs = require(States:WaitForChild("ForPairs"))
 
 -- Types extended
 type Seam = {
+    Batch : Batch.Batch,
     New : New.NewConstructor,
     Children : Children.Children,
     Value : Value.ValueConstructor<any>,
     Computed : Computed.ComputedConstructor<any>,
+    Resource : Resource.ResourceConstructor<any>,
+    Bezier : Bezier.BezierConstructor<any>,
     Spring : Spring.SpringConstructor<any>,
     Tween : Tween.TweenConstructor<any>,
     Scope : Scope.ScopeConstructor,
@@ -62,6 +69,7 @@ type Seam = {
     GetValue : GetValue.GetValue,
     Component : Component.Component,
     Tags : Tags.Tags,
+    StyleSheet : StyleSheet.StyleSheetDeclaration,
     SetValue : SetValue.SetValue,
     IsState : IsState.IsState,
     IsComponent : IsComponent.IsComponent,
@@ -74,6 +82,7 @@ type Seam = {
 }
 
 export type BaseState<T> = Types.BaseState<T>
+export type Batch = Batch.Batch
 export type Child = Types.Child
 export type NewConstructor = New.NewConstructor
 export type Children = Children.Children
@@ -81,6 +90,10 @@ export type Value<T> = Value.ValueInstance<T>
 export type ValueConstructor<T> = Value.ValueConstructor<T>
 export type Computed<T> = Computed.ComputedInstance<T>
 export type ComputedConstructor<T> = Computed.ComputedConstructor<T>
+export type Resource<T> = Resource.ResourceInstance<T>
+export type ResourceConstructor<T> = Resource.ResourceConstructor<T>
+export type Bezier<T> = Bezier.BezierInstance<T>
+export type BezierConstructor<T> = Bezier.BezierConstructor<T>
 export type Spring<T> = Spring.SpringInstance<T>
 export type SpringConstructor<T> = Spring.SpringConstructor<T>
 export type Tween<T> = Tween.TweenInstance<T>
@@ -99,6 +112,7 @@ export type FollowAttribute = FollowAttribute.FollowAttribute
 export type GetValue = GetValue.GetValue
 export type Component = Component.Component
 export type Tags = Tags.Tags
+export type StyleSheet = StyleSheet.StyleSheetDeclaration
 export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
@@ -127,9 +141,12 @@ local function Init()
 end
 
 Seam.New = New
+Seam.Batch = Batch
 Seam.Children = Children
 Seam.Value = Value
 Seam.Computed = Computed
+Seam.Resource = Resource
+Seam.Bezier = Bezier
 Seam.Spring = Spring
 Seam.Tween = Tween
 Seam.Scope = Scope
@@ -144,6 +161,7 @@ Seam.FollowAttribute = FollowAttribute
 Seam.GetValue = GetValue
 Seam.Component = Component
 Seam.Tags = Tags
+Seam.StyleSheet = StyleSheet
 Seam.SetValue = SetValue
 Seam.IsState = IsState
 Seam.IsComponent = IsComponent

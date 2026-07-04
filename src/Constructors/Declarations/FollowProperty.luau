@@ -14,17 +14,53 @@ local ClassSymbol = Symbol.new("FollowProperty")
 export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
 
 function FollowProperty:__call(PropertyName : string)
-    return setmetatable({}, {
+    local ActiveConnections = setmetatable({}, {__mode = "k"})
+
+    local function CleanupObjectConnection(Object : Instance)
+        local ConnectionBucket = ActiveConnections[Object]
+
+        if ConnectionBucket == nil then
+            return
+        end
+
+        if ConnectionBucket.PropertyConnection ~= nil and ConnectionBucket.PropertyConnection.Connected then
+            ConnectionBucket.PropertyConnection:Disconnect()
+        end
+
+        if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
+            ConnectionBucket.DestroyingConnection:Disconnect()
+        end
+
+        ActiveConnections[Object] = nil
+    end
+
+    return setmetatable({
+        Destroy = function()
+            for Object in ActiveConnections do
+                CleanupObjectConnection(Object)
+            end
+        end,
+    }, {
         __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
             -- Literally just a simple connection and value update
+            CleanupObjectConnection(Object)
 
-            Object:GetPropertyChangedSignal(PropertyName):Connect(function()
+            local PropertyConnection = Object:GetPropertyChangedSignal(PropertyName):Connect(function()
                 if Object[PropertyName] ~= ValueState.Value then
                     ValueState.Value = Object[PropertyName]
                 end
 
                 ValueState.Value = Object[PropertyName]
             end)
+
+            local DestroyingConnection = Object.Destroying:Connect(function()
+                CleanupObjectConnection(Object)
+            end)
+
+            ActiveConnections[Object] = {
+                PropertyConnection = PropertyConnection,
+                DestroyingConnection = DestroyingConnection,
+            }
         end,
 
         __index = function(_, Index : string)

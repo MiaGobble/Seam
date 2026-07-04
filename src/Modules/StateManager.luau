@@ -24,6 +24,7 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
     local ObjectType = GetObjectType(Object)
     local TroveInstance = Trove.new()
     local UpdateFunction = nil
+    local ChangedSignal = nil
 
     if ObjectType == "Instance" then
         local LastValue = nil
@@ -76,7 +77,14 @@ function StateManager:AttachStateToObject(Object : any, StateInstance : any)
         error("Attempted to attach non-state to object:\n" .. CreateDeepTraceback())
     end
 
-    TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(UpdateFunction))
+    ChangedSignal = StateInstance.Changed
+
+    if ChangedSignal ~= nil then
+        TroveInstance:Add(ChangedSignal:Connect(UpdateFunction))
+    else
+        TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(UpdateFunction))
+    end
+
     task.spawn(UpdateFunction)
 
     return TroveInstance

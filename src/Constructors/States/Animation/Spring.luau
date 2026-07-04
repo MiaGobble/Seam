@@ -8,6 +8,7 @@ local EPSILON = 0.001
 -- Imports
 local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
@@ -105,29 +106,54 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
     local InstanceSymbol = Symbol.new("Spring")
+    local IsSleeping = false
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
-        local PackedValues = {}
+        if IsSleeping then
+            return
+        end
 
-        for Index, Spring in UnpackedSprings do
-            local Position, _ = GetPositionAndVelocity(Spring.StartingPosition, Spring.Velocity, Spring.Target, GetValue(Dampening), GetValue(Speed), Spring.StartingTime)
+        local PackedValues = {}
+        local CurrentDampening = GetValue(Dampening)
+        local CurrentSpeed = GetValue(Speed)
+        local IsSettled = true
+
+        for Index, ThisSpring in UnpackedSprings do
+            local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, CurrentDampening, CurrentSpeed, ThisSpring.StartingTime)
 
 			if math.abs(Position) <= EPSILON then
 				Position = 0
-			elseif math.abs(Position - Spring.Target) <= EPSILON then
-				Position = Spring.Target
+			elseif math.abs(Position - ThisSpring.Target) <= EPSILON then
+				Position = ThisSpring.Target
 			end
 
+            if math.abs(Position - ThisSpring.Target) > EPSILON or math.abs(Velocity) > EPSILON then
+                IsSettled = false
+            end
+
             PackedValues[Index] = Position
+        end
+
+        if IsSettled then
+            for Index, ThisSpring in UnpackedSprings do
+                ThisSpring.StartingPosition = ThisSpring.Target
+                ThisSpring.Velocity = 0
+                ThisSpring.StartingTime = os.clock()
+                PackedValues[Index] = ThisSpring.Target
+            end
         end
 
         CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
         if IsValueChanged(LastValue, CurrentValue) then
-            ChangedSignal:Fire("Value")
+            Batch.Fire(ChangedSignal, "Value")
         end
 
         LastValue = CurrentValue
+
+        if IsSettled then
+            IsSleeping = true
+        end
     end))
 
     local ActiveValue; ActiveValue = setmetatable({
@@ -167,6 +193,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
 
         __newindex = function(_, Index : string, NewValue : any)
             if Index == "Target" then
+                IsSleeping = false
                 CurrentTarget = GetValue(NewValue)
 
                 local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
@@ -180,6 +207,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
                     ThisSpring.Target = UnpackedNewValue[ThisIndex]
                 end
             elseif Index == "Value" then
+                IsSleeping = false
                 local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisSpring in UnpackedSprings do
@@ -190,10 +218,13 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
                     ThisSpring.StartingTime = os.clock()
                 end
             elseif Index == "Dampening" then
+                IsSleeping = false
                 Dampening = NewValue
             elseif Index == "Speed" then
+                IsSleeping = false
                 Speed = NewValue
             elseif Index == "Velocity" then
+                IsSleeping = false
                 local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
 
                 for ThisIndex, ThisSpring in UnpackedSprings do
@@ -211,7 +242,7 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
             
             TroveInstance:Add(StateManager:AttachStateToObject(Object, {
                 Value = function()
-                    ChangedSignal:Fire("Value")
+                    Batch.Fire(ChangedSignal, "Value")
                     return This.Value
                 end,
 
