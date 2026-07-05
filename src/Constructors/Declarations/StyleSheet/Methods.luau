@@ -12,8 +12,12 @@ local API_MESSAGE_NAME = "SEAM_STYLESHEET_INSTANCE"
 -- Variables
 local ActiveStylesheets: { [Instance]: any } = {}
 
+-- Types
+type properties = { [any]: any }
+type log = { [Instance]: properties }
+
 -- Helpers
-local function CapturePropertyLog(instance: Instance, properties: { [any]: any }, log: { [Instance]: { [string]: any } })
+local function CapturePropertyLog(instance: Instance, properties: properties, log: log)
     if not log[instance] then
         log[instance] = {}
     end
@@ -29,7 +33,7 @@ local function CapturePropertyLog(instance: Instance, properties: { [any]: any }
     end
 end
 
-local function ApplyProperties(instance: Instance, properties: { [any]: any })
+local function ApplyProperties(instance: Instance, properties: properties)
     for PropertyName, Value in properties do
         if typeof(PropertyName) == "table" and PropertyName.__SEAM_INDEX then
             PropertyName(instance, Value)
@@ -69,7 +73,7 @@ local function SelectorMatches(instance: Instance, selector: string): boolean
     end
 end
 
-local function ApplyRules(instance: Instance, rules: { StyleRule }, log: { [Instance]: { [string]: any } })
+local function ApplyRules(instance: Instance, rules: { StyleRule }, log: log)
     for _, Rule in rules do
         if SelectorMatches(instance, Rule.Selector) then
             CapturePropertyLog(instance, Rule.Properties, log)
@@ -78,8 +82,8 @@ local function ApplyRules(instance: Instance, rules: { StyleRule }, log: { [Inst
     end
 end
 
-function Methods:Style(selector: string)
-    return function(properties: { [any]: any })
+function Methods:Style(selector: string): (properties) -> ()
+    return function(properties: properties)
         table.insert(self._rules, {
             Selector = selector,
             Properties = properties,
