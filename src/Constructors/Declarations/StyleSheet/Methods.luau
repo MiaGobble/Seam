@@ -1,47 +1,18 @@
 -- Author: iGottic
+-- note: i seperated the methods in its on file because it was getting big :v
 
-local StyleSheet = {}
+local Methods = {}
 
 -- Services
 local CollectionService = game:GetService("CollectionService")
 
--- Imports
-local Modules = script.Parent.Parent.Parent.Modules
-local Symbol = require(Modules.Symbol)
-
 -- Constants
-local API_MESSAGE_NAME = "SEAM_STYLESHEET"
+local API_MESSAGE_NAME = "SEAM_STYLESHEET_INSTANCE"
 
 -- Variables
-local DeclarationSymbol = Symbol.new("StyleSheet")
-local StyleSheetInstanceSymbol = Symbol.new("StyleSheetInstance")
-local StyleSheetGroupSymbol = Symbol.new("StyleSheetGroup")
 local ActiveStylesheets: { [Instance]: any } = {}
 
--- Types
-export type StyleRule = {
-    Selector: string,
-    Properties: { [any]: any },
-}
-
-export type StyleSheetInstance = {
-    Style: (self: StyleSheetInstance, selector: string) -> ({ [any]: any }) -> (),
-    Apply: (self: StyleSheetInstance, root: Instance) -> (),
-    Unapply: (self: StyleSheetInstance, root: Instance) -> (),
-    Destroy: (self: StyleSheetInstance) -> (),
-    __SEAM_STYLESHEET_INSTANCE: Symbol.Symbol,
-}
-
-export type StyleSheetGroup = {
-    __SEAM_INDEX: Symbol.Symbol,
-    __SEAM_STYLESHEET_GROUP: Symbol.Symbol,
-}
-
-export type StyleSheetDeclaration = ((Object: Instance, ActiveStyleSheet: StyleSheetInstance | StyleSheetGroup | any) -> ()) & {
-    new: () -> StyleSheetInstance,
-    group: (stylesheets: { [any]: StyleSheetInstance }) -> StyleSheetGroup,
-}
-
+-- Helpers
 local function CapturePropertyLog(instance: Instance, properties: { [any]: any }, log: { [Instance]: { [string]: any } })
     if not log[instance] then
         log[instance] = {}
@@ -107,9 +78,7 @@ local function ApplyRules(instance: Instance, rules: { StyleRule }, log: { [Inst
     end
 end
 
-local StyleSheetMethods = {}
-
-function StyleSheetMethods:Style(selector: string)
+function Methods:Style(selector: string)
     return function(properties: { [any]: any })
         table.insert(self._rules, {
             Selector = selector,
@@ -118,7 +87,7 @@ function StyleSheetMethods:Style(selector: string)
     end
 end
 
-function StyleSheetMethods:Apply(root: Instance)
+function Methods:Apply(root: Instance)
     local ActiveStyleSheet = ActiveStylesheets[root]
     if ActiveStyleSheet then
         ActiveStyleSheet:Unapply(root)
@@ -153,7 +122,7 @@ function StyleSheetMethods:Apply(root: Instance)
     table.insert(self._connections[root], DestroyingConnection)
 end
 
-function StyleSheetMethods:Unapply(root: Instance)
+function Methods:Unapply(root: Instance)
     local PropertyLog = self._logs[root]
     if not PropertyLog then
         return
@@ -180,7 +149,7 @@ function StyleSheetMethods:Unapply(root: Instance)
     ActiveStylesheets[root] = nil
 end
 
-function StyleSheetMethods:Destroy()
+function Methods:Destroy()
     for root in self._logs do
         self:Unapply(root)
     end
@@ -188,93 +157,4 @@ function StyleSheetMethods:Destroy()
     table.clear(self._rules)
 end
 
-local StyleSheetInstanceMeta = {
-    __index = function(_, key: string)
-        if key == "__SEAM_STYLESHEET_INSTANCE" then
-            return StyleSheetInstanceSymbol
-        end
-
-        return StyleSheetMethods[key]
-    end,
-
-    __call = function(self, object: Instance)
-        self:Apply(object)
-    end,
-}
-
-local function IsStyleSheetInstance(value: any): boolean
-    return typeof(value) == "table" and value.__SEAM_STYLESHEET_INSTANCE ~= nil
-end
-
-function StyleSheet.new(): StyleSheetInstance
-    return setmetatable({
-        _rules = {},
-        _logs = {},
-        _connections = {},
-    }, StyleSheetInstanceMeta) :: any
-end
-
-function StyleSheet.group(stylesheets: { [any]: StyleSheetInstance }): StyleSheetGroup
-    return setmetatable({}, {
-        __index = function(_, key: string)
-            if key == "__SEAM_INDEX" then
-                return StyleSheetGroupSymbol
-            elseif key == "__SEAM_STYLESHEET_GROUP" then
-                return StyleSheetGroupSymbol
-            end
-
-            return nil
-        end,
-
-        __call = function(_, instance: Instance, styleSheetKey: any)
-            local StyleSheetObject = stylesheets[styleSheetKey]
-            if not StyleSheetObject then
-                warn(`[{API_MESSAGE_NAME}] No stylesheet found for key '{styleSheetKey}'`)
-                return
-            end
-
-            StyleSheetObject:Apply(instance)
-        end,
-    }) :: any
-end
-
-function StyleSheet:__call(object: Instance, activeStyleSheet: StyleSheetInstance | StyleSheetGroup | any)
-    if IsStyleSheetInstance(activeStyleSheet) then
-        activeStyleSheet:Apply(object)
-        return
-    end
-
-    if typeof(activeStyleSheet) == "table" and activeStyleSheet.__SEAM_STYLESHEET_GROUP then
-        warn(`[{API_MESSAGE_NAME}] StyleSheet groups require an explicit key. Use [Seam.StyleSheet.group(...)] = key`)
-        return
-    end
-
-    if typeof(activeStyleSheet) == "table" and activeStyleSheet.__SEAM_STYLESHEET_INSTANCE == nil and #activeStyleSheet > 0 then
-        local InlineStyleSheet = StyleSheet.new()
-
-        for _, Rule in activeStyleSheet do
-            if typeof(Rule) == "table" and typeof(Rule.Selector) == "string" and typeof(Rule.Properties) == "table" then
-                InlineStyleSheet:Style(Rule.Selector)(Rule.Properties)
-            end
-        end
-
-        InlineStyleSheet:Apply(object)
-        return
-    end
-
-    warn(`[{API_MESSAGE_NAME}] [Seam.StyleSheet] expects Seam.StyleSheet.new() or a rule array`)
-end
-
-function StyleSheet:__index(index: string)
-    if index == "__SEAM_INDEX" then
-        return DeclarationSymbol
-    elseif index == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return rawget(StyleSheet, index)
-end
-
-local Meta = setmetatable({}, StyleSheet)
-
-return Meta :: StyleSheetDeclaration
+return Methods
