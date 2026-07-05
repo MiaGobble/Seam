@@ -37,8 +37,10 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
         for Index, Property in Properties do
             if typeof(Index) == "table" then
                 if Index.__SEAM_INDEX then
-                    -- A seam index is something like Attribute, Children, or Lifetime
-                    Index(Object, Property)
+                    -- A seam index is something like Attribute, Children, Stylesheet, or Lifetime
+                    task.defer(function()
+                        Index(Object, Property)
+                    end)
                 else
                     error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()}); {CreateDeepTraceback()}`)
                 end
