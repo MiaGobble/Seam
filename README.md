@@ -8,4 +8,4 @@ You can also install Seam from Wally. See info about that [here](https://wally.r
 Credit to bottosson for the Oklab color space module
 
 # SCDS Rating
-<img src="./img/oee.png" alt="Alt Text" width="175.5" height="167.75">
+<img src="./img/oee.png" alt="Alt Text" width="88" height="84">
