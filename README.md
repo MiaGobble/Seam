@@ -6,3 +6,6 @@ Read everything you need to know about Seam on the documentation site: https://s
 You can also install Seam from Wally. See info about that [here](https://wally.run/package/miagobble/seam).
 
 Credit to bottosson for the Oklab color space module
+
+# SCDS Rating
+<img src="./img/oee.png" alt="Alt Text" width="175.5" height="167.75">
