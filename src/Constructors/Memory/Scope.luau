@@ -174,8 +174,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             return
         end
 
-        Object:Destroy()
-        self.Trove[Object] = nil
+        self.Trove:Remove(Object)
     end
 
     function selfClass:Destroy()
