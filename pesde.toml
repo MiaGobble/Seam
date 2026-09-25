@@ -1,5 +1,5 @@
 name = "miagobble/seam"
-version = "1.0.0"
+version = "1.0.1"
 description = "A reactive state and animation library for Roblox"
 license = "MIT"
 authors = ["Mia Gobble"]
