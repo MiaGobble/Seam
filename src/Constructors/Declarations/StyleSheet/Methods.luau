@@ -6,6 +6,9 @@ local Methods = {}
 -- Services
 local CollectionService = game:GetService("CollectionService")
 
+-- Imports
+local Scope = require(script.Parent.Parent.Parent.Memory.Scope)
+
 -- Constants
 local API_MESSAGE_NAME = "SEAM_STYLESHEET_INSTANCE"
 
@@ -17,6 +20,42 @@ type properties = { [any]: any }
 type log = { [Instance]: properties }
 
 -- Helpers
+local function TrackResult(scope: Scope.ScopeInstance, result: any)
+    if result == nil then
+        return
+    end
+
+    if typeof(result) == "Instance" then
+        scope:AddObject(function()
+            pcall(function()
+                result:Destroy()
+            end)
+        end)
+
+        return
+    end
+
+    if typeof(result) == "table" then
+        if typeof(result.Destroy) == "function"
+            or typeof(result.Disconnect) == "function"
+            or typeof(result.destroy) == "function"
+            or typeof(result.disconnect) == "function"
+            or result.__SEAM_OBJECT
+        then
+            scope:AddObject(result)
+            return
+        end
+
+        for _, Item in result do
+            TrackResult(scope, Item)
+        end
+
+        return
+    end
+
+    scope:AddObject(result)
+end
+
 local function CapturePropertyLog(instance: Instance, properties: properties, log: log)
     if not log[instance] then
         log[instance] = {}
@@ -33,10 +72,10 @@ local function CapturePropertyLog(instance: Instance, properties: properties, lo
     end
 end
 
-local function ApplyProperties(instance: Instance, properties: properties)
+local function ApplyProperties(instance: Instance, properties: properties, scope: Scope.ScopeInstance)
     for PropertyName, Value in properties do
         if typeof(PropertyName) == "table" and PropertyName.__SEAM_INDEX then
-            PropertyName(instance, Value)
+            TrackResult(scope, PropertyName(instance, Value))
             continue
         end
 
@@ -73,11 +112,11 @@ local function SelectorMatches(instance: Instance, selector: string): boolean
     end
 end
 
-local function ApplyRules(instance: Instance, rules: { StyleRule }, log: log)
+local function ApplyRules(instance: Instance, rules: { StyleRule }, log: log, scope: Scope.ScopeInstance)
     for _, Rule in rules do
         if SelectorMatches(instance, Rule.Selector) then
             CapturePropertyLog(instance, Rule.Properties, log)
-            ApplyProperties(instance, Rule.Properties)
+            ApplyProperties(instance, Rule.Properties, scope)
         end
     end
 end
@@ -99,31 +138,29 @@ function Methods:Apply(root: Instance)
 
     ActiveStylesheets[root] = self
     self._logs[root] = {}
-    self._connections[root] = {}
 
-    ApplyRules(root, self._rules, self._logs[root])
+    local ApplyScope = Scope({})
+    self._scopes[root] = ApplyScope
+
+    ApplyRules(root, self._rules, self._logs[root], ApplyScope)
 
     for _, Descendant in root:GetDescendants() do
-        ApplyRules(Descendant, self._rules, self._logs[root])
+        ApplyRules(Descendant, self._rules, self._logs[root], ApplyScope)
     end
 
-    local DescendantAddedConnection = root.DescendantAdded:Connect(function(descendant: Instance)
-        ApplyRules(descendant, self._rules, self._logs[root])
-    end)
+    ApplyScope:AddObject(root.DescendantAdded:Connect(function(descendant: Instance)
+        ApplyRules(descendant, self._rules, self._logs[root], ApplyScope)
+    end))
 
-    local DescendantRemovingConnection = root.DescendantRemoving:Connect(function(descendant: Instance)
+    ApplyScope:AddObject(root.DescendantRemoving:Connect(function(descendant: Instance)
         if self._logs[root] then
             self._logs[root][descendant] = nil
         end
-    end)
+    end))
 
-    local DestroyingConnection = root.Destroying:Connect(function()
+    ApplyScope:AddObject(root.Destroying:Connect(function()
         self:Unapply(root)
-    end)
-
-    table.insert(self._connections[root], DescendantAddedConnection)
-    table.insert(self._connections[root], DescendantRemovingConnection)
-    table.insert(self._connections[root], DestroyingConnection)
+    end))
 end
 
 function Methods:Unapply(root: Instance)
@@ -132,7 +169,11 @@ function Methods:Unapply(root: Instance)
         return
     end
 
-    local Connections = self._connections[root]
+    local ApplyScope = self._scopes[root]
+
+    self._logs[root] = nil
+    self._scopes[root] = nil
+    ActiveStylesheets[root] = nil
 
     for InstanceObject, Properties in PropertyLog do
         for PropertyName, Value in Properties do
@@ -142,15 +183,9 @@ function Methods:Unapply(root: Instance)
         end
     end
 
-    if Connections then
-        for _, Connection in Connections do
-            Connection:Disconnect()
-        end
+    if ApplyScope then
+        ApplyScope:Destroy()
     end
-
-    self._logs[root] = nil
-    self._connections[root] = nil
-    ActiveStylesheets[root] = nil
 end
 
 function Methods:Destroy()

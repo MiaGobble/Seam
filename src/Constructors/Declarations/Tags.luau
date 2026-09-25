@@ -16,6 +16,12 @@ function Tags:__call(Object : Instance, AddedTags : {string})
     for _, Tag in AddedTags do -- Super simple iteration through strings
         Object:AddTag(Tag)
     end
+
+    return function()
+        for _, Tag in AddedTags do
+            Object:RemoveTag(Tag)
+        end
+    end
 end
 
 function Tags:__index(Index : string)

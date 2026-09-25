@@ -44,7 +44,7 @@ function StyleSheet.new(): StyleSheetInstance
     return setmetatable({
         _rules = {},
         _logs = {},
-        _connections = {},
+        _scopes = {},
     }, StyleSheetInstanceMeta) :: any
 end
 
