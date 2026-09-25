@@ -3,6 +3,12 @@ Seam is a reactive state and animation library, useful in many contexts includin
 
 Read everything you need to know about Seam on the documentation site: https://seam.igottic.com/
 
-You can also install Seam from Wally. See info about that [here](https://wally.run/package/miagobble/seam).
+You can install Seam from pesde:
+
+```sh
+pesde add miagobble/seam
+```
+
+Or from Wally. See info about that [here](https://wally.run/package/miagobble/seam).
 
 Credit to bottosson for the Oklab color space module

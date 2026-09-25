@@ -41,3 +41,10 @@ luac.out
 
 sourcemap.json
 build
+
+# pesde
+luau_packages/
+roblox_packages/
+lune_packages/
+.pesde/
+pesde.lock
