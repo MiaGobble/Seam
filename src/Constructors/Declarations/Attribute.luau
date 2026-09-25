@@ -42,6 +42,7 @@ function Attribute:__call(AttributeName : string)
         end,
     }, {
         __call = function(_, Object : Instance, AttributeValue : any)
+            local PreviousValue = Object:GetAttribute(AttributeName)
             CleanupObjectConnection(Object)
 
             if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
@@ -63,11 +64,18 @@ function Attribute:__call(AttributeName : string)
 
                 Object:SetAttribute(AttributeName, AttributeValue.Value)
 
-                return
+                return function()
+                    CleanupObjectConnection(Object)
+                    Object:SetAttribute(AttributeName, PreviousValue)
+                end
             end
 
             -- If we're not using a state, just set the attribute directly
             Object:SetAttribute(AttributeName, AttributeValue)
+
+            return function()
+                Object:SetAttribute(AttributeName, PreviousValue)
+            end
         end,
 
         __index = function(_, Index : string)
