@@ -154,6 +154,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         end
 
         local NewScope = Meta(NewScopedObjects) -- Make a new scope
+        NewScope.ParentScope = self
         self.Trove:Add(NewScope) -- Add the new sub-scope to the parent trove
 
         return NewScope
@@ -174,8 +175,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             return
         end
 
-        Object:Destroy()
-        self.Trove[Object] = nil
+        self.Trove:Remove(Object)
     end
 
     function selfClass:Destroy()
@@ -187,6 +187,11 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         IsDestroyed = true
         self.Trove:Destroy()
         self.Trove = nil
+
+        if self.ParentScope then
+            self.ParentScope.Trove:Pop(self)
+            self.ParentScope = nil
+        end
     end
 
     local ScopeInstance = setmetatable(selfClass, selfMeta)

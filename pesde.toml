@@ -1,0 +1,24 @@
+name = "miagobble/seam"
+version = "1.0.1"
+description = "A reactive state and animation library for Roblox"
+license = "MIT"
+authors = ["Mia Gobble"]
+repository = "https://github.com/MiaGobble/Seam"
+
+includes = [
+    "pesde.toml",
+    "README.md",
+    "LICENSE",
+    "src/**/*.luau",
+]
+
+[target]
+environment = "roblox"
+lib = "src/init.luau"
+build_files = ["src"]
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[engines]
+pesde = "^0.7.0"

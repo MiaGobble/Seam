@@ -61,6 +61,10 @@ function FollowProperty:__call(PropertyName : string)
                 PropertyConnection = PropertyConnection,
                 DestroyingConnection = DestroyingConnection,
             }
+
+            return function()
+                CleanupObjectConnection(Object)
+            end
         end,
 
         __index = function(_, Index : string)
