@@ -6,23 +6,29 @@ local OnAttributeChanged = {}
 export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
 
 function OnAttributeChanged:__call(AttributeName : string)
-    local ActiveConnection : RBXScriptConnection = nil
+    local ActiveConnections = setmetatable({}, {__mode = "k"})
 
     local EventBinding = setmetatable({
         Destroy = function()
-            if ActiveConnection and ActiveConnection.Connected then
-                ActiveConnection:Disconnect()
+            for Object, Connection in ActiveConnections do
+                if Connection.Connected then
+                    Connection:Disconnect()
+                end
+
+                ActiveConnections[Object] = nil
             end
         end,
     }, {
         __call = function(_, Object : Instance, Callback : (...any?) -> nil)
-            if ActiveConnection then
-                return
+            local ExistingConnection = ActiveConnections[Object]
+            if ExistingConnection and ExistingConnection.Connected then
+                ExistingConnection:Disconnect()
             end
 
-            ActiveConnection = Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
-            
-            return ActiveConnection
+            local Connection = Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
+            ActiveConnections[Object] = Connection
+
+            return Connection
         end,
 
         __index = function(_, Index : string)
