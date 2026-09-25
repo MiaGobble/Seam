@@ -75,7 +75,7 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
             end)
 
             -- Also make sure we clean things up when the parent is destroyed
-            Object.Destroying:Connect(function()
+            local DestroyingConnection = Object.Destroying:Connect(function()
                 Connection:Disconnect()
 
                 for _, Child in ActiveChildren do
@@ -83,12 +83,30 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
                 end
             end)
 
-            return
+            return {
+                Destroy = function()
+                    if Connection.Connected then
+                        Connection:Disconnect()
+                    end
+
+                    if DestroyingConnection.Connected then
+                        DestroyingConnection:Disconnect()
+                    end
+
+                    for _, Child in ActiveChildren do
+                        pcall(function()
+                            Child:Destroy()
+                        end)
+                    end
+
+                    table.clear(ActiveChildren)
+                end,
+            }
         end
     end
     
     -- If it's not a computed instance, just apply the array of children to the parent
-    ApplyChildren(Object, Children)
+    return ApplyChildren(Object, Children)
 end
 
 function Children:__index(Index : string)
