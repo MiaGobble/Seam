@@ -12,3 +12,6 @@ pesde add miagobble/seam
 Or from Wally. See info about that [here](https://wally.run/package/miagobble/seam).
 
 Credit to bottosson for the Oklab color space module
+
+# SCDS Rating
+<img src="./img/oee.png" alt="Alt Text" width="88" height="84">
