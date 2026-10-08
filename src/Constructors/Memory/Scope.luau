@@ -188,15 +188,21 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
         self.Trove:Destroy()
         self.Trove = nil
 
-        if self.ParentScope then
-            self.ParentScope.Trove:Pop(self)
-            self.ParentScope = nil
+        local ParentScope = rawget(self, "ParentScope")
+        
+        if ParentScope then
+            local ParentTrove = rawget(ParentScope, "Trove")
+            if ParentTrove and not ParentTrove._cleaning then
+                ParentTrove:Pop(self)
+            end
+            rawset(self, "ParentScope", nil)
         end
     end
 
     local ScopeInstance = setmetatable(selfClass, selfMeta)
     ScopeInstance.ScopedObjects = ScopedObjects
     ScopeInstance.Trove = Trove.new()
+    ScopeInstance.ParentScope = nil
 
     return ScopeInstance
 end
