@@ -1,0 +1,3 @@
+# Existing library sources keep their historical formatting.
+# StyLua is enforced for new test/CI tooling under tests/ and scripts/.
+src/
