@@ -12,7 +12,6 @@ local Symbol = require(Modules.Symbol)
 -- Class
 local OnAttributeChanged : Types.ConstructorDecompiled = {}
 
-OnAttributeChanged.__SEAM_INDEX = Symbol.new("OnAttributeChanged")
 OnAttributeChanged.__SEAM_CAN_BE_SCOPED = true
 
 function OnAttributeChanged.Callback(self : Types.ConstructorCompiled, AttributeName : string)
