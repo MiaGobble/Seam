@@ -2,8 +2,9 @@
 
 local OnAttributeChanged = {}
 
--- Types
-export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
 
 function OnAttributeChanged:__call(AttributeName : string)
     local ActiveConnections = setmetatable({}, {__mode = "k"})
@@ -53,4 +54,4 @@ end
 
 local Meta = setmetatable({}, OnAttributeChanged)
 
-return Meta :: OnAttributeChanged
+return Meta :: Types.OnAttributeChanged

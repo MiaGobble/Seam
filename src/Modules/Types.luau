@@ -11,5 +11,6 @@ export type ConstructorCompiled = typeof(setmetatable({}, {__call = function() e
 
 -- Constructors
 export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
+export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
 
 return nil
