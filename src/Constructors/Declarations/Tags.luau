@@ -1,18 +1,18 @@
 -- Author: iGottic
 
-local Tags = {}
-
--- Types
-export type Tags = (Object : Instance, AddedTags : {string}) -> nil
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("Tags")
+-- Class
+local Tags : Types.ConstructorDecompiled = {}
 
-function Tags:__call(Object : Instance, AddedTags : {string})
+Tags.__SEAM_INDEX = Symbol.new("Tags")
+Tags.__SEAM_CAN_BE_SCOPED = false
+
+function Tags.__CALLBACK(_: Types.ConstructorCompiled, Object : Instance, AddedTags : {string})
     for _, Tag in AddedTags do -- Super simple iteration through strings
         Object:AddTag(Tag)
     end
@@ -24,16 +24,4 @@ function Tags:__call(Object : Instance, AddedTags : {string})
     end
 end
 
-function Tags:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Tags)
-
-return Meta :: Tags
+return Compiler.CompileConstructor(Tags) :: Types.Tags
