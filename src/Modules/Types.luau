@@ -16,6 +16,7 @@ export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance)
 export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
 export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
 export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
+export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : BaseState<any> | any) -> nil
 
 export type StyleRule = {
     Selector : string,
