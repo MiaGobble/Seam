@@ -1,60 +1,25 @@
 -- Author: iGottic
 
-local Scope = {}
-
 -- Imports
-local Constructors = script.Parent.Parent
-local Modules = Constructors.Parent.Modules
-local States = Constructors.States
-local Trove = require(Modules.Trove)
+local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Trove = require(Modules.Trove)
 local Symbol = require(Modules.Symbol)
 local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
-local Computed = require(States.Computed)
-local Rendered = require(States.Rendered)
-local Value = require(States.Value)
-local Spring = require(States.Animation.Spring)
-local Tween = require(States.Animation.Tween)
-local ForPairs = require(States.ForPairs)
-local Bezier = require(States.Bezier)
-local Resource = require(States.Resource)
 
--- Variables
-local ClassSymbol = Symbol.new("Scope")
+-- Class
+local Scope : Types.ConstructorDecompiled = {}
+local ScopeCompiled : Types.ScopeConstructor
 
--- Extended types
-export type ScopeInstance = {
-    New : (self : ScopeInstance, Class : string | Instance | {[string] : any?}, Properties : {[any] : any}, From : any?) -> Instance,
-    Rendered : (self : ScopeInstance, Callback : (number) -> any?) -> Rendered.RenderedInstance<any>,
-    Value : (self : ScopeInstance, InitialValue : any) -> Value.ValueInstance<any>,
-    Spring : (self : ScopeInstance, Value : Types.BaseState<any> | any, Speed : number, Dampening : number) -> Spring.SpringInstance<any>,
-    Tween : (self : ScopeInstance, Value : Types.BaseState<any> | any, TweenInformation : TweenInfo) -> Tween.TweenInstance<any>,
-    Computed : (self : ScopeInstance, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> Computed.ComputedInstance<any>,
-    ForPairs : (self : ScopeInstance, TrackedValue : Value.ValueInstance<any>, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?) -> ForPairs.ForPairsInstance<any>,
-    Bezier : (self : ScopeInstance, Alpha : any, Origin : any, Midpoint : any, Target : any) -> Bezier.BezierInstance<any>,
-    Resource : (self : ScopeInstance, Callback : () -> any) -> Resource.ResourceInstance<any>,
-    OnChanged : (self : ScopeInstance, Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection,
-    OnAttributeChanged : (self : ScopeInstance, AttributeName : string) -> (...any) -> RBXScriptConnection,
-    OnEvent : (self : ScopeInstance, EventName : string) -> (...any) -> RBXScriptConnection,
-    OnAttached : (self : ScopeInstance, Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection,
+Scope.__SEAM_OBJECT = Symbol.new("Scope")
+Scope.__SEAM_CAN_BE_SCOPED = true
 
-    InnerScope : (self : ScopeInstance, ScopedObjects : {[string] : any}?) -> ScopeInstance,
-    AddObject : <T>(self : ScopeInstance, Object : T) -> (T),
-    RemoveObject : (self : ScopeInstance, Object : any) -> (),
-    Destroy : (self : ScopeInstance) -> (),
-}
-
-export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
-
-local Meta = setmetatable({}, Scope)
-
-function Scope.__call(_, ScopedObjects : {[string] : any})
+function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string] : any})
     -- Scopes have been a headache to get working, since I'm a dumdum
 
-    local selfClass = {}
-    local selfMeta = {}
-    local InstanceSymbol = Symbol.new("Scope")
     local IsDestroyed = false
+    local ScopeInstance : Types.ObjectCompiled
 
     if not ScopedObjects then
         ScopedObjects = {}
@@ -62,7 +27,73 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
 
     ScopedObjects = table.clone(ScopedObjects)
 
-    function selfMeta:__index(Key : string)
+    local ScopeObject : Types.ObjectDecompiled = {
+        __SEAM_OBJECT = Symbol.new("Scope"),
+    }
+
+    function ScopeObject.InnerScope(self : Types.ObjectCompiled, NewScopedObjects : {[string] : any}?)
+        if IsDestroyed then
+            warn(`Attempted to create inner scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        -- Default to a blank table
+        if NewScopedObjects == nil then
+            NewScopedObjects = {}
+        end
+
+        -- Take the current scoped objects and copy them to the new table
+        for Index, Object in self.ScopedObjects do
+            NewScopedObjects[Index] = Object
+        end
+
+        local NewScope = ScopeCompiled(NewScopedObjects) -- Make a new scope
+        NewScope.ParentScope = self
+        self.Trove:Add(NewScope) -- Add the new sub-scope to the parent trove
+
+        return NewScope
+    end
+
+    function ScopeObject.AddObject<T>(self : Types.ObjectCompiled, Object : T)
+        if IsDestroyed then
+            warn(`Attempted to add object to scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        return self.Trove:Add(Object)
+    end
+
+    function ScopeObject.RemoveObject(self : Types.ObjectCompiled, Object : any)
+        if IsDestroyed then
+            warn(`Attempted to remove object from scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        self.Trove:Remove(Object)
+    end
+
+    function ScopeObject.Destroy(self : Types.ObjectCompiled)
+        if IsDestroyed then
+            warn(`Attempted to destroy scope but scope is already destroyed: {CreateDeepTraceback()}`)
+            return
+        end
+
+        IsDestroyed = true
+        self.Trove:Destroy()
+        self.Trove = nil
+
+        local ParentScope = rawget(self, "ParentScope")
+
+        if ParentScope then
+            local ParentTrove = rawget(ParentScope, "Trove")
+            if ParentTrove and not ParentTrove._cleaning then
+                ParentTrove:Pop(self)
+            end
+            rawset(self, "ParentScope", nil)
+        end
+    end
+
+    function ScopeObject.__INDEX(self : Types.ObjectCompiled, Key : string)
         if IsDestroyed then
             warn(`Attempted to index a scope with {Key} but scope is already destroyed: {CreateDeepTraceback()}`)
             return
@@ -73,19 +104,13 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             return
         end
 
-        if Key == "__SEAM_OBJECT" then
-            -- Some things check if something is a seam object, so
-            -- this is the first thing we should try to return
-            return InstanceSymbol
-        end
-
         local Object = ScopedObjects[Key]
 
         if Object == nil then
             warn(`Attempt to index a scope with {Key} when it does not exist in scope{"\n"}{CreateDeepTraceback()}`)
             return nil
         end
-    
+
         if typeof(Object) ~= "function" and (typeof(Object) ~= "table" or not Object.__SEAM_CAN_BE_SCOPED) then
             if Object.__SEAM_OBJECT or Object.__SEAM_INDEX then
                 -- If something from seam has __SEAM_CAN_BE_SCOPED (meaning it can't be scoped) as false,
@@ -96,7 +121,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
                 error("Object is not a valid scopable Seam object")
             end
         end
-    
+
         return function(_, ...)
             if not self.Trove then -- If the trove instance doesn't exist, the scope is likely destroyed
                 warn(`Attempted to use something in scope ({Key}) but scope is already destroyed: {CreateDeepTraceback()}`)
@@ -121,7 +146,7 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
                 -- Right now, scope is not passed in to most seam objects
                 Tuple = {Object(...)}
             end
-    
+
             -- If nothing returns, don't bother running the rest of the code
             if #Tuple == 0 then
                 return
@@ -131,75 +156,13 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
             for _, ThisValue in Tuple do
                 self.Trove:Add(ThisValue)
             end
-    
+
             -- Unpack the tuple and return it ALLLLLLLL
             return unpack(Tuple)
         end
     end
 
-    function selfClass:InnerScope(NewScopedObjects : {[string] : any}?)
-        if IsDestroyed then
-            warn(`Attempted to create inner scope but scope is already destroyed: {CreateDeepTraceback()}`)
-            return
-        end
-
-        -- Default to a blank table
-        if NewScopedObjects == nil then
-            NewScopedObjects = {}
-        end
-
-        -- Take the current scoped objects and copy them to the new table
-        for Index, Object in self.ScopedObjects do
-            NewScopedObjects[Index] = Object
-        end
-
-        local NewScope = Meta(NewScopedObjects) -- Make a new scope
-        NewScope.ParentScope = self
-        self.Trove:Add(NewScope) -- Add the new sub-scope to the parent trove
-
-        return NewScope
-    end
-
-    function selfClass:AddObject<T>(Object : T)
-        if IsDestroyed then
-            warn(`Attempted to add object to scope but scope is already destroyed: {CreateDeepTraceback()}`)
-            return
-        end
-
-        return self.Trove:Add(Object)
-    end
-
-    function selfClass:RemoveObject(Object : any)
-        if IsDestroyed then
-            warn(`Attempted to remove object from scope but scope is already destroyed: {CreateDeepTraceback()}`)
-            return
-        end
-
-        self.Trove:Remove(Object)
-    end
-
-    function selfClass:Destroy()
-        if IsDestroyed then
-            warn(`Attempted to destroy scope but scope is already destroyed: {CreateDeepTraceback()}`)
-            return
-        end
-
-        IsDestroyed = true
-        self.Trove:Destroy()
-        self.Trove = nil
-
-        local ParentScope = rawget(self, "ParentScope")
-        
-        if ParentScope then
-            local ParentTrove = rawget(ParentScope, "Trove")
-            if ParentTrove and not ParentTrove._cleaning then
-                ParentTrove:Pop(self)
-            end
-            rawset(self, "ParentScope", nil)
-        end
-    end
-
-    local ScopeInstance = setmetatable(selfClass, selfMeta)
+    ScopeInstance = Compiler.CompileObject(ScopeObject)
     ScopeInstance.ScopedObjects = ScopedObjects
     ScopeInstance.Trove = Trove.new()
     ScopeInstance.ParentScope = nil
@@ -207,14 +170,6 @@ function Scope.__call(_, ScopedObjects : {[string] : any})
     return ScopeInstance
 end
 
-function Scope:__index(Key : string)
-    if Key == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Key == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
+ScopeCompiled = Compiler.CompileConstructor(Scope) :: Types.ScopeConstructor
 
-return Meta :: ScopeConstructor
+return ScopeCompiled
