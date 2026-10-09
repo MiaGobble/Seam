@@ -1,31 +1,24 @@
 -- Author: iGottic
 
-local OnChanged = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Symbol = require(Modules.Symbol)
 
-function OnChanged:__call(Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil)
+-- Class
+local OnChanged : Types.ConstructorDecompiled = {}
+
+OnChanged.__SEAM_INDEX = Symbol.new("OnChanged")
+OnChanged.__SEAM_CAN_BE_SCOPED = true
+
+function OnChanged.__CALLBACK(self : Types.ConstructorCompiled, Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) : RBXScriptConnection
     -- Fortunately, states also have a Changed signal, so this works out perfectly 
     -- for states as well!
 
     return (Object.Changed :: RBXScriptSignal):Connect(function(PropertyName : string)
-        -- When something changes, call the callback function
         Callback(PropertyName, Object[PropertyName])
     end)
 end
 
-function OnChanged:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return "OnChanged"
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, OnChanged)
-
-return Meta :: Types.OnChanged
+return Compiler.CompileConstructor(OnChanged) :: Types.OnChanged
