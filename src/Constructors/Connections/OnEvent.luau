@@ -2,8 +2,9 @@
 
 local OnEvent = {}
 
--- Types
-export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
 
 function OnEvent:__call(EventName : string)
     local ActiveConnections = setmetatable({}, {__mode = "k"})
@@ -55,4 +56,4 @@ end
 
 local Meta = setmetatable({}, OnEvent)
 
-return Meta :: OnEvent
+return Meta :: Types.OnEvent

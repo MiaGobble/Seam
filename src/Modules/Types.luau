@@ -15,5 +15,6 @@ export type ObjectCompiled = typeof(setmetatable({}, {__call = function() end}))
 export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
 export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
 export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
+export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
 
 return nil
