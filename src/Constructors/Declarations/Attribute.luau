@@ -39,6 +39,12 @@ function Attribute.__CALLBACK(self : Types.ConstructorCompiled, AttributeName : 
     EventBinding.__SEAM_INDEX = Symbol.new("Attribute")
     EventBinding.__SEAM_CAN_BE_SCOPED = false
 
+    EventBinding.Destroy = function(self : Types.ObjectCompiled)
+        for Object in ActiveConnections do
+            CleanupObjectConnection(Object)
+        end
+    end
+
     EventBinding.__CALLBACK = function(self : Types.ObjectCompiled, Object : Instance, AttributeValue : any)
         local PreviousValue = Object:GetAttribute(AttributeName)
         CleanupObjectConnection(Object)
