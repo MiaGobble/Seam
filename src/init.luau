@@ -49,80 +49,80 @@ local ForPairs = require(States:WaitForChild("ForPairs"))
 -- Types extended
 type Seam = {
     Batch : Batch.Batch,
-    New : New.NewConstructor,
-    Children : Children.Children,
-    Value : Value.ValueConstructor<any>,
-    Computed : Computed.ComputedConstructor<any>,
-    Resource : Resource.ResourceConstructor<any>,
-    Bezier : Bezier.BezierConstructor<any>,
-    Spring : Spring.SpringConstructor<any>,
-    Tween : Tween.TweenConstructor<any>,
-    Scope : Scope.ScopeConstructor,
-    OnEvent : OnEvent.OnEvent,
-    OnChanged : OnChanged.OnChanged,
-    Attribute : Attribute.Attribute,
-    OnAttributeChanged : OnAttributeChanged.OnAttributeChanged,
-    Lifetime : Lifetime.Lifetime,
-    Rendered : Rendered.RenderedConstructor<any>,
-    FollowProperty : FollowProperty.FollowProperty,
-    FollowAttribute : FollowAttribute.FollowAttribute,
+    New : Types.NewConstructor,
+    Children : Types.Children,
+    Value : Types.ValueConstructor<any>,
+    Computed : Types.ComputedConstructor<any>,
+    Resource : Types.ResourceConstructor<any>,
+    Bezier : Types.BezierConstructor<any>,
+    Spring : Types.SpringConstructor<any>,
+    Tween : Types.TweenConstructor<any>,
+    Scope : Types.ScopeConstructor,
+    OnEvent : Types.OnEvent,
+    OnChanged : Types.OnChanged,
+    Attribute : Types.Attribute,
+    OnAttributeChanged : Types.OnAttributeChanged,
+    Lifetime : Types.Lifetime,
+    Rendered : Types.RenderedConstructor<any>,
+    FollowProperty : Types.FollowProperty,
+    FollowAttribute : Types.FollowAttribute,
     GetValue : GetValue.GetValue,
-    Component : Component.Component,
-    Tags : Tags.Tags,
+    Component : Types.Component,
+    Tags : Types.Tags,
     StyleSheet : Types.StyleSheet,
     SetValue : SetValue.SetValue,
     IsState : IsState.IsState,
     IsComponent : IsComponent.IsComponent,
     LockValue : LockValue.LockValue,
     Inspect : Inspect.Inspect,
-    OnAttached : OnAttached.OnAttached,
-    Destroyed : Destroyed.Destroyed,
-    EventSequence : EventSequence.EventSequence,
-    ForPairs : ForPairs.ForPairsConstructor<any>
+    OnAttached : Types.OnAttached,
+    Destroyed : Types.Destroyed,
+    EventSequence : Types.EventSequence,
+    ForPairs : Types.ForPairsConstructor<any>
 }
 
 export type BaseState<T> = Types.BaseState<T>
 export type Batch = Batch.Batch
 export type Child = Types.Child
-export type NewConstructor = New.NewConstructor
-export type Children = Children.Children
-export type Value<T> = Value.ValueInstance<T>
-export type ValueConstructor<T> = Value.ValueConstructor<T>
-export type Computed<T> = Computed.ComputedInstance<T>
-export type ComputedConstructor<T> = Computed.ComputedConstructor<T>
-export type Resource<T> = Resource.ResourceInstance<T>
-export type ResourceConstructor<T> = Resource.ResourceConstructor<T>
-export type Bezier<T> = Bezier.BezierInstance<T>
-export type BezierConstructor<T> = Bezier.BezierConstructor<T>
-export type Spring<T> = Spring.SpringInstance<T>
-export type SpringConstructor<T> = Spring.SpringConstructor<T>
-export type Tween<T> = Tween.TweenInstance<T>
-export type TweenConstructor<T> = Tween.TweenConstructor<T>
-export type Scope = Scope.ScopeInstance
-export type ScopeConstructor = Scope.ScopeConstructor
-export type OnEvent = OnEvent.OnEvent
-export type OnChanged = OnChanged.OnChanged
-export type Attribute = Attribute.Attribute
-export type OnAttributeChanged = OnAttributeChanged.OnAttributeChanged
-export type Lifetime = Lifetime.Lifetime
-export type Rendered<T> = Rendered.RenderedInstance<T>
-export type RenderedConstructor<T> = Rendered.RenderedConstructor<T>
-export type FollowProperty = FollowProperty.FollowProperty
-export type FollowAttribute = FollowAttribute.FollowAttribute
+export type NewConstructor = Types.NewConstructor
+export type Children = Types.Children
+export type Value<T> = Types.ValueInstance<T>
+export type ValueConstructor<T> = Types.ValueConstructor<T>
+export type Computed<T> = Types.ComputedInstance<T>
+export type ComputedConstructor<T> = Types.ComputedConstructor<T>
+export type Resource<T> = Types.ResourceInstance<T>
+export type ResourceConstructor<T> = Types.ResourceConstructor<T>
+export type Bezier<T> = Types.BezierInstance<T>
+export type BezierConstructor<T> = Types.BezierConstructor<T>
+export type Spring<T> = Types.SpringInstance<T>
+export type SpringConstructor<T> = Types.SpringConstructor<T>
+export type Tween<T> = Types.TweenInstance<T>
+export type TweenConstructor<T> = Types.TweenConstructor<T>
+export type Scope = Types.ScopeInstance
+export type ScopeConstructor = Types.ScopeConstructor
+export type OnEvent = Types.OnEvent
+export type OnChanged = Types.OnChanged
+export type Attribute = Types.Attribute
+export type OnAttributeChanged = Types.OnAttributeChanged
+export type Lifetime = Types.Lifetime
+export type Rendered<T> = Types.RenderedInstance<T>
+export type RenderedConstructor<T> = Types.RenderedConstructor<T>
+export type FollowProperty = Types.FollowProperty
+export type FollowAttribute = Types.FollowAttribute
 export type GetValue = GetValue.GetValue
-export type Component = Component.Component
-export type Tags = Tags.Tags
+export type Component = Types.Component
+export type Tags = Types.Tags
 export type StyleSheet = Types.StyleSheet
 export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
 export type LockValue = LockValue.LockValue
 export type Inspect = Inspect.Inspect
-export type OnAttached = OnAttached.OnAttached
-export type Destroyed = Destroyed.Destroyed
-export type EventSequence = EventSequence.EventSequence
-export type ForPairs<T> = ForPairs.ForPairsInstance<T>
-export type ForPairsInstance<T> = ForPairs.ForPairsInstance<T>
+export type OnAttached = Types.OnAttached
+export type Destroyed = Types.Destroyed
+export type EventSequence = Types.EventSequence
+export type ForPairs<T> = Types.ForPairsInstance<T>
+export type ForPairsInstance<T> = Types.ForPairsInstance<T>
 
 -- Declaration
 local Seam : Seam = {} :: Seam
