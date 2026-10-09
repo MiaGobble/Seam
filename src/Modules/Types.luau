@@ -6,8 +6,10 @@ export type BaseState<T> = {
 }
 
 export type Child = Instance | BaseState<any> | {[unknown] : Child}
-export type ConstructorDecompiled = {Callback : (...any) -> any} & {[string] : any}
+export type ConstructorDecompiled = {__CALLBACK : (...any) -> any} & {[string] : any}
 export type ConstructorCompiled = typeof(setmetatable({}, {__call = function() end}))
+export type ObjectDecompiled = {__CALLBACK : (...any) -> any} & {[string] : any}
+export type ObjectCompiled = typeof(setmetatable({}, {__call = function() end})) & {[string] : any}
 
 -- Constructors
 export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
