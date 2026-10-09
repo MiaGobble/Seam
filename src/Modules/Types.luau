@@ -17,4 +17,23 @@ export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScri
 export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
 export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
 
+export type StyleRule = {
+    Selector : string,
+    Properties : { [any] : any },
+}
+
+export type StyleSheetInstance = {
+    Style : (self : StyleSheetInstance, selector : string) -> ({ [any] : any }) -> (),
+    Apply : (self : StyleSheetInstance, root : Instance) -> (),
+    Unapply : (self : StyleSheetInstance, root : Instance) -> (),
+    Destroy : (self : StyleSheetInstance) -> (),
+} & typeof(setmetatable({}, {__call = function() end}))
+
+export type StyleSheetGroup = typeof(setmetatable({}, {__call = function() end}))
+
+export type StyleSheet = ((Object : Instance, ActiveStyleSheet : StyleSheetInstance | StyleSheetGroup | any) -> ()) & {
+    new : () -> StyleSheetInstance,
+    group : (stylesheets : { [any] : StyleSheetInstance }) -> StyleSheetGroup,
+}
+
 return nil

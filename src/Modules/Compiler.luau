@@ -16,7 +16,7 @@ function Compiler.CompileConstructor(constructorDecompiled : Types.ConstructorDe
     local Meta = {}
 
     for index, value in constructorDecompiled do
-        if typeof(index) == "string" and typeof(value) ~= "function" then
+        if index ~= CALLBACK_INDEX then
             BackendIndexes[index] = value
         end
     end
@@ -26,7 +26,7 @@ function Compiler.CompileConstructor(constructorDecompiled : Types.ConstructorDe
     end
 
     function Meta:__index(index : string)
-        if BackendIndexes[index] then
+        if BackendIndexes[index] ~= nil then
             return BackendIndexes[index]
         end
 
@@ -56,7 +56,7 @@ function Compiler.CompileObject(objectDecompiled : Types.ObjectDecompiled) : Typ
     end
 
     function Meta:__index(index : string)
-        if BackendIndexes[index] then
+        if BackendIndexes[index] ~= nil then
             return BackendIndexes[index]
         end
 

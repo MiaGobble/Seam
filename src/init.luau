@@ -69,7 +69,7 @@ type Seam = {
     GetValue : GetValue.GetValue,
     Component : Component.Component,
     Tags : Tags.Tags,
-    StyleSheet : StyleSheet.StyleSheetDeclaration,
+    StyleSheet : Types.StyleSheet,
     SetValue : SetValue.SetValue,
     IsState : IsState.IsState,
     IsComponent : IsComponent.IsComponent,
@@ -112,7 +112,7 @@ export type FollowAttribute = FollowAttribute.FollowAttribute
 export type GetValue = GetValue.GetValue
 export type Component = Component.Component
 export type Tags = Tags.Tags
-export type StyleSheet = StyleSheet.StyleSheetDeclaration
+export type StyleSheet = Types.StyleSheet
 export type SetValue = SetValue.SetValue
 export type IsState = IsState.IsState
 export type IsComponent = IsComponent.IsComponent
