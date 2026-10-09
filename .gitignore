@@ -41,6 +41,16 @@ luac.out
 
 sourcemap.json
 build
+test-place.rbxl
+test-place.rbxlx
+.tools/
+
+# wally
+Packages/
+ServerPackages/
+DevPackages/
+wally.lock
+wally-package-types.d.luau
 
 # pesde
 luau_packages/
