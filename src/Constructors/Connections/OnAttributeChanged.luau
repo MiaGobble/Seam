@@ -14,7 +14,7 @@ local OnAttributeChanged : Types.ConstructorDecompiled = {}
 
 OnAttributeChanged.__SEAM_CAN_BE_SCOPED = true
 
-function OnAttributeChanged.Callback(self : Types.ConstructorCompiled, AttributeName : string)
+function OnAttributeChanged.__CALLBACK(self : Types.ConstructorCompiled, AttributeName : string)
     local EventBinding : Types.ObjectDecompiled = {}
     local ActiveConnections = setmetatable({}, {__mode = "k"})
 
