@@ -1,19 +1,21 @@
 -- Author: iGottic
 
-local FollowProperty = {}
+-- Types
+type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, Object : Instance, ValueState : any) end}))
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("FollowProperty")
+-- Class
+local FollowProperty : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
+FollowProperty.__SEAM_CAN_BE_SCOPED = false
 
-function FollowProperty:__call(PropertyName : string)
+function FollowProperty.__CALLBACK(_: Types.ConstructorCompiled, PropertyName : string) : EventBinding
+    local EventBinding : Types.ObjectDecompiled = {}
     local ActiveConnections = setmetatable({}, {__mode = "k"})
 
     local function CleanupObjectConnection(Object : Instance)
@@ -34,51 +36,42 @@ function FollowProperty:__call(PropertyName : string)
         ActiveConnections[Object] = nil
     end
 
-    return setmetatable({
-        Destroy = function()
-            for Object in ActiveConnections do
-                CleanupObjectConnection(Object)
-            end
-        end,
-    }, {
-        __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
-            -- Literally just a simple connection and value update
+    EventBinding.__SEAM_INDEX = Symbol.new("FollowProperty")
+    EventBinding.__SEAM_CAN_BE_SCOPED = false
+
+    function EventBinding.Destroy(_: EventBinding)
+        for Object in ActiveConnections do
             CleanupObjectConnection(Object)
+        end
+    end
 
-            local PropertyConnection = Object:GetPropertyChangedSignal(PropertyName):Connect(function()
-                if Object[PropertyName] ~= ValueState.Value then
-                    ValueState.Value = Object[PropertyName]
-                end
+    function EventBinding.__CALLBACK(_: EventBinding, Object : Instance, ValueState : Types.BaseState<any>)
+        -- Literally just a simple connection and value update
+        CleanupObjectConnection(Object)
 
+        local PropertyConnection = Object:GetPropertyChangedSignal(PropertyName):Connect(function()
+            if Object[PropertyName] ~= ValueState.Value then
                 ValueState.Value = Object[PropertyName]
-            end)
-
-            local DestroyingConnection = Object.Destroying:Connect(function()
-                CleanupObjectConnection(Object)
-            end)
-
-            ActiveConnections[Object] = {
-                PropertyConnection = PropertyConnection,
-                DestroyingConnection = DestroyingConnection,
-            }
-
-            return function()
-                CleanupObjectConnection(Object)
             end
-        end,
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_INDEX" then
-                return ClassSymbol
-            elseif Index == "__SEAM_CAN_BE_SCOPED" then
-                return false
-            else
-                return nil
-            end
-        end,
-    })
+            ValueState.Value = Object[PropertyName]
+        end)
+
+        local DestroyingConnection = Object.Destroying:Connect(function()
+            CleanupObjectConnection(Object)
+        end)
+
+        ActiveConnections[Object] = {
+            PropertyConnection = PropertyConnection,
+            DestroyingConnection = DestroyingConnection,
+        }
+
+        return function()
+            CleanupObjectConnection(Object)
+        end
+    end
+
+    return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
-local Meta = setmetatable({}, FollowProperty)
-
-return Meta :: FollowProperty
+return Compiler.CompileConstructor(FollowProperty) :: Types.FollowProperty
