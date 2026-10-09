@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  stylua:
+    name: StyLua
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rokit
+        uses: rojo-rbx/setup-rokit@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check formatting
+        run: stylua --check tests scripts
+
+  selene:
+    name: Selene
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rokit
+        uses: rojo-rbx/setup-rokit@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint
+        run: selene src tests scripts
+
+  test:
+    name: Jest (Lune)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rokit
+        uses: rojo-rbx/setup-rokit@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run tests
+        run: lune run scripts/run-tests.luau
