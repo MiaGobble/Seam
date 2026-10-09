@@ -2,8 +2,9 @@
 
 local OnAttached = {}
 
--- Types
-export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
 
 function OnAttached:__call(Object : any, Callback : (AttachedInstance : Instance) -> nil)
     return (Object.AttachedToInstance :: RBXScriptSignal):Connect(function(...)
@@ -24,4 +25,4 @@ end
 
 local Meta = setmetatable({}, OnAttached)
 
-return Meta :: OnAttached
+return Meta :: Types.OnAttached
