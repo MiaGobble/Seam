@@ -133,4 +133,12 @@ export type ScopeInstance = {
 
 export type ScopeConstructor = (ScopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
 
+-- Utilities
+export type GetValue = (State : any?) -> any?
+export type SetValue = (State : any?, NewValue : any?) -> any?
+export type LockValue = (LockedValue : ValueInstance<any>) -> nil
+export type IsState = (CheckedValue : any?) -> boolean
+export type IsComponent = (CheckedValue : any?) -> boolean
+export type Inspect = (Object : any, DebugName : string) -> RBXScriptConnection
+
 return nil
