@@ -1,14 +1,19 @@
 -- Author: iGottic
 
-local IsState = {}
-
--- Types
-export type IsState = (CheckedValue : any?) -> boolean
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 
 -- Constants
 local RECOGNIZED_STATE_SYMBOLS = {"Spring", "Tween", "Bezier", "Resource", "ComputedInstance", "RenderedInstance", "Value"}
 
-function IsState:__call(CheckedValue : any?) : boolean
+-- Class
+local IsState : Types.ConstructorDecompiled = {}
+
+IsState.__SEAM_CAN_BE_SCOPED = false
+
+function IsState.__CALLBACK(_: Types.ConstructorCompiled, CheckedValue : any?) : boolean
     if typeof(CheckedValue) ~= "table" then
         return false -- Not a state since it's not a table
     end
@@ -24,14 +29,4 @@ function IsState:__call(CheckedValue : any?) : boolean
     return false -- Default to false
 end
 
-function IsState:__index(Key : string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return nil
-end
-
-local Meta = setmetatable({}, IsState)
-
-return Meta :: IsState
+return Compiler.CompileConstructor(IsState) :: Types.IsState
