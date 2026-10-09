@@ -1,21 +1,20 @@
 -- Author: iGottic
 
-local New = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
-local Scope = require(script.Parent.Parent.Memory.Scope)
 local Children = require(script.Parent.Children)
 
--- Types extended
-export type NewConstructor = (Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
+-- Class
+local New : Types.ConstructorDecompiled = {}
 
--- Variables
-local ClassSymbol = Symbol.new("New")
+New.__SEAM_OBJECT = Symbol.new("New")
+New.__SEAM_CAN_BE_SCOPED = true
 
-function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}, ThisScope : Scope.ScopeInstance?)
+function New.__CALLBACK(_: Types.ConstructorCompiled, Class : string | Instance | (Types.ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}, ThisScope : Types.ScopeInstance?)
     local Object = nil
 
     if typeof(Class) == "Instance" then
@@ -63,16 +62,4 @@ function New:__call(Class : string | Instance | (Scope.ScopeInstance?, {[any] : 
     return Object
 end
 
-function New:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, New)
-
-return Meta :: NewConstructor
+return Compiler.CompileConstructor(New) :: Types.NewConstructor

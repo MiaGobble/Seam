@@ -1,17 +1,16 @@
 -- Author: iGottic
 
-local Children = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local Compiler = require(Modules.Compiler)
 
--- Variables
-local ClassSymbol = Symbol.new("Children")
+-- Class
+local Children : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type Children = (Object : Instance, Children : {Types.Child}) -> nil
+Children.__SEAM_INDEX = Symbol.new("Children")
+Children.__SEAM_CAN_BE_SCOPED = false
 
 local function ApplyChildren(Parent : Instance, Children : {Types.Child} | Types.Child)
     -- This function just goes through the table and sets the parent of
@@ -57,9 +56,9 @@ local function GetOldChildren(OldChildren : {Instance}, NewChildren : {Instance}
     return DifferenceSet
 end
 
-function Children:__call(Object : Instance, Children : Types.BaseState<any> | {any})
+function Children.__CALLBACK(self : Types.ConstructorCompiled, Object : Instance, Children : Types.BaseState<any> | {any}) : {Destroy : () -> nil} | {Instance}
     if typeof(Children) == "table" then
-        if Children.__SEAM_OBJECT and tostring(Children.__SEAM_OBJECT) == "ComputedInstance" then -- Since 0.1.0, you can use computed as the children
+        if Children.__SEAM_OBJECT and tostring(Children.__SEAM_OBJECT) == "ComputedInstance" then
             local ActiveChildren = ApplyChildren(Object, Children.Value)
 
             local Connection = Children.Changed:Connect(function()
@@ -109,16 +108,4 @@ function Children:__call(Object : Instance, Children : Types.BaseState<any> | {a
     return ApplyChildren(Object, Children)
 end
 
-function Children:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Children)
-
-return Meta :: Children
+return Compiler.CompileConstructor(Children) :: Types.Children

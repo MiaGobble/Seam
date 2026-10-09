@@ -1,11 +1,16 @@
 -- Author: iGottic
 
-local IsComponent = {}
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 
--- Types
-export type IsComponent = (CheckedValue : any?) -> boolean
+-- Class
+local IsComponent : Types.ConstructorDecompiled = {}
 
-function IsComponent:__call(CheckedValue : any?) : boolean
+IsComponent.__SEAM_CAN_BE_SCOPED = false
+
+function IsComponent.__CALLBACK(_: Types.ConstructorCompiled, CheckedValue : any?) : boolean
     if typeof(CheckedValue) ~= "table" then
         return false -- Not a component since it's not a table
     end
@@ -17,14 +22,4 @@ function IsComponent:__call(CheckedValue : any?) : boolean
     return false -- Default to false
 end
 
-function IsComponent:__index(Key : string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return nil
-end
-
-local Meta = setmetatable({}, IsComponent)
-
-return Meta :: IsComponent
+return Compiler.CompileConstructor(IsComponent) :: Types.IsComponent

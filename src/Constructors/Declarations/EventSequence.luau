@@ -1,34 +1,23 @@
 -- Author: iGottic
 
-local EventSequence = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 local Trove = require(Modules.Trove)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Types extended
-export type SequenceKeyframe = {number | () -> nil}
+-- Class
+local EventSequence : Types.ConstructorDecompiled = {}
 
-export type EventSequenceInstance = {
-    Play : (EventSequenceInstance) -> nil,
-    Stop : (EventSequenceInstance) -> nil,
-    Pause : (EventSequenceInstance) -> nil,
-    Resume : (EventSequenceInstance) -> nil,
-    Looped : boolean,
-    LoopDelayTime : number,
-}
+EventSequence.__SEAM_OBJECT = Symbol.new("EventSequence")
+EventSequence.__SEAM_CAN_BE_SCOPED = true
 
-export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
-
--- Variables
-local ClassSymbol = Symbol.new("EventSequence")
-
-function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSequenceInstance
+function EventSequence.__CALLBACK(_: Types.ConstructorCompiled, SequenceKeyframes : {Types.SequenceKeyframe}) : Types.EventSequenceInstance
     local CurrentTime = 0
     local PlayedIndexes = {}
-    local EventSequenceInstance : EventSequenceInstance = {}
+    local EventSequenceInstance : Types.EventSequenceInstance = {} :: Types.EventSequenceInstance
     local PlayingTrove = nil
     local CurrentlyPaused = false
 
@@ -128,16 +117,4 @@ function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSeq
     return EventSequenceInstance
 end
 
-function EventSequence:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, EventSequence)
-
-return Meta :: EventSequence
+return Compiler.CompileConstructor(EventSequence) :: Types.EventSequence

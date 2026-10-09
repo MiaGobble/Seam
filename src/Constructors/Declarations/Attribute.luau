@@ -1,19 +1,21 @@
 -- Author: iGottic
 
-local Attribute = {}
+-- Types
+type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, Object : Instance, AttributeValue : any) end}))
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
+local Compiler = require(Modules.Compiler)
 
--- Variable
-local ClassSymbol = Symbol.new("Attribute")
+-- Class
+local Attribute : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type Attribute = (AttributeName : string) -> (Object : Instance, AttributeValue : Types.BaseState<any> | any) -> nil
+Attribute.__SEAM_CAN_BE_SCOPED = false
 
-function Attribute:__call(AttributeName : string)
+function Attribute.__CALLBACK(self : Types.ConstructorCompiled, AttributeName : string) : EventBinding
+    local EventBinding : Types.ObjectDecompiled = {}
     local ActiveConnections = setmetatable({}, {__mode = "k"})
 
     local function CleanupObjectConnection(Object : Instance)
@@ -34,71 +36,53 @@ function Attribute:__call(AttributeName : string)
         ActiveConnections[Object] = nil
     end
 
-    local EventBinding = setmetatable({
-        Destroy = function()
-            for Object in ActiveConnections do
-                CleanupObjectConnection(Object)
-            end
-        end,
-    }, {
-        __call = function(_, Object : Instance, AttributeValue : any)
-            local PreviousValue = Object:GetAttribute(AttributeName)
+    EventBinding.__SEAM_INDEX = Symbol.new("Attribute")
+    EventBinding.__SEAM_CAN_BE_SCOPED = false
+
+    EventBinding.Destroy = function(self : Types.ObjectCompiled)
+        for Object in ActiveConnections do
             CleanupObjectConnection(Object)
+        end
+    end
 
-            if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
-                -- If we are using a state, then let's connect to it
-                -- When it changes, update the attribute
+    EventBinding.__CALLBACK = function(self : Types.ObjectCompiled, Object : Instance, AttributeValue : any)
+        local PreviousValue = Object:GetAttribute(AttributeName)
+        CleanupObjectConnection(Object)
 
-                local StateConnection = AttributeValue.Changed:Connect(function()
-                    Object:SetAttribute(AttributeName, AttributeValue.Value)
-                end)
+        if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
+            -- If we are using a state, then let's connect to it
+            -- When it changes, update the attribute
 
-                local DestroyingConnection = Object.Destroying:Connect(function()
-                    CleanupObjectConnection(Object)
-                end)
-
-                ActiveConnections[Object] = {
-                    StateConnection = StateConnection,
-                    DestroyingConnection = DestroyingConnection,
-                }
-
+            local StateConnection = AttributeValue.Changed:Connect(function()
                 Object:SetAttribute(AttributeName, AttributeValue.Value)
+            end)
 
-                return function()
-                    CleanupObjectConnection(Object)
-                    Object:SetAttribute(AttributeName, PreviousValue)
-                end
-            end
+            local DestroyingConnection = Object.Destroying:Connect(function()
+                CleanupObjectConnection(Object)
+            end)
 
-            -- If we're not using a state, just set the attribute directly
-            Object:SetAttribute(AttributeName, AttributeValue)
+            ActiveConnections[Object] = {
+                StateConnection = StateConnection,
+                DestroyingConnection = DestroyingConnection,
+            }
+
+            Object:SetAttribute(AttributeName, AttributeValue.Value)
 
             return function()
+                CleanupObjectConnection(Object)
                 Object:SetAttribute(AttributeName, PreviousValue)
             end
-        end,
-
-        __index = function(_, Index : string)
-            if Index == "__SEAM_INDEX" then
-                return ClassSymbol
-            else
-                return nil
-            end
         end
-    })
 
-    return EventBinding
-end
+        -- If we're not using a state, just set the attribute directly
+        Object:SetAttribute(AttributeName, AttributeValue)
 
-function Attribute:__index(Index : string)
-    if Index == "__SEAM_CAN_BE_SCOPED" then
-        -- This cannot be scoped
-        return false
-    else
-        return nil
+        return function()
+            Object:SetAttribute(AttributeName, PreviousValue)
+        end
     end
+
+    return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
-local Meta = setmetatable({}, Attribute)
-
-return Meta :: Attribute
+return Compiler.CompileConstructor(Attribute) :: Types.Attribute

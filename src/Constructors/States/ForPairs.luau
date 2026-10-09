@@ -1,23 +1,20 @@
 -- Author: iGottic
 
-local ForPairs = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Computed = require(script.Parent.Computed)
-local Value = require(script.Parent.Value)
 
--- Variables
-local ClassSymbol = Symbol.new("ForPairs")
+-- Class
+local ForPairs : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type ForPairsInstance<T> = {} & Types.BaseState<T>
-export type ForPairsConstructor<T> = (TrackedValue : Value.ValueInstance<any>, Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ForPairsInstance<T>
+ForPairs.__SEAM_INDEX = Symbol.new("ForPairs")
+ForPairs.__SEAM_CAN_BE_SCOPED = true
 
-function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
+function ForPairs.__CALLBACK(_: Types.ConstructorCompiled, TrackedValue : Types.ValueInstance<any>, Callback : ((Value : Types.ValueInstance<any>) -> any) -> any?)
     local LastValues = {}
     local OutputtedValues = {}
 
@@ -40,7 +37,7 @@ function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((V
         for Index, LastValue in LastValues do
             if ThisTable[Index] ~= LastValue then
                 LastValues[Index] = ThisTable[Index]
-                
+
                 if ThisTable[Index] then
                     ThisOuput[Index] = Callback(Use, Index, ThisTable[Index])
                 end
@@ -54,19 +51,7 @@ function ForPairs:__call(TrackedValue : Value.ValueInstance<any>, Callback : ((V
         return ThisOuput
     end)
 
-    return ActiveComputation :: ForPairsInstance<any>
+    return ActiveComputation :: Types.ForPairsInstance<any>
 end
 
-function ForPairs:__index(Key : string)
-    if Key == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Key == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, ForPairs)
-
-return Meta :: ForPairsConstructor<any>
+return Compiler.CompileConstructor(ForPairs) :: Types.ForPairsConstructor<any>

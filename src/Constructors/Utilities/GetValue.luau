@@ -1,14 +1,17 @@
 -- Author: iGottic
 
-local GetValue = {}
-
--- Types
-export type GetValue = (State : any?) -> any?
-
 -- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local IsState = require(script.Parent.IsState)
 
-function GetValue:__call(State : any?) : any?
+-- Class
+local GetValue : Types.ConstructorDecompiled = {}
+
+GetValue.__SEAM_CAN_BE_SCOPED = false
+
+function GetValue.__CALLBACK(_: Types.ConstructorCompiled, State : any?) : any?
     -- Nothing exists? No problem.
     if State == nil then
         return nil
@@ -23,14 +26,4 @@ function GetValue:__call(State : any?) : any?
     return State
 end
 
-function GetValue:__index(Key : string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return nil
-end
-
-local Meta = setmetatable({}, GetValue)
-
-return Meta :: GetValue
+return Compiler.CompileConstructor(GetValue) :: Types.GetValue

@@ -1,37 +1,29 @@
 -- Author: iGottic
 
-local Value = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("Value")
+-- Class
+local Value : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type ValueInstance<T> = {
-    Changed : RBXScriptSignal,
-    TableInsert : (self : ValueInstance<T>, InsertedValue : any, Path : {any}?) -> (),
-    TableRemove : (self : ValueInstance<T>, RemovedValueIndex : number, Path : {any}?) -> (),
-    TableSet : (self : ValueInstance<T>, NewTargetValue : any, Path : {any}?) -> (),
-} & Types.BaseState<T>
+Value.__SEAM_INDEX = Symbol.new("Value")
+Value.__SEAM_CAN_BE_SCOPED = true
 
-export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
-
-function Value:__call(ThisValue : any)
+function Value.__CALLBACK(_: Types.ConstructorCompiled, ThisValue : any)
     local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
-    local InstanceSymbol = Symbol.new("Value")
     local IsLocked = false
     local ValueType = if ThisValue ~= nil then typeof(ThisValue) else nil
+    local ActiveValue : Types.ObjectCompiled
 
     if ValueType == "table" then
         -- Seam values clone tables before using them
@@ -107,144 +99,130 @@ function Value:__call(ThisValue : any)
         This.Changed -> As rbxscriptsignal
     --]]
 
-    local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function(_)
-            TroveInstance:Destroy()
+    local ValueObject : Types.ObjectDecompiled = {
+        __SEAM_OBJECT = Symbol.new("Value"),
+        Changed = ChangedSignal,
+        AttachedToInstance = AttachedSignal,
+    }
+
+    function ValueObject.Destroy()
+        TroveInstance:Destroy()
+    end
+
+    function ValueObject.TableInsert(_: Types.ObjectCompiled, InsertedValue : any, Path : {any}?)
+        local NewRoot, TargetTable = CloneTableToPath(Path)
+
+        table.insert(TargetTable, InsertedValue)
+
+        ActiveValue.Value = NewRoot
+    end
+
+    function ValueObject.TableRemove(_: Types.ObjectCompiled, RemovedValueIndex : number, Path : {any}?)
+        if typeof(RemovedValueIndex) ~= "number" then
+            error("RemovedValueIndex must be a number")
         end
-    }, {
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                return ThisValue
-            elseif Index == "Changed" then
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
-            elseif Index == "TableInsert" then
-                return function(_, InsertedValue : any, Path : {any}?)
-                    local NewRoot, TargetTable = CloneTableToPath(Path)
 
-                    table.insert(TargetTable, InsertedValue)
+        local NewRoot, TargetTable = CloneTableToPath(Path)
 
-                    ActiveValue.Value = NewRoot
-                end
-            elseif Index == "TableRemove" then
-                return function(_, RemovedValueIndex : number, Path : {any}?)
-                    if typeof(RemovedValueIndex) ~= "number" then
-                        error("RemovedValueIndex must be a number")
-                    end
+        table.remove(TargetTable, RemovedValueIndex)
 
-                    local NewRoot, TargetTable = CloneTableToPath(Path)
+        ActiveValue.Value = NewRoot
+    end
 
-                    table.remove(TargetTable, RemovedValueIndex)
+    function ValueObject.TableSet(_: Types.ObjectCompiled, NewTargetValue : any, Path : {any}?)
+        local SafePath = if Path ~= nil then Path else {}
 
-                    ActiveValue.Value = NewRoot
-                end
-            elseif Index == "TableSet" then
-                return function(_, NewTargetValue : any, Path : {any}?)
-                    local SafePath = if Path ~= nil then Path else {}
+        if typeof(SafePath) ~= "table" then
+            error("Path must be a table of keys")
+        end
 
-                    if typeof(SafePath) ~= "table" then
-                        error("Path must be a table of keys")
-                    end
+        if #SafePath == 0 then
+            ActiveValue.Value = NewTargetValue
+            return
+        end
 
-                    if #SafePath == 0 then
-                        ActiveValue.Value = NewTargetValue
-                        return
-                    end
+        local NewRoot, _, NewParent, LastKey = CloneTableToParentPath(SafePath)
+        NewParent[LastKey] = NewTargetValue
+        ActiveValue.Value = NewRoot
+    end
 
-                    local NewRoot, _, NewParent, LastKey = CloneTableToParentPath(SafePath)
-                    NewParent[LastKey] = NewTargetValue
-                    ActiveValue.Value = NewRoot
-                end
-            end
+    function ValueObject.__CALLBACK(_: Types.ObjectCompiled, Object : any, Index : string)
+        if not Object then
+            return
+        end
 
-            return nil
-        end,
+        if not Index then
+            return
+        end
 
-        __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Value" then
-                if IsLocked then
-                    error("Attempt to modify value when locked.")
-                end
+        if typeof(ThisValue) == "table" and ThisValue ~= nil then
+            Object[Index] = table.clone(ThisValue)
+        else
+            Object[Index] = ThisValue
+        end
 
-                if ValueType ~= nil then
-                    if NewValue ~= nil and typeof(NewValue) ~= ValueType then
-                        error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
-                    end
-                elseif NewValue ~= nil then
-                    ValueType = typeof(NewValue)
-                end
+        AttachedSignal:Fire(Object)
 
-                if not IsValueChanged(ThisValue, NewValue) then
-                    return
-                end
-
-                ThisValue = NewValue
-
-                -- Make sure to fire the changed signal for other states
-                Batch.Fire(ChangedSignal, "Value", ThisValue)
-                return
-            elseif Index == "__LOCKED" then
-                if NewValue == true then
-                    IsLocked = true
-                    ActiveValue:Destroy()
-                    return
+        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+            Value = function()
+                if typeof(ThisValue) == "table" and ThisValue ~= nil then
+                    return table.clone(ThisValue)
                 else
-                    error("Can not unlock values.")
+                    return ThisValue
                 end
-            elseif Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            else
-                error("Ran into an unexpected error")
-            end
-        end,
+            end,
 
-        __call = function(_, Object, Index : string)
-            if not Object then
-                return
-            end
+            PropertyName = Index
+        }))
+    end
 
-            if not Index then
-                return
-            end
-
-            if typeof(ThisValue) == "table" and ThisValue ~= nil then
-                Object[Index] = table.clone(ThisValue)
-            else
-                Object[Index] = ThisValue
-            end
-
-            AttachedSignal:Fire(Object)
-
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    if typeof(ThisValue) == "table" and ThisValue ~= nil then
-                        return table.clone(ThisValue)
-                    else
-                        return ThisValue
-                    end
-                end,
-                
-                PropertyName = Index
-            }))
+    function ValueObject.__INDEX(_: Types.ObjectCompiled, Index : string)
+        if Index == "Value" then
+            return ThisValue
         end
-    })
 
-    return ActiveValue :: ValueInstance<any>
-end
-
-function Value:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
         return nil
     end
+
+    function ValueObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
+        if Index == "Value" then
+            if IsLocked then
+                error("Attempt to modify value when locked.")
+            end
+
+            if ValueType ~= nil then
+                if NewValue ~= nil and typeof(NewValue) ~= ValueType then
+                    error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
+                end
+            elseif NewValue ~= nil then
+                ValueType = typeof(NewValue)
+            end
+
+            if not IsValueChanged(ThisValue, NewValue) then
+                return
+            end
+
+            ThisValue = NewValue
+
+            -- Make sure to fire the changed signal for other states
+            Batch.Fire(ChangedSignal, "Value", ThisValue)
+            return
+        elseif Index == "__LOCKED" then
+            if NewValue == true then
+                IsLocked = true
+                ActiveValue:Destroy()
+                return
+            else
+                error("Can not unlock values.")
+            end
+        else
+            error("Ran into an unexpected error")
+        end
+    end
+
+    ActiveValue = Compiler.CompileObject(ValueObject)
+
+    return ActiveValue :: Types.ValueInstance<any>
 end
 
-local Meta = setmetatable({}, Value)
-
-return Meta :: ValueConstructor<any>
+return Compiler.CompileConstructor(Value) :: Types.ValueConstructor<any>
