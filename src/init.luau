@@ -66,15 +66,15 @@ type Seam = {
     Rendered : Types.RenderedConstructor<any>,
     FollowProperty : Types.FollowProperty,
     FollowAttribute : Types.FollowAttribute,
-    GetValue : GetValue.GetValue,
+    GetValue : Types.GetValue,
     Component : Types.Component,
     Tags : Types.Tags,
     StyleSheet : Types.StyleSheet,
-    SetValue : SetValue.SetValue,
-    IsState : IsState.IsState,
-    IsComponent : IsComponent.IsComponent,
-    LockValue : LockValue.LockValue,
-    Inspect : Inspect.Inspect,
+    SetValue : Types.SetValue,
+    IsState : Types.IsState,
+    IsComponent : Types.IsComponent,
+    LockValue : Types.LockValue,
+    Inspect : Types.Inspect,
     OnAttached : Types.OnAttached,
     Destroyed : Types.Destroyed,
     EventSequence : Types.EventSequence,
@@ -109,15 +109,15 @@ export type Rendered<T> = Types.RenderedInstance<T>
 export type RenderedConstructor<T> = Types.RenderedConstructor<T>
 export type FollowProperty = Types.FollowProperty
 export type FollowAttribute = Types.FollowAttribute
-export type GetValue = GetValue.GetValue
+export type GetValue = Types.GetValue
 export type Component = Types.Component
 export type Tags = Types.Tags
 export type StyleSheet = Types.StyleSheet
-export type SetValue = SetValue.SetValue
-export type IsState = IsState.IsState
-export type IsComponent = IsComponent.IsComponent
-export type LockValue = LockValue.LockValue
-export type Inspect = Inspect.Inspect
+export type SetValue = Types.SetValue
+export type IsState = Types.IsState
+export type IsComponent = Types.IsComponent
+export type LockValue = Types.LockValue
+export type Inspect = Types.Inspect
 export type OnAttached = Types.OnAttached
 export type Destroyed = Types.Destroyed
 export type EventSequence = Types.EventSequence
