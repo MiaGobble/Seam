@@ -24,7 +24,7 @@ type properties = { [any]: any }
 type log = { [Instance]: properties }
 
 -- Helpers
-local function TrackResult(scope: Scope.ScopeInstance, result: any)
+local function TrackResult(scope: Types.ScopeInstance, result: any)
     if result == nil then
         return
     end
@@ -76,7 +76,7 @@ local function CapturePropertyLog(instance: Instance, properties: properties, pr
     end
 end
 
-local function ApplyProperties(instance: Instance, properties: properties, scope: Scope.ScopeInstance)
+local function ApplyProperties(instance: Instance, properties: properties, scope: Types.ScopeInstance)
     for PropertyName, Value in properties do
         if typeof(PropertyName) == "table" and PropertyName.__SEAM_INDEX then
             TrackResult(scope, PropertyName(instance, Value))
@@ -116,7 +116,7 @@ local function SelectorMatches(instance: Instance, selector: string): boolean
     end
 end
 
-local function ApplyRules(instance: Instance, rules: { Types.StyleRule }, propertyLog: log, scope: Scope.ScopeInstance)
+local function ApplyRules(instance: Instance, rules: { Types.StyleRule }, propertyLog: log, scope: Types.ScopeInstance)
     for _, Rule in rules do
         if SelectorMatches(instance, Rule.Selector) then
             CapturePropertyLog(instance, Rule.Properties, propertyLog)
@@ -138,7 +138,7 @@ StyleSheet.__SEAM_CAN_BE_SCOPED = false
 function StyleSheet.new(): Types.StyleSheetInstance
     local Rules: { Types.StyleRule } = {}
     local Logs: { [Instance]: log } = {}
-    local Scopes: { [Instance]: Scope.ScopeInstance } = {}
+    local Scopes: { [Instance]: Types.ScopeInstance } = {}
     local StyleSheetObject: Types.ObjectDecompiled = {}
 
     StyleSheetObject.__SEAM_STYLESHEET_INSTANCE = StyleSheetInstanceSymbol
