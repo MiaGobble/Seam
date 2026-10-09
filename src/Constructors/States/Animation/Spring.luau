@@ -1,34 +1,28 @@
 -- Author: iGottic
 
-local Spring = {}
-
 -- Constants
 local EPSILON = 0.001
 
 -- Imports
 local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Variables
-local ClassSymbol = Symbol.new("Spring")
+-- Class
+local Spring : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type SpringInstance<T> = {
-    Velocity : T,
-    Target : T
-} & Types.BaseState<T>
-
-export type SpringConstructor<T> = (Value : Types.BaseState<T> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) -> SpringInstance<T>
+Spring.__SEAM_OBJECT = Symbol.new("Spring")
+Spring.__SEAM_CAN_BE_SCOPED = true
 
 local function GetPositionAndVelocity(OldPosition : number, OldVelocity : number, Target : number, Dampening : number, Speed : number, TimeStarted : number) : (number, number)
     local TimePassed = os.clock() - TimeStarted
@@ -96,7 +90,7 @@ local function ConvertValueToUnpackedSprings(Value : any)
     return UnpackedValue
 end
 
-function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) : SpringInstance<any>
+function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState<any> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) : Types.SpringInstance<any>
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
@@ -105,8 +99,8 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
     local LastValue = CurrentTarget
-    local InstanceSymbol = Symbol.new("Spring")
     local IsSleeping = false
+    local ActiveValue : Types.ObjectCompiled
 
     TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         if IsSleeping then
@@ -156,120 +150,108 @@ function Spring:__call(Value : Types.BaseState<any> | any, Speed : Types.BaseSta
         end
     end))
 
-    local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function()
-            UnpackedSprings = nil
-            TroveInstance:Destroy()
-            TroveInstance = nil
-        end
-    }, {
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                return CurrentValue
-            elseif Index == "Velocity" then
-                local PackedValues = {}
+    local SpringObject : Types.ObjectDecompiled = {
+        __SEAM_OBJECT = Symbol.new("Spring"),
+        Changed = ChangedSignal,
+        AttachedToInstance = AttachedSignal,
+    }
 
-                for ThisIndex, ThisSpring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+    function SpringObject.Destroy()
+        UnpackedSprings = nil
+        TroveInstance:Destroy()
+        TroveInstance = nil
+    end
 
-                    PackedValues[ThisIndex] = Velocity
-                end
+    function SpringObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
+        AttachedSignal:Fire(Object)
 
-                return ValuePacker.PackValue(PackedValues, ValueType)
-            elseif Index == "Changed" then
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
-            elseif Index == "Speed" then
-                return Speed
-            elseif Index == "Dampening" then
-                return Dampening
+        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+            Value = function()
+                Batch.Fire(ChangedSignal, "Value")
+                return This.Value
+            end,
+
+            PropertyName = Index
+        }))
+
+        return ActiveValue
+    end
+
+    function SpringObject.__INDEX(_: Types.ObjectCompiled, Index : string)
+        if Index == "Value" then
+            return CurrentValue
+        elseif Index == "Velocity" then
+            local PackedValues = {}
+
+            for ThisIndex, ThisSpring in UnpackedSprings do
+                local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+
+                PackedValues[ThisIndex] = Velocity
             end
 
-            return nil
-        end,
-
-        __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Target" then
-                IsSleeping = false
-                CurrentTarget = GetValue(NewValue)
-
-                local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
-
-                for ThisIndex, ThisSpring in UnpackedSprings do
-                    local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
-
-                    ThisSpring.StartingPosition = Position
-                    ThisSpring.Velocity = Velocity
-                    ThisSpring.StartingTime = os.clock()
-                    ThisSpring.Target = UnpackedNewValue[ThisIndex]
-                end
-            elseif Index == "Value" then
-                IsSleeping = false
-                local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
-
-                for ThisIndex, ThisSpring in UnpackedSprings do
-                    local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
-
-                    ThisSpring.StartingPosition = UnpackedNewValue[ThisIndex]
-                    ThisSpring.Velocity = Velocity
-                    ThisSpring.StartingTime = os.clock()
-                end
-            elseif Index == "Dampening" then
-                IsSleeping = false
-                Dampening = NewValue
-            elseif Index == "Speed" then
-                IsSleeping = false
-                Speed = NewValue
-            elseif Index == "Velocity" then
-                IsSleeping = false
-                local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
-
-                for ThisIndex, ThisSpring in UnpackedSprings do
-                    local Position, _ = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
-
-                    ThisSpring.Velocity = UnpackedNewValue[ThisIndex]
-                    ThisSpring.StartingPosition = Position
-                    ThisSpring.StartingTime = os.clock()
-                end
-            end
-        end,
-
-        __call = function(This, Object, Index : string)
-            AttachedSignal:Fire(Object)
-            
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    Batch.Fire(ChangedSignal, "Value")
-                    return This.Value
-                end,
-
-                PropertyName = Index
-            }))
-
-            return ActiveValue
+            return ValuePacker.PackValue(PackedValues, ValueType)
+        elseif Index == "Speed" then
+            return Speed
+        elseif Index == "Dampening" then
+            return Dampening
         end
-    })
+
+        return nil
+    end
+
+    function SpringObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
+        if Index == "Target" then
+            IsSleeping = false
+            CurrentTarget = GetValue(NewValue)
+
+            local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
+
+            for ThisIndex, ThisSpring in UnpackedSprings do
+                local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+
+                ThisSpring.StartingPosition = Position
+                ThisSpring.Velocity = Velocity
+                ThisSpring.StartingTime = os.clock()
+                ThisSpring.Target = UnpackedNewValue[ThisIndex]
+            end
+        elseif Index == "Value" then
+            IsSleeping = false
+            local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
+
+            for ThisIndex, ThisSpring in UnpackedSprings do
+                local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+
+                ThisSpring.StartingPosition = UnpackedNewValue[ThisIndex]
+                ThisSpring.Velocity = Velocity
+                ThisSpring.StartingTime = os.clock()
+            end
+        elseif Index == "Dampening" then
+            IsSleeping = false
+            Dampening = NewValue
+        elseif Index == "Speed" then
+            IsSleeping = false
+            Speed = NewValue
+        elseif Index == "Velocity" then
+            IsSleeping = false
+            local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
+
+            for ThisIndex, ThisSpring in UnpackedSprings do
+                local Position, _ = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+
+                ThisSpring.Velocity = UnpackedNewValue[ThisIndex]
+                ThisSpring.StartingPosition = Position
+                ThisSpring.StartingTime = os.clock()
+            end
+        end
+    end
+
+    ActiveValue = Compiler.CompileObject(SpringObject)
 
     if typeof(Value) == "table" and Value.__SEAM_OBJECT then
         Value(ActiveValue, "Target")
     end
 
-    return ActiveValue :: SpringInstance<any>
+    return ActiveValue :: Types.SpringInstance<any>
 end
 
-function Spring:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Spring)
-
-return Meta :: SpringConstructor<any>
+return Compiler.CompileConstructor(Spring) :: Types.SpringConstructor<any>

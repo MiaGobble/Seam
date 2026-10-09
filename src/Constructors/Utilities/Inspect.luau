@@ -1,11 +1,16 @@
 -- Author: iGottic
 
-local Inspect = {}
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 
--- Types
-export type Inspect = (Object : any, DebugName : string) -> RBXScriptConnection
+-- Class
+local Inspect : Types.ConstructorDecompiled = {}
 
-function Inspect:__call(Object : any, DebugName : string)
+Inspect.__SEAM_CAN_BE_SCOPED = true
+
+function Inspect.__CALLBACK(_: Types.ConstructorCompiled, Object : any, DebugName : string)
     if not DebugName then
         error("Expected DebugName, got nil")
     end
@@ -20,14 +25,4 @@ function Inspect:__call(Object : any, DebugName : string)
     end)
 end
 
-function Inspect:__index(Index : string)
-    if Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Inspect)
-
-return Meta :: Inspect
+return Compiler.CompileConstructor(Inspect) :: Types.Inspect
