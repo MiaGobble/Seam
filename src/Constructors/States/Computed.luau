@@ -1,27 +1,24 @@
 -- Author: iGottic
 
-local Computed = {}
-
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
 local Trove = require(Modules.Trove)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
-local Value = require(script.Parent.Value)
 local GetValue = require(script.Parent.Parent.Utilities.GetValue)
 local IsState = require(script.Parent.Parent.Utilities.IsState)
 
--- Variables
-local ClassSymbol = Symbol.new("Computed")
+-- Class
+local Computed : Types.ConstructorDecompiled = {}
 
--- Types Extended
-export type ComputedInstance<T> = {} & Types.BaseState<T>
-export type ComputedConstructor<T> = (Callback : ((Value : Value.ValueInstance<T>) -> any) -> any?) -> ComputedInstance<T>
+Computed.__SEAM_INDEX = Symbol.new("Computed")
+Computed.__SEAM_CAN_BE_SCOPED = true
 
-function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) -> any?)
+function Computed.__CALLBACK(_: Types.ConstructorCompiled, Callback : ((Value : Types.ValueInstance<any>) -> any) -> any?)
     -- This shit has caused me so much pain
     local TroveInstance = Trove.new()
     local ChangedSignal = Signal.new()
@@ -29,9 +26,9 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
     local CurrentValue = nil
     local IsInitialized = false
     local AttachedSignal = Signal.new()
-    local InstanceSymbol = Symbol.new("ComputedInstance")
     local IsRecomputing = false
     local RecomputeAndFireChanged
+    local ActiveComputation : Types.ObjectCompiled
 
     local function CleanupDependencyConnections()
         for _, Connection in DependencyConnections do
@@ -52,7 +49,7 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
 
         local SeenDependencies : {[any] : boolean} = {}
 
-        local function Use(ThisValue : Value.ValueInstance<any>)
+        local function Use(ThisValue : Types.ValueInstance<any>)
             -- Is Use connecting to a state? If not, just get the value
 
             if ThisValue ~= nil and IsState(ThisValue) then
@@ -93,73 +90,63 @@ function Computed:__call(Callback : ((Value : Value.ValueInstance<any>) -> any) 
         RecomputeCore()
     end
 
-    local ActiveComputation; ActiveComputation = setmetatable({
-        Destroy = function()
-            CleanupDependencyConnections()
-            TroveInstance:Destroy()
-        end,
-    }, {
-        __call = function(_, Object : Instance, Index : string)
-            AttachedSignal:Fire(Object)
+    local ComputationObject : Types.ObjectDecompiled = {
+        __SEAM_OBJECT = Symbol.new("ComputedInstance"),
+    }
 
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    -- We don't want to re-calculate the computed when the states haven't changed,
-                    -- so let's just force-calculate only when it's first checked
+    function ComputationObject.Destroy()
+        CleanupDependencyConnections()
+        TroveInstance:Destroy()
+    end
 
-                    if not IsInitialized then
-                        RecomputeSilently()
-                    end
-                    
-                    return CurrentValue
-                end,
+    function ComputationObject.__CALLBACK(_: Types.ObjectCompiled, Object : Instance, Index : string)
+        AttachedSignal:Fire(Object)
 
-                PropertyName = Index
-            }))
-
-            return ActiveComputation
-        end,
-
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                -- Same as above, let's not re-calculate
+        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+            Value = function()
+                -- We don't want to re-calculate the computed when the states haven't changed,
+                -- so let's just force-calculate only when it's first checked
 
                 if not IsInitialized then
                     RecomputeSilently()
                 end
 
                 return CurrentValue
-            elseif Index == "Changed" then
-                -- We need to connect the Use() functions here to track changes
+            end,
 
-                if not IsInitialized then
-                    RecomputeSilently()
-                end
+            PropertyName = Index
+        }))
 
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
+        return ActiveComputation
+    end
+
+    function ComputationObject.__INDEX(_: Types.ObjectCompiled, Index : string)
+        if Index == "Value" then
+            -- Same as above, let's not re-calculate
+
+            if not IsInitialized then
+                RecomputeSilently()
             end
 
-            return nil
+            return CurrentValue
+        elseif Index == "Changed" then
+            -- We need to connect the Use() functions here to track changes
+
+            if not IsInitialized then
+                RecomputeSilently()
+            end
+
+            return ChangedSignal
+        elseif Index == "AttachedToInstance" then
+            return AttachedSignal
         end
-    })
 
-    return ActiveComputation :: ComputedInstance<any>
-end
-
-function Computed:__index(Key : string)
-    if Key == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Key == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
         return nil
     end
+
+    ActiveComputation = Compiler.CompileObject(ComputationObject)
+
+    return ActiveComputation :: Types.ComputedInstance<any>
 end
 
-local Meta = setmetatable({}, Computed)
-
-return Meta :: ComputedConstructor<any>
+return Compiler.CompileConstructor(Computed) :: Types.ComputedConstructor<any>
