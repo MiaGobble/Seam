@@ -2,8 +2,9 @@
 
 local OnChanged = {}
 
--- Types
-export type OnChanged = (Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
 
 function OnChanged:__call(Object : any, Callback : (PropertyChanged : string, NewValue : any) -> nil)
     -- Fortunately, states also have a Changed signal, so this works out perfectly 
@@ -27,4 +28,4 @@ end
 
 local Meta = setmetatable({}, OnChanged)
 
-return Meta :: OnChanged
+return Meta :: Types.OnChanged
