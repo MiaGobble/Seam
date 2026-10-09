@@ -12,7 +12,7 @@ local OnAttached : Types.ConstructorDecompiled = {}
 OnAttached.__SEAM_INDEX = Symbol.new("OnAttached")
 OnAttached.__SEAM_CAN_BE_SCOPED = true
 
-function OnAttached.Callback(self : Types.ConstructorCompiled, Object : any, Callback : (AttachedInstance : Instance) -> nil)
+function OnAttached.__CALLBACK(self : Types.ConstructorCompiled, Object : any, Callback : (AttachedInstance : Instance) -> nil)
     return (Object.AttachedToInstance :: RBXScriptSignal):Connect(Callback)
 end
 
