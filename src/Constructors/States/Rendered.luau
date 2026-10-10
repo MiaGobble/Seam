@@ -53,7 +53,7 @@ function Rendered.__CALLBACK(_: Types.ConstructorCompiled, Callback : (number) -
     function RenderedObject.__CALLBACK(This : Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

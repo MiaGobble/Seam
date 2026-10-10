@@ -111,7 +111,7 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
     function TweenObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

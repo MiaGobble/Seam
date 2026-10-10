@@ -73,7 +73,7 @@ function Resource.__CALLBACK(_: Types.ConstructorCompiled, Callback : () -> any)
     function ResourceObject.__CALLBACK(This : Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

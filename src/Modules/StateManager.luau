@@ -27,7 +27,7 @@ local function GetObjectType(Object : any) : string
 end
 
 -- This function is a bit weird but it's a lot of stuff to essentially just progate changes from one thing to another
-function StateManager:AttachStateToObject(Object : any, StateInstance : StateInstance)
+function StateManager.AttachStateToObject(Object : any, StateInstance : StateInstance)
     local ObjectType = GetObjectType(Object)
     local TroveInstance = Trove.new()
     local UpdateFunction = nil

@@ -165,7 +165,7 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
     function SpringObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 Batch.Fire(ChangedSignal, "Value")
                 return This.Value

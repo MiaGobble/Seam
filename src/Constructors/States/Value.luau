@@ -163,7 +163,7 @@ function Value.__CALLBACK(_: Types.ConstructorCompiled, ThisValue : any)
 
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 if typeof(ThisValue) == "table" and ThisValue ~= nil then
                     return table.clone(ThisValue)

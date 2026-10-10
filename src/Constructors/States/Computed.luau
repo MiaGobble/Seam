@@ -102,7 +102,7 @@ function Computed.__CALLBACK(_: Types.ConstructorCompiled, Callback : ((Value : 
     function ComputationObject.__CALLBACK(_: Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 -- We don't want to re-calculate the computed when the states haven't changed,
                 -- so let's just force-calculate only when it's first checked
