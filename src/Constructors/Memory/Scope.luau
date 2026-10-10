@@ -85,10 +85,13 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
         local ParentScope = rawget(self, "ParentScope")
 
         if ParentScope then
+            -- When an inner scope is destroyed, remove it from the parent scope
             local ParentTrove = rawget(ParentScope, "Trove")
+
             if ParentTrove and not ParentTrove._cleaning then
                 ParentTrove:Pop(self)
             end
+
             rawset(self, "ParentScope", nil)
         end
     end
