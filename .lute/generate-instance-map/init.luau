@@ -147,8 +147,8 @@ end
 -- Arguments --
 const opts = parseArgs(process.args)
 const output = opts.output
-const classesSet = opts.classes and tableext.toSet(opts.classes)
-const superclassesSet = opts.superclasses and tableext.toSet(opts.superclasses)
+const inclClassSet = opts.classes and tableext.toSet(opts.classes)
+const inclSuperclassSet = opts.superclasses and tableext.toSet(opts.superclasses)
 const tags = opts.tags
 const verbose = opts.verbose
 
@@ -172,7 +172,7 @@ for _, class in dump.Classes do
 end
 
 -- Warn about classes that don't exist
-for _, set in {classesSet, superclassesSet} do
+for _, set in {inclClassSet, inclSuperclassSet} do
 	for name in set do
 		if not classMap[name] then
 			color_output.warn(`Unknown class '{name}' (not in dump)`)
@@ -181,13 +181,13 @@ for _, set in {classesSet, superclassesSet} do
 end
 
 const function isSubClassIncluded(class: string): (boolean)
-	assert(superclassesSet, "isSubClassIncluded can only be used when superclasses is defined")
+	assert(inclSuperclassSet, "isSubClassIncluded can only be used when superclasses is defined")
 
 	const classInfo = classMap[class]
 	local node: ClassInfo? = classInfo
 	while node do
 		const name = node.Name
-		if superclassesSet[name] then
+		if inclSuperclassSet[name] then
 			if verbose then color_output.verbose(`{class} is subclass of {name}`) end
 			return true
 		end
@@ -198,9 +198,9 @@ const function isSubClassIncluded(class: string): (boolean)
 end
 
 const function isIncluded(className: string): boolean
-	const classIncluded = if classesSet
-			then classesSet[className] ~= nil
-		elseif superclassesSet
+	const classIncluded = if inclClassSet
+			then inclClassSet[className] ~= nil
+		elseif inclSuperclassSet
 			then isSubClassIncluded(className)
 		else true -- No class filter specified, include every class
 
