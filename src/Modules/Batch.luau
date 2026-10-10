@@ -29,10 +29,12 @@ local function FlushPendingSignals()
     table.clear(PendingOrder)
 end
 
+-- Beginning a batch does nothing but mark that it's opened
 function Batch.Begin()
     ActiveDepth += 1
 end
 
+-- Ending a batch closes it. If it's the top batch scope, fire everything.
 function Batch.End()
     if ActiveDepth <= 0 then
         error("Seam.Batch.End() called without a matching Begin()")
@@ -45,6 +47,9 @@ function Batch.End()
     end
 end
 
+-- Instead of direcly firing changed signals in Seam, we do it through batch.
+-- If there is no active batch, then the signal fires normally.
+-- Otherwise, it adds it to pending signals.
 function Batch.Fire(ChangedSignal: any, ...: any)
     if ActiveDepth <= 0 then
         ChangedSignal:Fire(...)
