@@ -47,7 +47,7 @@ local EventSequence = require(Declarations:WaitForChild("EventSequence"))
 local ForPairs = require(States:WaitForChild("ForPairs"))
 
 -- Types extended
-type Seam = {
+export type Seam = {
     Batch : Batch.Batch,
     New : Types.NewConstructor,
     Children : Types.Children,
