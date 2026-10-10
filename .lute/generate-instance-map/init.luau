@@ -14,6 +14,7 @@
 		```
 ]]
 
+const tableext = require("@std/tableext")
 const process = require("@std/process")
 const path = require("@std/path")
 const json = require("@std/json")
@@ -23,12 +24,10 @@ const io = require("@std/io")
 
 const ansi = require("@self/ansi-format")
 const color_output = require("@self/color-output")
-const tableext = require("@std/tableext")
 
 const DUMP_URL = "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/API-Dump.json"
 
 -- API Dump Shapes --
-
 type ClassInfo = {
 	Name: string,
 	Superclass: string,
@@ -41,6 +40,10 @@ type Dump = {
 }
 
 -- Helpers --
+
+const function unhandled(a: never): ()
+	color_output.fatal(`Unrecognized argument: {a}`, 2)
+end
 
 const function fetchRemoteJson(url: string): (json.Array | json.Object | json.Value)
 	const response = net.request(url)
@@ -74,8 +77,8 @@ const HELP_MESSAGE =  `\z
 type CLIOptions = {
 	help: true?,
 	output: path.Pathlike?,
-	classes: {[string]: true}?,
-	superclasses: {[string]: true}?,
+	classes: {string}?,
+	superclasses: {string}?,
 	tags: {{value: string, negate: boolean}}?,
 	verbose: true?,
 }
@@ -88,17 +91,9 @@ type CLIArguments =
 	| "-t" | "--tags"
 	| "-v" | "--verbose"
 
-const function unhandled(a: never): ()
-	color_output.fatal(`Unrecognized argument: {a}`, 2)
-end
-
 const function parseArgs(args: { CLIArguments | string }): (CLIOptions)
 	const function splitComma(value: string): ({string})
 		return string.split(value, ",")
-	end
-
-	const function commaSepToSet(value: string): ({[string]: true})
-		return tableext.toSet(splitComma(value))
 	end
 
 	const opts: CLIOptions = {}
@@ -116,11 +111,11 @@ const function parseArgs(args: { CLIArguments | string }): (CLIOptions)
 		elseif arg == "-c" or arg == "--class" then
 			i += 1
 
-			opts.classes = commaSepToSet(args[i])
+			opts.classes = splitComma(args[i])
 		elseif arg == "-s" or arg == "--superclass" then
 			i += 1
 
-			opts.superclasses = commaSepToSet(args[i])
+			opts.superclasses = splitComma(args[i])
 		elseif arg == "-t" or arg == "--tags" then
 			i += 1
 
@@ -152,8 +147,8 @@ end
 -- Arguments --
 const opts = parseArgs(process.args)
 const output = opts.output
-const classesSet = opts.classes
-const superclassesSet = opts.superclasses
+const classesSet = opts.classes and tableext.toSet(opts.classes)
+const superclassesSet = opts.superclasses and tableext.toSet(opts.superclasses)
 const tags = opts.tags
 const verbose = opts.verbose
 
