@@ -34,6 +34,8 @@ function StateManager.AttachStateToObject(Object : any, StateInstance : StateIns
     local ChangedSignal = nil
 
     if ObjectType == "Instance" then
+        -- Propogate state value to a instance
+
         local LastValue = nil
 
         UpdateFunction = function()
@@ -64,6 +66,8 @@ function StateManager.AttachStateToObject(Object : any, StateInstance : StateIns
             end))
         end)
     elseif ObjectType == "SeamObject" then
+        -- Propogate state value to a Seam state
+
         local LastValue = nil
 
         UpdateFunction = function()
@@ -86,12 +90,14 @@ function StateManager.AttachStateToObject(Object : any, StateInstance : StateIns
 
     ChangedSignal = StateInstance.Changed
 
+    -- Prefer a changed signal when updating
     if ChangedSignal ~= nil then
         TroveInstance:Add(ChangedSignal:Connect(UpdateFunction))
     else
         TroveInstance:Add(UpdateSignals.OnFrameUpdate:Connect(UpdateFunction))
     end
 
+    -- Immediately apply current state to object
     task.spawn(UpdateFunction)
 
     return TroveInstance
