@@ -73,9 +73,11 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
         local CurrentTweenInformation = GetValue(TweenInformation)
         local IsSettled = true
 
+        -- Each part of a value is separated into separate tweens, just like springs. For example, a Vector3 is three separate tweens.
         for Index, ThisTween in UnpackedTweens do
             local Position, Alpha = GetTweenPosition(ThisTween, CurrentTweenInformation)
 
+            -- Snap to value based on epsilon to prevent forever retargeting
             if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
                 IsSettled = false
             end
