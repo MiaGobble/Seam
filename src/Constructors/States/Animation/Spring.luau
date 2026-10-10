@@ -112,15 +112,19 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
         local CurrentSpeed = GetValue(Speed)
         local IsSettled = true
 
+        -- Each part of a value is separated into separate springs. For example, a Vector3 is three separate springs.
         for Index, ThisSpring in UnpackedSprings do
+            -- Do the math to get position and velocity of spring
             local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, CurrentDampening, CurrentSpeed, ThisSpring.StartingTime)
 
+            -- Snap to value based on epsilon to prevent forever retargeting
 			if math.abs(Position) <= EPSILON then
 				Position = 0
 			elseif math.abs(Position - ThisSpring.Target) <= EPSILON then
 				Position = ThisSpring.Target
 			end
 
+            -- Prevent sleeping if a spring is still moving
             if math.abs(Position - ThisSpring.Target) > EPSILON or math.abs(Velocity) > EPSILON then
                 IsSettled = false
             end
@@ -128,6 +132,7 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
             PackedValues[Index] = Position
         end
 
+        -- Ensure springs stay frozen after settled and ready to sleep
         if IsSettled then
             for Index, ThisSpring in UnpackedSprings do
                 ThisSpring.StartingPosition = ThisSpring.Target
