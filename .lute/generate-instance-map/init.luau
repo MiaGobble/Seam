@@ -5,7 +5,7 @@
 
 	Example:
 		```bash
-		lute run generate-instance-map -t "!NotCreatable,!Deprecated" -s GuiBase,UIBase
+		lute run generate-instance-map -t "!NotCreatable,!NotReplicated,!Deprecated" -s GuiBase,UIBase
 		```
 
 	For more information on usage, run:
@@ -152,8 +152,6 @@ const superclassesSet = opts.superclasses and tableext.toSet(opts.superclasses)
 const tags = opts.tags
 const verbose = opts.verbose
 
-const filtered = (classesSet or superclassesSet or tags) ~= nil
-
 if opts.help then
 	print(HELP_MESSAGE)
 	process.exit(0)
@@ -182,14 +180,34 @@ for _, set in {classesSet, superclassesSet} do
 	end
 end
 
-const function isIncluded(className: string): boolean
-	if not filtered then return true end
-	if classesSet and classesSet[className] then return true end
-	
-	const classInfo = classMap[className]
+const function isSubClassIncluded(class: string): (boolean)
+	assert(superclassesSet, "isSubClassIncluded can only be used when superclasses is defined")
 
-	-- Filter tags before superclass inclusion
+	const classInfo = classMap[class]
+	local node: ClassInfo? = classInfo
+	while node do
+		const name = node.Name
+		if superclassesSet[name] then
+			if verbose then color_output.verbose(`{class} is subclass of {name}`) end
+			return true
+		end
+		node = classMap[node.Superclass]
+	end
+
+	return false
+end
+
+const function isIncluded(className: string): boolean
+	const classIncluded = if classesSet
+			then classesSet[className] ~= nil
+		elseif superclassesSet
+			then isSubClassIncluded(className)
+		else true -- No class filter specified, include every class
+
+	if not classIncluded then return false end
+
 	if tags then
+		const classInfo = classMap[className]
 		const classTags = classInfo.Tags or {}
 
 		for _, tag in tags do
@@ -199,21 +217,8 @@ const function isIncluded(className: string): boolean
 			end
 		end
 	end
-
-	if superclassesSet then
-		-- Walk up the inheritance chain looking for a requested superclass
-		local node: ClassInfo? = classInfo
-		while node do
-			const name = node.Name
-			if superclassesSet[name] then
-				if verbose then color_output.verbose(`{className} is subclass of {name}`) end
-				return true
-			end
-			node = classMap[node.Superclass]
-		end
-	end
 	
-	return false
+	return true
 end
 
 const includedClassNames: {string} = {}
