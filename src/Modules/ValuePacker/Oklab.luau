@@ -2,10 +2,10 @@
 
 local Oklab = {}
 
-function Oklab.ToOklab(RobloxColor: Color3): Vector3
-	local LongConeResponse = RobloxColor.R * 0.4122214708 + RobloxColor.G * 0.5363325363 + RobloxColor.B * 0.0514459929
-	local MediumConeResponse = RobloxColor.R * 0.2119034982 + RobloxColor.G * 0.6806995451 + RobloxColor.B * 0.1073969566
-	local ShortConeResponse = RobloxColor.R * 0.0883024619 + RobloxColor.G * 0.2817188376 + RobloxColor.B * 0.6299787005
+function Oklab.ToOklab(robloxColor : Color3) : Vector3
+	local LongConeResponse = robloxColor.R * 0.4122214708 + robloxColor.G * 0.5363325363 + robloxColor.B * 0.0514459929
+	local MediumConeResponse = robloxColor.R * 0.2119034982 + robloxColor.G * 0.6806995451 + robloxColor.B * 0.1073969566
+	local ShortConeResponse = robloxColor.R * 0.0883024619 + robloxColor.G * 0.2817188376 + robloxColor.B * 0.6299787005
 
 	local LongConeCubicRoot = LongConeResponse ^ (1 / 3)
 	local MediumConeCubicRoot = MediumConeResponse ^ (1 / 3)
@@ -18,10 +18,10 @@ function Oklab.ToOklab(RobloxColor: Color3): Vector3
 	return Vector3.new(OklabLightness, OklabA, OklabB)
 end
 
-function Oklab.FromOklab(OklabColor: Vector3, ReturnUnclamped: boolean?): Color3
-	local LongConeCubicRoot = OklabColor.X + OklabColor.Y * 0.3963377774 + OklabColor.Z * 0.2158037573
-	local MediumConeCubicRoot = OklabColor.X - OklabColor.Y * 0.1055613458 - OklabColor.Z * 0.0638541728
-	local ShortConeCubicRoot = OklabColor.X - OklabColor.Y * 0.0894841775 - OklabColor.Z * 1.2914855480
+function Oklab.FromOklab(oklabColor : Vector3, returnUnclamped : boolean?) : Color3
+	local LongConeCubicRoot = oklabColor.X + oklabColor.Y * 0.3963377774 + oklabColor.Z * 0.2158037573
+	local MediumConeCubicRoot = oklabColor.X - oklabColor.Y * 0.1055613458 - oklabColor.Z * 0.0638541728
+	local ShortConeCubicRoot = oklabColor.X - oklabColor.Y * 0.0894841775 - oklabColor.Z * 1.2914855480
 
 	local LongConeResponse = LongConeCubicRoot ^ 3
 	local MediumConeResponse = MediumConeCubicRoot ^ 3
@@ -31,7 +31,7 @@ function Oklab.FromOklab(OklabColor: Vector3, ReturnUnclamped: boolean?): Color3
 	local GreenChannel = LongConeResponse * -1.2684380046 + MediumConeResponse * 2.6097574011 - ShortConeResponse * 0.3413193965
 	local BlueChannel = LongConeResponse * -0.0041960863 - MediumConeResponse * 0.7034186147 + ShortConeResponse * 1.7076147010
 
-	if not ReturnUnclamped then
+	if not returnUnclamped then
 		RedChannel = math.clamp(RedChannel, 0, 1)
 		GreenChannel = math.clamp(GreenChannel, 0, 1)
 		BlueChannel = math.clamp(BlueChannel, 0, 1)

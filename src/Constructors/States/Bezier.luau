@@ -1,4 +1,4 @@
--- Author: iGottic
+local Bezier = {}
 
 -- Imports
 local Constructors = script.Parent.Parent
@@ -13,193 +13,190 @@ local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
--- Class
-local Bezier : Types.ConstructorDecompiled = {}
-
 Bezier.__SEAM_OBJECT = Symbol.new("Bezier")
 Bezier.__SEAM_CAN_BE_SCOPED = true
 
-local function ClampAlpha(AlphaValue : number) : number
-    return math.clamp(AlphaValue, 0, 1)
+local function ClampAlpha(alphaValue : number) : number
+	return math.clamp(alphaValue, 0, 1)
 end
 
-local function GetBezierNumber(AlphaValue : number, OriginValue : number, MidpointValue : number, TargetValue : number) : number
-    local InverseAlpha = 1 - AlphaValue
-    return (InverseAlpha * InverseAlpha * OriginValue) + (2 * InverseAlpha * AlphaValue * MidpointValue) + (AlphaValue * AlphaValue * TargetValue)
+local function GetBezierNumber(alphaValue : number, originValue : number, midpointValue : number, targetValue : number) : number
+	local InverseAlpha = 1 - alphaValue
+	return (InverseAlpha * InverseAlpha * originValue) + (2 * InverseAlpha * alphaValue * midpointValue) + (alphaValue * alphaValue * targetValue)
 end
 
-local function GetBezierValue(AlphaValue : number, OriginValue : any, MidpointValue : any, TargetValue : any, ValueType : string) : any
-    if ValueType == "number" then
-        return GetBezierNumber(AlphaValue, OriginValue, MidpointValue, TargetValue)
-    end
+local function GetBezierValue(alphaValue : number, originValue : any, midpointValue : any, targetValue : any, valueType : string) : any
+	if valueType == "number" then
+		return GetBezierNumber(alphaValue, originValue, midpointValue, targetValue)
+	end
 
-    local UnpackedOrigin = ValuePacker.UnpackValue(OriginValue, ValueType)
-    local UnpackedMidpoint = ValuePacker.UnpackValue(MidpointValue, ValueType)
-    local UnpackedTarget = ValuePacker.UnpackValue(TargetValue, ValueType)
+	local UnpackedOrigin = ValuePacker.UnpackValue(originValue, valueType)
+	local UnpackedMidpoint = ValuePacker.UnpackValue(midpointValue, valueType)
+	local UnpackedTarget = ValuePacker.UnpackValue(targetValue, valueType)
 
-    if #UnpackedOrigin == 0 then
-        if AlphaValue <= 0 then
-            return OriginValue
-        elseif AlphaValue >= 1 then
-            return TargetValue
-        end
+	if #UnpackedOrigin == 0 then
+		if alphaValue <= 0 then
+			return originValue
+		elseif alphaValue >= 1 then
+			return targetValue
+		end
 
-        return MidpointValue
-    end
+		return midpointValue
+	end
 
-    local UnpackedBezier = {}
+	local UnpackedBezier = {}
 
-    for Index, OriginElement in UnpackedOrigin do
-        UnpackedBezier[Index] = GetBezierNumber(AlphaValue, OriginElement, UnpackedMidpoint[Index], UnpackedTarget[Index])
-    end
+	for index, originElement in UnpackedOrigin do
+		UnpackedBezier[index] = GetBezierNumber(alphaValue, originElement, UnpackedMidpoint[index], UnpackedTarget[index])
+	end
 
-    return ValuePacker.PackValue(UnpackedBezier, ValueType)
+	return ValuePacker.PackValue(UnpackedBezier, valueType)
 end
 
-function Bezier.__CALLBACK(_: Types.ConstructorCompiled, Alpha : any, Origin : any, Midpoint : any, Target : any) : Types.BezierInstance<any>
-    local BucketInstance = Bucket.new()
-    local AttachedSignal = Signal.new()
-    local AlphaValue = Value(GetValue(Alpha))
-    local OriginValue = Value(GetValue(Origin))
-    local MidpointValue = Value(GetValue(Midpoint))
-    local TargetValue = Value(GetValue(Target))
-    local ValueType = typeof(OriginValue.Value)
-    local ActiveValue : Types.ObjectCompiled
+function Bezier.__CALLBACK(_ : Types.ConstructorCompiled, alpha : any, origin : any, midpoint : any, target : any) : Types.BezierInstance<any>
+	local BucketInstance = Bucket.new()
+	local AttachedSignal = Signal.new()
+	local AlphaValue = Value(GetValue(alpha))
+	local OriginValue = Value(GetValue(origin))
+	local MidpointValue = Value(GetValue(midpoint))
+	local TargetValue = Value(GetValue(target))
+	local ValueType = typeof(OriginValue.Value)
+	local ActiveValue : Types.ObjectCompiled
 
-    local function BindInput(Source : any, TargetState : any)
-        if typeof(Source) == "table" and Source.__SEAM_OBJECT then
-            TargetState.Value = GetValue(Source)
+	local function BindInput(source : any, targetState : any)
+		if typeof(source) == "table" and source.__SEAM_OBJECT then
+			targetState.Value = GetValue(source)
 
-            return Source.Changed:Connect(function()
-                TargetState.Value = GetValue(Source)
-            end)
-        end
+			return source.Changed:Connect(function()
+				targetState.Value = GetValue(source)
+			end)
+		end
 
-        TargetState.Value = GetValue(Source)
-        return nil
-    end
+		targetState.Value = GetValue(source)
+		return nil
+	end
 
-    if typeof(AlphaValue.Value) ~= "number" then
-        error("Bezier alpha must resolve to a number")
-    end
+	if typeof(AlphaValue.Value) ~= "number" then
+		error("Bezier alpha must resolve to a number")
+	end
 
-    if typeof(MidpointValue.Value) ~= ValueType or typeof(TargetValue.Value) ~= ValueType then
-        error("Bezier origin, midpoint, and target must resolve to the same type")
-    end
+	if typeof(MidpointValue.Value) ~= ValueType or typeof(TargetValue.Value) ~= ValueType then
+		error("Bezier origin, midpoint, and target must resolve to the same type")
+	end
 
-    local BoundInputConnections = {
-        Alpha = BindInput(Alpha, AlphaValue),
-        Origin = BindInput(Origin, OriginValue),
-        Midpoint = BindInput(Midpoint, MidpointValue),
-        Target = BindInput(Target, TargetValue),
-    }
+	local BoundInputConnections = {
+		Alpha = BindInput(alpha, AlphaValue),
+		Origin = BindInput(origin, OriginValue),
+		Midpoint = BindInput(midpoint, MidpointValue),
+		Target = BindInput(target, TargetValue),
+	}
 
-    local ComputedValue = Computed(function(Use)
-        local CurrentAlpha = Use(AlphaValue)
-        local CurrentOrigin = Use(OriginValue)
-        local CurrentMidpoint = Use(MidpointValue)
-        local CurrentTarget = Use(TargetValue)
+	local ComputedValue = Computed(function(use)
+		local CurrentAlpha = use(AlphaValue)
+		local CurrentOrigin = use(OriginValue)
+		local CurrentMidpoint = use(MidpointValue)
+		local CurrentTarget = use(TargetValue)
 
-        if typeof(CurrentAlpha) ~= "number" then
-            error("Bezier alpha must resolve to a number")
-        end
+		if typeof(CurrentAlpha) ~= "number" then
+			error("Bezier alpha must resolve to a number")
+		end
 
-        if typeof(CurrentOrigin) ~= ValueType or typeof(CurrentMidpoint) ~= ValueType or typeof(CurrentTarget) ~= ValueType then
-            error("Bezier origin, midpoint, and target must resolve to the same type")
-        end
+		if typeof(CurrentOrigin) ~= ValueType or typeof(CurrentMidpoint) ~= ValueType or typeof(CurrentTarget) ~= ValueType then
+			error("Bezier origin, midpoint, and target must resolve to the same type")
+		end
 
-        return GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
-    end)
+		return GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
+	end)
 
-    BucketInstance:Add(AlphaValue)
-    BucketInstance:Add(OriginValue)
-    BucketInstance:Add(MidpointValue)
-    BucketInstance:Add(TargetValue)
-    BucketInstance:Add(ComputedValue)
-    BucketInstance:Add(ComputedValue.AttachedToInstance:Connect(function(Object)
-        AttachedSignal:Fire(Object)
-    end))
+	BucketInstance:Add(AlphaValue)
+	BucketInstance:Add(OriginValue)
+	BucketInstance:Add(MidpointValue)
+	BucketInstance:Add(TargetValue)
+	BucketInstance:Add(ComputedValue)
+	BucketInstance:Add(ComputedValue.AttachedToInstance:Connect(function(object)
+		AttachedSignal:Fire(object)
+	end))
 
-    local function RebindInput(Key : string, Source : any, TargetState : any)
-        local CurrentConnection = BoundInputConnections[Key]
+	local function RebindInput(key : string, source : any, targetState : any)
+		local CurrentConnection = BoundInputConnections[key]
 
-        if CurrentConnection ~= nil then
-            if CurrentConnection.Connected then
-                CurrentConnection:Disconnect()
-            end
+		if CurrentConnection ~= nil then
+			if CurrentConnection.Connected then
+				CurrentConnection:Disconnect()
+			end
 
-            BoundInputConnections[Key] = nil
-        end
+			BoundInputConnections[key] = nil
+		end
 
-        BoundInputConnections[Key] = BindInput(Source, TargetState)
-    end
+		BoundInputConnections[key] = BindInput(source, targetState)
+	end
 
-    local BezierObject : Types.ObjectDecompiled = {
-        __SEAM_OBJECT = Symbol.new("Bezier"),
-        AttachedToInstance = AttachedSignal,
-    }
+	local BezierObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Bezier"),
+		AttachedToInstance = AttachedSignal,
+	}
 
-    function BezierObject.Destroy()
-        for _, Connection in BoundInputConnections do
-            if Connection ~= nil and Connection.Connected then
-                Connection:Disconnect()
-            end
-        end
+	function BezierObject.Destroy()
+		for _, connection in BoundInputConnections do
+			if connection ~= nil and connection.Connected then
+				connection:Disconnect()
+			end
+		end
 
-        table.clear(BoundInputConnections)
-        BucketInstance:Destroy()
-        BucketInstance = nil
-    end
+		table.clear(BoundInputConnections)
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-    function BezierObject.__CALLBACK(_: Types.ObjectCompiled, Object : any, Index : string)
-        ComputedValue(Object, Index)
-        return ActiveValue
-    end
+	function BezierObject.__CALLBACK(_ : Types.ObjectCompiled, object : any, index : string)
+		ComputedValue(object, index)
+		return ActiveValue
+	end
 
-    function BezierObject.__INDEX(_: Types.ObjectCompiled, Index : string)
-        if Index == "Value" then
-            return ComputedValue.Value
-        elseif Index == "Changed" then
-            return ComputedValue.Changed
-        elseif Index == "Origin" then
-            return Origin
-        elseif Index == "Midpoint" then
-            return Midpoint
-        elseif Index == "Target" then
-            return Target
-        elseif Index == "Alpha" then
-            return Alpha
-        end
+	function BezierObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return ComputedValue.Value
+		elseif index == "Changed" then
+			return ComputedValue.Changed
+		elseif index == "Origin" then
+			return origin
+		elseif index == "Midpoint" then
+			return midpoint
+		elseif index == "Target" then
+			return target
+		elseif index == "Alpha" then
+			return alpha
+		end
 
-        return nil
-    end
+		return nil
+	end
 
-    function BezierObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
-        if Index == "Origin" then
-            Origin = NewValue
-            RebindInput("Origin", NewValue, OriginValue)
-        elseif Index == "Midpoint" then
-            Midpoint = NewValue
-            RebindInput("Midpoint", NewValue, MidpointValue)
-        elseif Index == "Target" then
-            Target = NewValue
-            RebindInput("Target", NewValue, TargetValue)
-        elseif Index == "Alpha" then
-            Alpha = NewValue
-            RebindInput("Alpha", NewValue, AlphaValue)
-        elseif Index == "Value" then
-            Origin = NewValue
-            Midpoint = NewValue
-            Target = NewValue
-            RebindInput("Origin", NewValue, OriginValue)
-            RebindInput("Midpoint", NewValue, MidpointValue)
-            RebindInput("Target", NewValue, TargetValue)
-        end
-    end
+	function BezierObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Origin" then
+			origin = newValue
+			RebindInput("Origin", newValue, OriginValue)
+		elseif index == "Midpoint" then
+			midpoint = newValue
+			RebindInput("Midpoint", newValue, MidpointValue)
+		elseif index == "Target" then
+			target = newValue
+			RebindInput("Target", newValue, TargetValue)
+		elseif index == "Alpha" then
+			alpha = newValue
+			RebindInput("Alpha", newValue, AlphaValue)
+		elseif index == "Value" then
+			origin = newValue
+			midpoint = newValue
+			target = newValue
+			RebindInput("Origin", newValue, OriginValue)
+			RebindInput("Midpoint", newValue, MidpointValue)
+			RebindInput("Target", newValue, TargetValue)
+		end
+	end
 
-    ActiveValue = Compiler.CompileObject(BezierObject)
+	ActiveValue = Compiler.CompileObject(BezierObject)
 
-    return ActiveValue :: Types.BezierInstance<any>
+	return ActiveValue :: Types.BezierInstance<any>
 end
 
 return Compiler.CompileConstructor(Bezier) :: Types.BezierConstructor<any>

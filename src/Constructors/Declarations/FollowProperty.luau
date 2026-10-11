@@ -1,7 +1,7 @@
--- Author: iGottic
+local FollowProperty = {}
 
 -- Types
-type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, Object : Instance, ValueState : any) end}))
+type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, object : Instance, valueState : any) end}))
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
@@ -9,69 +9,66 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 
--- Class
-local FollowProperty : Types.ConstructorDecompiled = {}
-
 FollowProperty.__SEAM_CAN_BE_SCOPED = false
 
-function FollowProperty.__CALLBACK(_: Types.ConstructorCompiled, PropertyName : string) : EventBinding
-    local EventBinding : Types.ObjectDecompiled = {}
-    local ActiveConnections = setmetatable({}, {__mode = "k"})
+function FollowProperty.__CALLBACK(_ : Types.ConstructorCompiled, propertyName : string) : EventBinding
+	local EventBinding : Types.ObjectDecompiled = {}
+	local ActiveConnections = setmetatable({}, {__mode = "k"})
 
-    local function CleanupObjectConnection(Object : Instance)
-        local ConnectionBucket = ActiveConnections[Object]
+	local function CleanupObjectConnection(object : Instance)
+		local ConnectionBucket = ActiveConnections[object]
 
-        if ConnectionBucket == nil then
-            return
-        end
+		if ConnectionBucket == nil then
+			return
+		end
 
-        if ConnectionBucket.PropertyConnection ~= nil and ConnectionBucket.PropertyConnection.Connected then
-            ConnectionBucket.PropertyConnection:Disconnect()
-        end
+		if ConnectionBucket.PropertyConnection ~= nil and ConnectionBucket.PropertyConnection.Connected then
+			ConnectionBucket.PropertyConnection:Disconnect()
+		end
 
-        if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
-            ConnectionBucket.DestroyingConnection:Disconnect()
-        end
+		if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
+			ConnectionBucket.DestroyingConnection:Disconnect()
+		end
 
-        ActiveConnections[Object] = nil
-    end
+		ActiveConnections[object] = nil
+	end
 
-    EventBinding.__SEAM_INDEX = Symbol.new("FollowProperty")
-    EventBinding.__SEAM_CAN_BE_SCOPED = false
+	EventBinding.__SEAM_INDEX = Symbol.new("FollowProperty")
+	EventBinding.__SEAM_CAN_BE_SCOPED = false
 
-    function EventBinding.Destroy(_: EventBinding)
-        for Object in ActiveConnections do
-            CleanupObjectConnection(Object)
-        end
-    end
+	function EventBinding.Destroy(_ : EventBinding)
+		for object in ActiveConnections do
+			CleanupObjectConnection(object)
+		end
+	end
 
-    function EventBinding.__CALLBACK(_: EventBinding, Object : Instance, ValueState : Types.BaseState<any>)
-        -- Literally just a simple connection and value update
-        CleanupObjectConnection(Object)
+	function EventBinding.__CALLBACK(_ : EventBinding, object : Instance, valueState : Types.BaseState<any>)
+		-- Literally just a simple connection and value update
+		CleanupObjectConnection(object)
 
-        local PropertyConnection = Object:GetPropertyChangedSignal(PropertyName):Connect(function()
-            if Object[PropertyName] ~= ValueState.Value then
-                ValueState.Value = Object[PropertyName]
-            end
+		local PropertyConnection = object:GetPropertyChangedSignal(propertyName):Connect(function()
+			if object[propertyName] ~= valueState.Value then
+				valueState.Value = object[propertyName]
+			end
 
-            ValueState.Value = Object[PropertyName]
-        end)
+			valueState.Value = object[propertyName]
+		end)
 
-        local DestroyingConnection = Object.Destroying:Connect(function()
-            CleanupObjectConnection(Object)
-        end)
+		local DestroyingConnection = object.Destroying:Connect(function()
+			CleanupObjectConnection(object)
+		end)
 
-        ActiveConnections[Object] = {
-            PropertyConnection = PropertyConnection,
-            DestroyingConnection = DestroyingConnection,
-        }
+		ActiveConnections[object] = {
+			PropertyConnection = PropertyConnection,
+			DestroyingConnection = DestroyingConnection,
+		}
 
-        return function()
-            CleanupObjectConnection(Object)
-        end
-    end
+		return function()
+			CleanupObjectConnection(object)
+		end
+	end
 
-    return Compiler.CompileObject(EventBinding) :: EventBinding
+	return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
 return Compiler.CompileConstructor(FollowProperty) :: Types.FollowProperty

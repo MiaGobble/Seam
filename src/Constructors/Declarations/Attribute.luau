@@ -1,7 +1,7 @@
--- Author: iGottic
+local Attribute = {}
 
 -- Types
-type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, Object : Instance, AttributeValue : any) end}))
+type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, object : Instance, attributeValue : any) end}))
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
@@ -9,80 +9,77 @@ local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 local Compiler = require(Modules.Compiler)
 
--- Class
-local Attribute : Types.ConstructorDecompiled = {}
-
 Attribute.__SEAM_CAN_BE_SCOPED = false
 
-function Attribute.__CALLBACK(self : Types.ConstructorCompiled, AttributeName : string) : EventBinding
-    local EventBinding : Types.ObjectDecompiled = {}
-    local ActiveConnections = setmetatable({}, {__mode = "k"})
+function Attribute.__CALLBACK(self : Types.ConstructorCompiled, attributeName : string) : EventBinding
+	local EventBinding : Types.ObjectDecompiled = {}
+	local ActiveConnections = setmetatable({}, {__mode = "k"})
 
-    local function CleanupObjectConnection(Object : Instance)
-        local ConnectionBucket = ActiveConnections[Object]
+	local function CleanupObjectConnection(object : Instance)
+		local ConnectionBucket = ActiveConnections[object]
 
-        if ConnectionBucket == nil then
-            return
-        end
+		if ConnectionBucket == nil then
+			return
+		end
 
-        if ConnectionBucket.StateConnection ~= nil and ConnectionBucket.StateConnection.Connected then
-            ConnectionBucket.StateConnection:Disconnect()
-        end
+		if ConnectionBucket.StateConnection ~= nil and ConnectionBucket.StateConnection.Connected then
+			ConnectionBucket.StateConnection:Disconnect()
+		end
 
-        if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
-            ConnectionBucket.DestroyingConnection:Disconnect()
-        end
+		if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
+			ConnectionBucket.DestroyingConnection:Disconnect()
+		end
 
-        ActiveConnections[Object] = nil
-    end
+		ActiveConnections[object] = nil
+	end
 
-    EventBinding.__SEAM_INDEX = Symbol.new("Attribute")
-    EventBinding.__SEAM_CAN_BE_SCOPED = false
+	EventBinding.__SEAM_INDEX = Symbol.new("Attribute")
+	EventBinding.__SEAM_CAN_BE_SCOPED = false
 
-    EventBinding.Destroy = function(self : Types.ObjectCompiled)
-        for Object in ActiveConnections do
-            CleanupObjectConnection(Object)
-        end
-    end
+	EventBinding.Destroy = function(self : Types.ObjectCompiled)
+		for object in ActiveConnections do
+			CleanupObjectConnection(object)
+		end
+	end
 
-    EventBinding.__CALLBACK = function(self : Types.ObjectCompiled, Object : Instance, AttributeValue : any)
-        local PreviousValue = Object:GetAttribute(AttributeName)
-        CleanupObjectConnection(Object)
+	EventBinding.__CALLBACK = function(self : Types.ObjectCompiled, object : Instance, attributeValue : any)
+		local PreviousValue = object:GetAttribute(attributeName)
+		CleanupObjectConnection(object)
 
-        if typeof(AttributeValue) == "table" and AttributeValue.__SEAM_OBJECT then
-            -- If we are using a state, then let's connect to it
-            -- When it changes, update the attribute
+		if typeof(attributeValue) == "table" and attributeValue.__SEAM_OBJECT then
+			-- If we are using a state, then let's connect to it
+			-- When it changes, update the attribute
 
-            local StateConnection = AttributeValue.Changed:Connect(function()
-                Object:SetAttribute(AttributeName, AttributeValue.Value)
-            end)
+			local StateConnection = attributeValue.Changed:Connect(function()
+				object:SetAttribute(attributeName, attributeValue.Value)
+			end)
 
-            local DestroyingConnection = Object.Destroying:Connect(function()
-                CleanupObjectConnection(Object)
-            end)
+			local DestroyingConnection = object.Destroying:Connect(function()
+				CleanupObjectConnection(object)
+			end)
 
-            ActiveConnections[Object] = {
-                StateConnection = StateConnection,
-                DestroyingConnection = DestroyingConnection,
-            }
+			ActiveConnections[object] = {
+				StateConnection = StateConnection,
+				DestroyingConnection = DestroyingConnection,
+			}
 
-            Object:SetAttribute(AttributeName, AttributeValue.Value)
+			object:SetAttribute(attributeName, attributeValue.Value)
 
-            return function()
-                CleanupObjectConnection(Object)
-                Object:SetAttribute(AttributeName, PreviousValue)
-            end
-        end
+			return function()
+				CleanupObjectConnection(object)
+				object:SetAttribute(attributeName, PreviousValue)
+			end
+		end
 
-        -- If we're not using a state, just set the attribute directly
-        Object:SetAttribute(AttributeName, AttributeValue)
+		-- If we're not using a state, just set the attribute directly
+		object:SetAttribute(attributeName, attributeValue)
 
-        return function()
-            Object:SetAttribute(AttributeName, PreviousValue)
-        end
-    end
+		return function()
+			object:SetAttribute(attributeName, PreviousValue)
+		end
+	end
 
-    return Compiler.CompileObject(EventBinding) :: EventBinding
+	return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
 return Compiler.CompileConstructor(Attribute) :: Types.Attribute

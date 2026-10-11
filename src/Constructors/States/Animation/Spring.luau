@@ -1,4 +1,4 @@
--- Author: iGottic
+local Spring = {}
 
 -- Constants
 local EPSILON = 0.001
@@ -18,245 +18,242 @@ local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Class
-local Spring : Types.ConstructorDecompiled = {}
-
 Spring.__SEAM_OBJECT = Symbol.new("Spring")
 Spring.__SEAM_CAN_BE_SCOPED = true
 
-local function GetPositionAndVelocity(OldPosition : number, OldVelocity : number, Target : number, Dampening : number, Speed : number, TimeStarted : number) : (number, number)
-    local TimePassed = os.clock() - TimeStarted
-    local TimeValue = TimePassed * Speed
-    local DampeningSquared = Dampening ^ 2
-    local HighSpeedTime = nil
-    local Cosine = nil
-    local Sine = nil
+local function GetPositionAndVelocity(oldPosition : number, oldVelocity : number, target : number, dampening : number, speed : number, timeStarted : number) : (number, number)
+	local TimePassed = os.clock() - timeStarted
+	local TimeValue = TimePassed * speed
+	local DampeningSquared = dampening ^ 2
+	local HighSpeedTime = nil
+	local Cosine = nil
+	local Sine = nil
 
-    if DampeningSquared < 1 then
-        -- Under dampened
+	if DampeningSquared < 1 then
+		-- Under dampened
 
-        HighSpeedTime = (1 - DampeningSquared) ^ 0.5
+		HighSpeedTime = (1 - DampeningSquared) ^ 0.5
 
-        local EulersFastTime = math.exp(-Dampening * TimeValue) / HighSpeedTime
-        Cosine = EulersFastTime * math.cos(HighSpeedTime * TimeValue)
-        Sine = EulersFastTime * math.sin(HighSpeedTime * TimeValue)
-    elseif DampeningSquared == 1 then
-        -- Critically dampened
+		local EulersFastTime = math.exp(-dampening * TimeValue) / HighSpeedTime
+		Cosine = EulersFastTime * math.cos(HighSpeedTime * TimeValue)
+		Sine = EulersFastTime * math.sin(HighSpeedTime * TimeValue)
+	elseif DampeningSquared == 1 then
+		-- Critically dampened
 
-        HighSpeedTime = 1
+		HighSpeedTime = 1
 
-        local EulersFastTime = math.exp(-Dampening * TimeValue)
-        Cosine = EulersFastTime
-        Sine = EulersFastTime * TimeValue
-    else
-        -- Over dampened
+		local EulersFastTime = math.exp(-dampening * TimeValue)
+		Cosine = EulersFastTime
+		Sine = EulersFastTime * TimeValue
+	else
+		-- Over dampened
 
-        HighSpeedTime = (DampeningSquared - 1) ^ 0.5
-        Cosine = math.exp((-Dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) + math.exp((-Dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
-        Sine = math.exp((-Dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) - math.exp((-Dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
-    end
+		HighSpeedTime = (DampeningSquared - 1) ^ 0.5
+		Cosine = math.exp((-dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) + math.exp((-dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
+		Sine = math.exp((-dampening + HighSpeedTime) * TimeValue) / (2 * HighSpeedTime) - math.exp((-dampening - HighSpeedTime) * TimeValue) / (2 * HighSpeedTime)
+	end
 
-    local Value0 = {
-        HighSpeedTime * Cosine + Dampening * Sine,
-        1 - (HighSpeedTime * Cosine + Dampening * Sine),
-        Sine / Speed,
-    }
+	local Value0 = {
+		HighSpeedTime * Cosine + dampening * Sine,
+		1 - (HighSpeedTime * Cosine + dampening * Sine),
+		Sine / speed,
+	}
 
-    local Value1 = {
-        -Speed * Sine,
-        Speed * Sine,
-        HighSpeedTime * Cosine - Dampening * Sine,
-    }
+	local Value1 = {
+		-speed * Sine,
+		speed * Sine,
+		HighSpeedTime * Cosine - dampening * Sine,
+	}
 
-    local Position = Value0[1] * OldPosition + Value0[2] * Target + Value0[3] * OldVelocity
-    local Velocity = Value1[1] * OldPosition + Value1[2] * Target + Value1[3] * OldVelocity
+	local Position = Value0[1] * oldPosition + Value0[2] * target + Value0[3] * oldVelocity
+	local Velocity = Value1[1] * oldPosition + Value1[2] * target + Value1[3] * oldVelocity
 
-    return Position, Velocity
+	return Position, Velocity
 end
 
-local function ConvertValueToUnpackedSprings(Value : any)
-    local ValueType = typeof(Value)
-    local UnpackedValue = ValuePacker.UnpackValue(Value, ValueType)
+local function ConvertValueToUnpackedSprings(value : any)
+	local ValueType = typeof(value)
+	local UnpackedValue = ValuePacker.UnpackValue(value, ValueType)
 
-    for Index, Element in UnpackedValue do
-        UnpackedValue[Index] = {
-            StartingPosition = Element,
-            Velocity = 0,
-            StartingTime = os.clock(),
-            Target = Element,
-        }
-    end
+	for index, element in UnpackedValue do
+		UnpackedValue[index] = {
+			StartingPosition = element,
+			Velocity = 0,
+			StartingTime = os.clock(),
+			Target = element,
+		}
+	end
 
-    return UnpackedValue
+	return UnpackedValue
 end
 
-function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState<any> | any, Speed : Types.BaseState<any> | number, Dampening : Types.BaseState<any> | number) : Types.SpringInstance<any>
-    local CurrentTarget = GetValue(Value)
-    local ValueType = typeof(CurrentTarget)
-    local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
-    local BucketInstance = Bucket.new()
-    local AttachedSignal = Signal.new()
-    local ChangedSignal = Signal.new()
-    local CurrentValue = CurrentTarget
-    local LastValue = CurrentTarget
-    local IsSleeping = false
-    local ActiveValue : Types.ObjectCompiled
+function Spring.__CALLBACK(_ : Types.ConstructorCompiled, value : Types.BaseState<any> | any, speed : Types.BaseState<any> | number, dampening : Types.BaseState<any> | number) : Types.SpringInstance<any>
+	local CurrentTarget = GetValue(value)
+	local ValueType = typeof(CurrentTarget)
+	local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
+	local BucketInstance = Bucket.new()
+	local AttachedSignal = Signal.new()
+	local ChangedSignal = Signal.new()
+	local CurrentValue = CurrentTarget
+	local LastValue = CurrentTarget
+	local IsSleeping = false
+	local ActiveValue : Types.ObjectCompiled
 
-    BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
-        if IsSleeping then
-            return
-        end
+	BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+		if IsSleeping then
+			return
+		end
 
-        local PackedValues = {}
-        local CurrentDampening = GetValue(Dampening)
-        local CurrentSpeed = GetValue(Speed)
-        local IsSettled = true
+		local PackedValues = {}
+		local CurrentDampening = GetValue(dampening)
+		local CurrentSpeed = GetValue(speed)
+		local IsSettled = true
 
-        -- Each part of a value is separated into separate springs. For example, a Vector3 is three separate springs.
-        for Index, ThisSpring in UnpackedSprings do
-            -- Do the math to get position and velocity of spring
-            local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, CurrentDampening, CurrentSpeed, ThisSpring.StartingTime)
+		-- Each part of a value is separated into separate springs. For example, a Vector3 is three separate springs.
+		for index, thisSpring in UnpackedSprings do
+			-- Do the math to get position and velocity of spring
+			local Position, Velocity = GetPositionAndVelocity(thisSpring.StartingPosition, thisSpring.Velocity, thisSpring.Target, CurrentDampening, CurrentSpeed, thisSpring.StartingTime)
 
-            -- Snap to value based on epsilon to prevent forever retargeting
+			-- Snap to value based on epsilon to prevent forever retargeting
 			if math.abs(Position) <= EPSILON then
 				Position = 0
-			elseif math.abs(Position - ThisSpring.Target) <= EPSILON then
-				Position = ThisSpring.Target
+			elseif math.abs(Position - thisSpring.Target) <= EPSILON then
+				Position = thisSpring.Target
 			end
 
-            -- Prevent sleeping if a spring is still moving
-            if math.abs(Position - ThisSpring.Target) > EPSILON or math.abs(Velocity) > EPSILON then
-                IsSettled = false
-            end
+			-- Prevent sleeping if a spring is still moving
+			if math.abs(Position - thisSpring.Target) > EPSILON or math.abs(Velocity) > EPSILON then
+				IsSettled = false
+			end
 
-            PackedValues[Index] = Position
-        end
+			PackedValues[index] = Position
+		end
 
-        -- Ensure springs stay frozen after settled and ready to sleep
-        if IsSettled then
-            for Index, ThisSpring in UnpackedSprings do
-                ThisSpring.StartingPosition = ThisSpring.Target
-                ThisSpring.Velocity = 0
-                ThisSpring.StartingTime = os.clock()
-                PackedValues[Index] = ThisSpring.Target
-            end
-        end
+		-- Ensure springs stay frozen after settled and ready to sleep
+		if IsSettled then
+			for index, thisSpring in UnpackedSprings do
+				thisSpring.StartingPosition = thisSpring.Target
+				thisSpring.Velocity = 0
+				thisSpring.StartingTime = os.clock()
+				PackedValues[index] = thisSpring.Target
+			end
+		end
 
-        CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
+		CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
-        if IsValueChanged(LastValue, CurrentValue) then
-            Batch.Fire(ChangedSignal, "Value")
-        end
+		if IsValueChanged(LastValue, CurrentValue) then
+			Batch.Fire(ChangedSignal, "Value")
+		end
 
-        LastValue = CurrentValue
+		LastValue = CurrentValue
 
-        if IsSettled then
-            IsSleeping = true
-        end
-    end))
+		if IsSettled then
+			IsSleeping = true
+		end
+	end))
 
-    local SpringObject : Types.ObjectDecompiled = {
-        __SEAM_OBJECT = Symbol.new("Spring"),
-        Changed = ChangedSignal,
-        AttachedToInstance = AttachedSignal,
-    }
+	local SpringObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Spring"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+	}
 
-    function SpringObject.Destroy()
-        UnpackedSprings = nil
-        BucketInstance:Destroy()
-        BucketInstance = nil
-    end
+	function SpringObject.Destroy()
+		UnpackedSprings = nil
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-    function SpringObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
-        AttachedSignal:Fire(Object)
+	function SpringObject.__CALLBACK(self : Types.ObjectCompiled, object : any, index : string)
+		AttachedSignal:Fire(object)
 
-        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
-            Value = function()
-                Batch.Fire(ChangedSignal, "Value")
-                return This.Value
-            end,
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				Batch.Fire(ChangedSignal, "Value")
+				return self.Value
+			end,
 
-            PropertyName = Index
-        }))
+			PropertyName = index,
+		}))
 
-        return ActiveValue
-    end
+		return ActiveValue
+	end
 
-    function SpringObject.__INDEX(_: Types.ObjectCompiled, Index : string)
-        if Index == "Value" then
-            return CurrentValue
-        elseif Index == "Velocity" then
-            local PackedValues = {}
+	function SpringObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return CurrentValue
+		elseif index == "Velocity" then
+			local PackedValues = {}
 
-            for ThisIndex, ThisSpring in UnpackedSprings do
-                local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+			for thisIndex, thisSpring in UnpackedSprings do
+				local _, Velocity = GetPositionAndVelocity(thisSpring.StartingPosition, thisSpring.Velocity, thisSpring.Target, GetValue(dampening), GetValue(speed), thisSpring.StartingTime)
 
-                PackedValues[ThisIndex] = Velocity
-            end
+				PackedValues[thisIndex] = Velocity
+			end
 
-            return ValuePacker.PackValue(PackedValues, ValueType)
-        elseif Index == "Speed" then
-            return Speed
-        elseif Index == "Dampening" then
-            return Dampening
-        end
+			return ValuePacker.PackValue(PackedValues, ValueType)
+		elseif index == "Speed" then
+			return speed
+		elseif index == "Dampening" then
+			return dampening
+		end
 
-        return nil
-    end
+		return nil
+	end
 
-    function SpringObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
-        if Index == "Target" then
-            IsSleeping = false
-            CurrentTarget = GetValue(NewValue)
+	function SpringObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Target" then
+			IsSleeping = false
+			CurrentTarget = GetValue(newValue)
 
-            local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
+			local UnpackedNewValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
 
-            for ThisIndex, ThisSpring in UnpackedSprings do
-                local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+			for thisIndex, thisSpring in UnpackedSprings do
+				local Position, Velocity = GetPositionAndVelocity(thisSpring.StartingPosition, thisSpring.Velocity, thisSpring.Target, GetValue(dampening), GetValue(speed), thisSpring.StartingTime)
 
-                ThisSpring.StartingPosition = Position
-                ThisSpring.Velocity = Velocity
-                ThisSpring.StartingTime = os.clock()
-                ThisSpring.Target = UnpackedNewValue[ThisIndex]
-            end
-        elseif Index == "Value" then
-            IsSleeping = false
-            local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
+				thisSpring.StartingPosition = Position
+				thisSpring.Velocity = Velocity
+				thisSpring.StartingTime = os.clock()
+				thisSpring.Target = UnpackedNewValue[thisIndex]
+			end
+		elseif index == "Value" then
+			IsSleeping = false
+			local UnpackedNewValue = ValuePacker.UnpackValue(newValue, ValueType)
 
-            for ThisIndex, ThisSpring in UnpackedSprings do
-                local _, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+			for thisIndex, thisSpring in UnpackedSprings do
+				local _, Velocity = GetPositionAndVelocity(thisSpring.StartingPosition, thisSpring.Velocity, thisSpring.Target, GetValue(dampening), GetValue(speed), thisSpring.StartingTime)
 
-                ThisSpring.StartingPosition = UnpackedNewValue[ThisIndex]
-                ThisSpring.Velocity = Velocity
-                ThisSpring.StartingTime = os.clock()
-            end
-        elseif Index == "Dampening" then
-            IsSleeping = false
-            Dampening = NewValue
-        elseif Index == "Speed" then
-            IsSleeping = false
-            Speed = NewValue
-        elseif Index == "Velocity" then
-            IsSleeping = false
-            local UnpackedNewValue = ValuePacker.UnpackValue(NewValue, ValueType)
+				thisSpring.StartingPosition = UnpackedNewValue[thisIndex]
+				thisSpring.Velocity = Velocity
+				thisSpring.StartingTime = os.clock()
+			end
+		elseif index == "Dampening" then
+			IsSleeping = false
+			dampening = newValue
+		elseif index == "Speed" then
+			IsSleeping = false
+			speed = newValue
+		elseif index == "Velocity" then
+			IsSleeping = false
+			local UnpackedNewValue = ValuePacker.UnpackValue(newValue, ValueType)
 
-            for ThisIndex, ThisSpring in UnpackedSprings do
-                local Position, _ = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, GetValue(Dampening), GetValue(Speed), ThisSpring.StartingTime)
+			for thisIndex, thisSpring in UnpackedSprings do
+				local Position, _ = GetPositionAndVelocity(thisSpring.StartingPosition, thisSpring.Velocity, thisSpring.Target, GetValue(dampening), GetValue(speed), thisSpring.StartingTime)
 
-                ThisSpring.Velocity = UnpackedNewValue[ThisIndex]
-                ThisSpring.StartingPosition = Position
-                ThisSpring.StartingTime = os.clock()
-            end
-        end
-    end
+				thisSpring.Velocity = UnpackedNewValue[thisIndex]
+				thisSpring.StartingPosition = Position
+				thisSpring.StartingTime = os.clock()
+			end
+		end
+	end
 
-    ActiveValue = Compiler.CompileObject(SpringObject)
+	ActiveValue = Compiler.CompileObject(SpringObject)
 
-    if typeof(Value) == "table" and Value.__SEAM_OBJECT then
-        Value(ActiveValue, "Target")
-    end
+	if typeof(value) == "table" and value.__SEAM_OBJECT then
+		value(ActiveValue, "Target")
+	end
 
-    return ActiveValue :: Types.SpringInstance<any>
+	return ActiveValue :: Types.SpringInstance<any>
 end
 
 return Compiler.CompileConstructor(Spring) :: Types.SpringConstructor<any>

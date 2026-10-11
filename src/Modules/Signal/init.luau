@@ -1,8 +1,3 @@
--- Authors:
--- stravant - July 31st, 2021 - Created the file.     
--- sleitnick - August 3rd, 2021 - Modified for Knit. 
--- iGottic - April 18th, 2026 - Modified for Praxis.
-
 local Signal = {}
 Signal.__index = Signal
 
@@ -13,17 +8,18 @@ local Connection = require(script.Connection)
 export type Connection = Connection.Connection
 
 export type Signal<T...> = {
-	Fire: (self: Signal<T...>, T...) -> (),
-	FireDeferred: (self: Signal<T...>, T...) -> (),
-	Connect: (self: Signal<T...>, fn: (T...) -> ()) -> Connection,
-	Once: (self: Signal<T...>, fn: (T...) -> ()) -> Connection,
-	DisconnectAll: (self: Signal<T...>) -> (),
-	GetConnections: (self: Signal<T...>) -> { Connection },
-	Destroy: (self: Signal<T...>) -> (),
-	Wait: (self: Signal<T...>) -> T...,
+	Fire : (self : Signal<T...>, T...) -> (),
+	FireDeferred : (self : Signal<T...>, T...) -> (),
+	Connect : (self : Signal<T...>, fn : (T...) -> ()) -> Connection,
+	Once : (self : Signal<T...>, fn : (T...) -> ()) -> Connection,
+	DisconnectAll : (self : Signal<T...>) -> (),
+	GetConnections : (self : Signal<T...>) -> {Connection},
+	Destroy : (self : Signal<T...>) -> (),
+	Wait : (self : Signal<T...>) -> T...,
 }
 
-local FreeRunnerThread: thread? = nil
+-- Variables
+local FreeRunnerThread : thread? = nil
 
 local function AcquireRunnerThreadAndCallEventHandler(fn, ...)
 	local AcquiredRunnerThread = FreeRunnerThread
@@ -41,7 +37,7 @@ local function RunEventHandlerInFreeThread(...)
 	end
 end
 
-function Signal.new<T...>(): Signal<T...>
+function Signal.new<T...>() : Signal<T...>
 	local self = setmetatable({
 		_HandlerListHead = false,
 		_ProxyHandler = nil,
@@ -51,25 +47,24 @@ function Signal.new<T...>(): Signal<T...>
 	return self :: any
 end
 
-function Signal.Wrap<T...>(rbxScriptSignal: RBXScriptSignal): Signal<T...>
-	assert(
-		typeof(rbxScriptSignal) == "RBXScriptSignal",
-		"Argument #1 to Signal.Wrap must be a RBXScriptSignal; got " .. typeof(rbxScriptSignal)
-	)
+function Signal.Wrap<T...>(rbxScriptSignal : RBXScriptSignal) : Signal<T...>
+	if typeof(rbxScriptSignal) ~= "RBXScriptSignal" then
+		error(`Argument #1 to Signal.Wrap must be a RBXScriptSignal; got {typeof(rbxScriptSignal)}`)
+	end
 
-	local signal = Signal.new() :: any
-	signal._ProxyHandler = rbxScriptSignal:Connect(function(...)
-		signal:Fire(...)
+	local ThisSignal = Signal.new() :: any
+	ThisSignal._ProxyHandler = rbxScriptSignal:Connect(function(...)
+		ThisSignal:Fire(...)
 	end)
 
-	return signal
+	return ThisSignal
 end
 
-function Signal.Is(obj: any): boolean
+function Signal.Is(obj : any) : boolean
 	return type(obj) == "table" and getmetatable(obj) == Signal
 end
 
-function Signal.Connect<T...>(self: Signal<T...>, fn)
+function Signal.Connect<T...>(self : Signal<T...>, fn)
 	local ThisConnection = setmetatable({
 		Connected = true,
 		_Signal = self,
@@ -87,12 +82,12 @@ function Signal.Connect<T...>(self: Signal<T...>, fn)
 	return ThisConnection
 end
 
-function Signal.ConnectOnce<T...>(self: Signal<T...>, fn)
+function Signal.ConnectOnce<T...>(self : Signal<T...>, fn)
 	return self:Once(fn)
 end
 
-function Signal.Once<T...>(self: Signal<T...>, fn)
-	local ThisConnection: Connection
+function Signal.Once<T...>(self : Signal<T...>, fn)
+	local ThisConnection : Connection
 	local Done = false
 
 	ThisConnection = self:Connect(function(...)
@@ -108,7 +103,7 @@ function Signal.Once<T...>(self: Signal<T...>, fn)
 	return ThisConnection
 end
 
-function Signal.GetConnections<T...>(self: Signal<T...>)
+function Signal.GetConnections<T...>(self : Signal<T...>)
 	local Items = {}
 
 	local Item = (self :: any)._HandlerListHead
@@ -120,7 +115,7 @@ function Signal.GetConnections<T...>(self: Signal<T...>)
 	return Items
 end
 
-function Signal.DisconnectAll<T...>(self: Signal<T...>)
+function Signal.DisconnectAll<T...>(self : Signal<T...>)
 	local Item = (self :: any)._HandlerListHead
 	while Item do
 		Item.Connected = false
@@ -128,7 +123,7 @@ function Signal.DisconnectAll<T...>(self: Signal<T...>)
 	end
 	(self :: any)._HandlerListHead = false
 
-	local YieldedThreads = rawget(self :: any, "_YieldedThreads") :: {[thread]: unknown}?
+	local YieldedThreads = rawget(self :: any, "_YieldedThreads") :: {[thread] : unknown}?
 	if YieldedThreads then
 		for thread in YieldedThreads do
 			if coroutine.status(thread) == "suspended" then
@@ -140,7 +135,7 @@ function Signal.DisconnectAll<T...>(self: Signal<T...>)
 	end
 end
 
-function Signal.Fire<T...>(self: Signal<T...>, ...)
+function Signal.Fire<T...>(self : Signal<T...>, ...)
 	local Item = (self :: any)._HandlerListHead
 	while Item do
 		if Item.Connected then
@@ -155,7 +150,7 @@ function Signal.Fire<T...>(self: Signal<T...>, ...)
 	end
 end
 
-function Signal.FireDeferred<T...>(self: Signal<T...>, ...)
+function Signal.FireDeferred<T...>(self : Signal<T...>, ...)
 	local Item = (self :: any)._HandlerListHead
 	while Item do
 		local Conn = Item
@@ -168,19 +163,19 @@ function Signal.FireDeferred<T...>(self: Signal<T...>, ...)
 	end
 end
 
-function Signal.Wait<T...>(self: Signal<T...>)
-	local YieldedThreads = rawget(self :: any, "_YieldedThreads") :: {[thread]: unknown}?
+function Signal.Wait<T...>(self : Signal<T...>)
+	local YieldedThreads = rawget(self :: any, "_YieldedThreads") :: {[thread] : unknown}?
 	if not YieldedThreads then
-		YieldedThreads = {} :: {[thread]: unknown}?
+		YieldedThreads = {} :: {[thread] : unknown}?
 		rawset(self :: any, "_YieldedThreads", YieldedThreads)
 	end
 
-	local _: typeof(assert(YieldedThreads))
+	local _ : typeof(assert(YieldedThreads))
 	local Thread = coroutine.running()
 	YieldedThreads[Thread] = true
 
 	self:Once(function(...)
-		local _: typeof(assert(YieldedThreads))
+		local _ : typeof(assert(YieldedThreads))
 		YieldedThreads[Thread] = nil
 
 		if coroutine.status(Thread) == "suspended" then
@@ -191,7 +186,7 @@ function Signal.Wait<T...>(self: Signal<T...>)
 	return coroutine.yield()
 end
 
-function Signal.Destroy<T...>(self: Signal<T...>)
+function Signal.Destroy<T...>(self : Signal<T...>)
 	self:DisconnectAll()
 
 	local ProxyHandler = rawget(self :: any, "_ProxyHandler")
@@ -200,13 +195,12 @@ function Signal.Destroy<T...>(self: Signal<T...>)
 	end
 end
 
--- Make signal strict
 setmetatable(Signal, {
 	__index = function(_tb, key)
-		error(("Attempt to get Signal::%s (not a valid member)"):format(tostring(key)), 2)
+		error(`Attempt to get Signal::{key} (not a valid member)`, 2)
 	end,
 	__newindex = function(_tb, key, _value)
-		error(("Attempt to set Signal::%s (not a valid member)"):format(tostring(key)), 2)
+		error(`Attempt to set Signal::{key} (not a valid member)`, 2)
 	end,
 })
 
