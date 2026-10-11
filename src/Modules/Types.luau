@@ -1,5 +1,7 @@
 -- Author: iGottic
 
+const InstanceTypeMap = require("./InstanceTypeMap")
+
 -- Primitives
 export type BaseState<T> = {
     Value : T,
@@ -29,8 +31,90 @@ export type Lifetime = (Object : Instance, CleanupTime : number) -> nil
 export type Destroyed = (Object : Instance, Callback : () -> nil) -> nil
 export type FollowProperty = (PropertyName : string) -> (Object : Instance, ValueState : BaseState<any>) -> nil
 export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : BaseState<any>) -> nil
-export type NewConstructor = (Class : string | Instance | (ScopeInstance?, {[any] : any}) -> any, Properties : {[any] : any}) -> Instance
 export type Component = ({[any] : any}) -> (ScopeInstance?, {[string] : any}) -> any
+
+-- Aliases to allow usage in UDTF
+type fnIndex<T, U> = index<T, U>
+type fnKeyOf<T> = keyof<T>
+
+type Classes = InstanceTypeMap.Classes
+type InstanceAlias = Instance
+type function ResolveNewClass(class: type): (type)
+	const tag = class.tag
+	if tag == "extern" then
+		return class
+	elseif tag == "singleton" then
+		const exists, classType = pcall(fnIndex, Classes, class)
+		if exists then
+			return classType
+		end
+
+		print(`{class} isn't a registered class and can't be checked (is the type map outdated?)\nAnnotate the class type to silence.`)
+		return InstanceAlias
+	elseif tag == "string" then
+		print(`Can't resolve class from string primitive, did you mean to use a string literal?\nAnnotate as \`any\` to silence.`)
+		return InstanceAlias
+	elseif class:issubtypeof(ScopeInstanceNewConstructor) then
+		print(`Can't resolve class from a \`ScopeInstance\` constructor, consider annotating the argument.`)
+		return InstanceAlias
+	elseif tag == "any" then
+		return InstanceAlias
+	else
+		print(`Can't resolve class from {tag}type.`)
+		return InstanceAlias
+	end
+end
+
+type function writableMembersOf(tbl: type): (type)
+	const EXCLUDE = {
+		["ClassName"] = true,
+		["RobloxLocked"] = true,
+		["AbsolutePosition"] = true,
+		["AbsoluteRotation"] = true,
+		["AbsoluteSize"] = true,
+		["Localize"] = true,
+	}
+
+	const props = types.newtable()
+	local node = tbl
+	while node do
+		for keyType, rwType in node:properties() do
+			if EXCLUDE[keyType:value()] then continue end
+
+			const writeType = rwType.write
+
+			-- Filter out read-only members
+			-- LUAU FIXME: This doesn't work right now because there is no serialized distinction
+			-- between read-only and other members. Both read and write are set to the same type.
+			if not writeType then continue end
+
+			-- Filter out methods
+			if writeType.tag == "function" then continue end
+
+			-- Account for overloads too
+			if writeType.tag == "intersection" and writeType:components()[1].tag == "function" then continue end
+
+			-- Filter out signals
+			if writeType.tag == "table" or writeType.tag == "extern" then
+				const exists = pcall(fnIndex, writeType, types.singleton("Connect"))
+				if exists then continue end
+			end
+
+			-- LUAU FIXME: subtyping doesn't work if we don't make it read-only
+			props:setproperty(types.optional(writeType))
+		end
+
+		node = node:readparent()
+	end
+
+	return props
+end
+
+type ScopeInstanceNewConstructor = (ScopeInstance?, {[any]: any}) -> (any)
+export type NewConstructor = <T>(
+	Class: T & (keyof<Classes> | "" | string | Instance | ScopeInstanceNewConstructor),
+	Properties: writableMembersOf<ResolveNewClass<T>>
+) -> (ResolveNewClass<T>)
 
 export type SequenceKeyframe = {number | () -> nil}
 export type EventSequenceInstance = {
