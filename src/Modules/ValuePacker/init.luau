@@ -36,22 +36,22 @@ Converter.CFrame = {
 
 Converter.Color3 = {
 	Pack = function(UnpackedValue : UnpackedValue)
-		return Oklab.from(Vector3.new(UnpackedValue[1], UnpackedValue[2], UnpackedValue[3]), false)
+		return Oklab.FromOklab(Vector3.new(UnpackedValue[1], UnpackedValue[2], UnpackedValue[3]), false)
 	end,
 
 	Unpack = function(Value : Color3)
-		local Lab = Oklab.to(Value)
+		local Lab = Oklab.ToOklab(Value)
 		return {Lab.X, Lab.Y, Lab.Z}
 	end,
 }
 
 Converter.ColorSequenceKeypoint = {
 	Pack = function(UnpackedValue : UnpackedValue)
-		return ColorSequenceKeypoint.new(UnpackedValue[4], Oklab.from(Vector3.new(UnpackedValue[1], UnpackedValue[2], UnpackedValue[3]), false))
+		return ColorSequenceKeypoint.new(UnpackedValue[4], Oklab.FromOklab(Vector3.new(UnpackedValue[1], UnpackedValue[2], UnpackedValue[3]), false))
 	end,
 
 	Unpack = function(Value : ColorSequenceKeypoint)
-		local Lab = Oklab.to(Value.Value)
+		local Lab = Oklab.ToOklab(Value.Value)
 		return {Lab.X, Lab.Y, Lab.Z, Value.Time}
 	end,
 }

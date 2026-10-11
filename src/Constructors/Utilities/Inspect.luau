@@ -17,11 +17,11 @@ function Inspect.__CALLBACK(_: Types.ConstructorCompiled, Object : any, DebugNam
 
     return (Object.Changed :: RBXScriptSignal):Connect(function(PropertyName : string)
         if not PropertyName then
-            print(`SEAM_INSPECT | {DebugName} | Value changed, unknown property that changed`)
+            print(`SEAM_{DebugName}.Value changed, unknown property that changed`)
             return
         end
 
-        print(`SEAM_INSPECT | {DebugName} | Value changed to {Object[PropertyName]}`)
+        print(`SEAM_{DebugName}.Value = {Object[PropertyName]}`)
     end)
 end
 

@@ -6,7 +6,7 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
@@ -19,7 +19,7 @@ Rendered.__SEAM_CAN_BE_SCOPED = true
 
 function Rendered.__CALLBACK(_: Types.ConstructorCompiled, Callback : (number) -> any?)
     -- This is MUCH simpler than computed, since it just force-updates every frame
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
     local CurrentValue = nil
@@ -34,7 +34,7 @@ function Rendered.__CALLBACK(_: Types.ConstructorCompiled, Callback : (number) -
         return Callback(DeltaTime)
     end
 
-    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+    BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         CurrentValue = WrappedCallback()
         IsInitialized = true
         Batch.Fire(ChangedSignal, "Value", CurrentValue)
@@ -47,13 +47,13 @@ function Rendered.__CALLBACK(_: Types.ConstructorCompiled, Callback : (number) -
     }
 
     function RenderedObject.Destroy()
-        TroveInstance:Destroy()
+        BucketInstance:Destroy()
     end
 
     function RenderedObject.__CALLBACK(This : Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

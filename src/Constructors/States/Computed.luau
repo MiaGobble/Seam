@@ -6,7 +6,7 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 local GetValue = require(script.Parent.Parent.Utilities.GetValue)
@@ -20,7 +20,7 @@ Computed.__SEAM_CAN_BE_SCOPED = true
 
 function Computed.__CALLBACK(_: Types.ConstructorCompiled, Callback : ((Value : Types.ValueInstance<any>) -> any) -> any?)
     -- This shit has caused me so much pain
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local ChangedSignal = Signal.new()
     local DependencyConnections : {[any] : RBXScriptConnection} = {}
     local CurrentValue = nil
@@ -96,13 +96,13 @@ function Computed.__CALLBACK(_: Types.ConstructorCompiled, Callback : ((Value : 
 
     function ComputationObject.Destroy()
         CleanupDependencyConnections()
-        TroveInstance:Destroy()
+        BucketInstance:Destroy()
     end
 
     function ComputationObject.__CALLBACK(_: Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 -- We don't want to re-calculate the computed when the states haven't changed,
                 -- so let's just force-calculate only when it's first checked

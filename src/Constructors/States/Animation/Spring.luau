@@ -12,7 +12,7 @@ local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
@@ -94,7 +94,7 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedSprings = ConvertValueToUnpackedSprings(CurrentTarget)
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
@@ -102,7 +102,7 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
     local IsSleeping = false
     local ActiveValue : Types.ObjectCompiled
 
-    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+    BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         if IsSleeping then
             return
         end
@@ -112,15 +112,19 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
         local CurrentSpeed = GetValue(Speed)
         local IsSettled = true
 
+        -- Each part of a value is separated into separate springs. For example, a Vector3 is three separate springs.
         for Index, ThisSpring in UnpackedSprings do
+            -- Do the math to get position and velocity of spring
             local Position, Velocity = GetPositionAndVelocity(ThisSpring.StartingPosition, ThisSpring.Velocity, ThisSpring.Target, CurrentDampening, CurrentSpeed, ThisSpring.StartingTime)
 
+            -- Snap to value based on epsilon to prevent forever retargeting
 			if math.abs(Position) <= EPSILON then
 				Position = 0
 			elseif math.abs(Position - ThisSpring.Target) <= EPSILON then
 				Position = ThisSpring.Target
 			end
 
+            -- Prevent sleeping if a spring is still moving
             if math.abs(Position - ThisSpring.Target) > EPSILON or math.abs(Velocity) > EPSILON then
                 IsSettled = false
             end
@@ -128,6 +132,7 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
             PackedValues[Index] = Position
         end
 
+        -- Ensure springs stay frozen after settled and ready to sleep
         if IsSettled then
             for Index, ThisSpring in UnpackedSprings do
                 ThisSpring.StartingPosition = ThisSpring.Target
@@ -158,14 +163,14 @@ function Spring.__CALLBACK(_: Types.ConstructorCompiled, Value : Types.BaseState
 
     function SpringObject.Destroy()
         UnpackedSprings = nil
-        TroveInstance:Destroy()
-        TroveInstance = nil
+        BucketInstance:Destroy()
+        BucketInstance = nil
     end
 
     function SpringObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 Batch.Fire(ChangedSignal, "Value")
                 return This.Value

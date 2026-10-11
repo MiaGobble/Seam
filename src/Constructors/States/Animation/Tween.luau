@@ -15,7 +15,7 @@ local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
@@ -56,7 +56,7 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
     local CurrentTarget = GetValue(Value)
     local ValueType = typeof(CurrentTarget)
     local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local AttachedSignal = Signal.new()
     local ChangedSignal = Signal.new()
     local CurrentValue = CurrentTarget
@@ -64,7 +64,7 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
     local IsSleeping = false
     local ActiveValue : Types.ObjectCompiled
 
-    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+    BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
         if IsSleeping then
             return
         end
@@ -73,9 +73,11 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
         local CurrentTweenInformation = GetValue(TweenInformation)
         local IsSettled = true
 
+        -- Each part of a value is separated into separate tweens, just like springs. For example, a Vector3 is three separate tweens.
         for Index, ThisTween in UnpackedTweens do
             local Position, Alpha = GetTweenPosition(ThisTween, CurrentTweenInformation)
 
+            -- Snap to value based on epsilon to prevent forever retargeting
             if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
                 IsSettled = false
             end
@@ -104,14 +106,14 @@ function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInform
 
     function TweenObject.Destroy()
         UnpackedTweens = nil
-        TroveInstance:Destroy()
-        TroveInstance = nil
+        BucketInstance:Destroy()
+        BucketInstance = nil
     end
 
     function TweenObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager:AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

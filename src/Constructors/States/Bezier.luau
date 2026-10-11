@@ -9,7 +9,7 @@ local Computed = require(script.Parent.Computed)
 local Value = require(script.Parent.Value)
 local GetValue = require(Constructors.Utilities.GetValue)
 local ValuePacker = require(Modules.ValuePacker)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
@@ -57,7 +57,7 @@ local function GetBezierValue(AlphaValue : number, OriginValue : any, MidpointVa
 end
 
 function Bezier.__CALLBACK(_: Types.ConstructorCompiled, Alpha : any, Origin : any, Midpoint : any, Target : any) : Types.BezierInstance<any>
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local AttachedSignal = Signal.new()
     local AlphaValue = Value(GetValue(Alpha))
     local OriginValue = Value(GetValue(Origin))
@@ -111,12 +111,12 @@ function Bezier.__CALLBACK(_: Types.ConstructorCompiled, Alpha : any, Origin : a
         return GetBezierValue(ClampAlpha(CurrentAlpha), CurrentOrigin, CurrentMidpoint, CurrentTarget, ValueType)
     end)
 
-    TroveInstance:Add(AlphaValue)
-    TroveInstance:Add(OriginValue)
-    TroveInstance:Add(MidpointValue)
-    TroveInstance:Add(TargetValue)
-    TroveInstance:Add(ComputedValue)
-    TroveInstance:Add(ComputedValue.AttachedToInstance:Connect(function(Object)
+    BucketInstance:Add(AlphaValue)
+    BucketInstance:Add(OriginValue)
+    BucketInstance:Add(MidpointValue)
+    BucketInstance:Add(TargetValue)
+    BucketInstance:Add(ComputedValue)
+    BucketInstance:Add(ComputedValue.AttachedToInstance:Connect(function(Object)
         AttachedSignal:Fire(Object)
     end))
 
@@ -147,8 +147,8 @@ function Bezier.__CALLBACK(_: Types.ConstructorCompiled, Alpha : any, Origin : a
         end
 
         table.clear(BoundInputConnections)
-        TroveInstance:Destroy()
-        TroveInstance = nil
+        BucketInstance:Destroy()
+        BucketInstance = nil
     end
 
     function BezierObject.__CALLBACK(_: Types.ObjectCompiled, Object : any, Index : string)
