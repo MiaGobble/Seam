@@ -6,7 +6,7 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
@@ -17,7 +17,7 @@ Resource.__SEAM_OBJECT = Symbol.new("Resource")
 Resource.__SEAM_CAN_BE_SCOPED = true
 
 function Resource.__CALLBACK(_: Types.ConstructorCompiled, Callback : () -> any) : Types.ResourceInstance<any>
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
     local CurrentValue = nil
@@ -66,14 +66,14 @@ function Resource.__CALLBACK(_: Types.ConstructorCompiled, Callback : () -> any)
     }
 
     function ResourceObject.Destroy()
-        TroveInstance:Destroy()
-        TroveInstance = nil
+        BucketInstance:Destroy()
+        BucketInstance = nil
     end
 
     function ResourceObject.__CALLBACK(This : Types.ObjectCompiled, Object : Instance, Index : string)
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 return This.Value
             end,

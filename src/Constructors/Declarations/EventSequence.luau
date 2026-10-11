@@ -5,7 +5,7 @@ local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local UpdateSignals = require(Modules.UpdateSignals)
 
 -- Class
@@ -18,7 +18,7 @@ function EventSequence.__CALLBACK(_: Types.ConstructorCompiled, SequenceKeyframe
     local CurrentTime = 0
     local PlayedIndexes = {}
     local EventSequenceInstance : Types.EventSequenceInstance = {} :: Types.EventSequenceInstance
-    local PlayingTrove = nil
+    local PlayingBucket = nil
     local CurrentlyPaused = false
 
     for Index, Keyframe in SequenceKeyframes do
@@ -39,14 +39,14 @@ function EventSequence.__CALLBACK(_: Types.ConstructorCompiled, SequenceKeyframe
     EventSequenceInstance.LoopDelayTime = 0
 
     function EventSequenceInstance.Play()
-        if PlayingTrove then
+        if PlayingBucket then
             EventSequenceInstance.Stop()
         end
 
         CurrentlyPaused = false
-        PlayingTrove = Trove.new()
+        PlayingBucket = Bucket.new()
 
-        PlayingTrove:Add(UpdateSignals.OnFrameUpdate:Connect(function(Delta : number)
+        PlayingBucket:Add(UpdateSignals.OnFrameUpdate:Connect(function(Delta : number)
             if CurrentlyPaused then
                 return
             end
@@ -77,29 +77,29 @@ function EventSequence.__CALLBACK(_: Types.ConstructorCompiled, SequenceKeyframe
                     CurrentTime = -EventSequenceInstance.LoopDelayTime
                     table.clear(PlayedIndexes)
                 else
-                    PlayingTrove:Destroy()
+                    PlayingBucket:Destroy()
                 end
             end
         end))
 
-        PlayingTrove:Add(function()
+        PlayingBucket:Add(function()
             CurrentTime = 0
-            PlayingTrove = nil
+            PlayingBucket = nil
             CurrentlyPaused = false
             PlayedIndexes = {}
         end)
     end
 
     function EventSequenceInstance.Stop()
-        if not PlayingTrove then
+        if not PlayingBucket then
             return
         end
 
-        PlayingTrove:Destroy()
+        PlayingBucket:Destroy()
     end
 
     function EventSequenceInstance.Pause()
-        if not PlayingTrove then
+        if not PlayingBucket then
             return
         end
 
@@ -107,7 +107,7 @@ function EventSequence.__CALLBACK(_: Types.ConstructorCompiled, SequenceKeyframe
     end
 
     function EventSequenceInstance.Resume()
-        if not PlayingTrove then
+        if not PlayingBucket then
             return
         end
 

@@ -4,7 +4,7 @@
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Symbol = require(Modules.Symbol)
 local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 
@@ -49,7 +49,7 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
 
         local NewScope = ScopeCompiled(NewScopedObjects) -- Make a new scope
         NewScope.ParentScope = self
-        self.Trove:Add(NewScope) -- Add the new sub-scope to the parent trove
+        self.Bucket:Add(NewScope) -- Add the new sub-scope to the parent bucket
 
         return NewScope
     end
@@ -60,7 +60,7 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
             return
         end
 
-        return self.Trove:Add(Object)
+        return self.Bucket:Add(Object)
     end
 
     function ScopeObject.RemoveObject(self : Types.ObjectCompiled, Object : any)
@@ -69,7 +69,7 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
             return
         end
 
-        self.Trove:Remove(Object)
+        self.Bucket:Remove(Object)
     end
 
     function ScopeObject.Destroy(self : Types.ObjectCompiled)
@@ -79,17 +79,17 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
         end
 
         IsDestroyed = true
-        self.Trove:Destroy()
-        self.Trove = nil
+        self.Bucket:Destroy()
+        self.Bucket = nil
 
         local ParentScope = rawget(self, "ParentScope")
 
         if ParentScope then
             -- When an inner scope is destroyed, remove it from the parent scope
-            local ParentTrove = rawget(ParentScope, "Trove")
+            local ParentBucket = rawget(ParentScope, "Bucket")
 
-            if ParentTrove and not ParentTrove._cleaning then
-                ParentTrove:Pop(self)
+            if ParentBucket and not ParentBucket.IsCleaning then
+                ParentBucket:Remove(self)
             end
 
             rawset(self, "ParentScope", nil)
@@ -126,13 +126,13 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
         end
 
         return function(_, ...)
-            if not self.Trove then -- If the trove instance doesn't exist, the scope is likely destroyed
+            if not self.Bucket then -- If the bucket instance doesn't exist, the scope is likely destroyed
                 warn(`Attempted to use something in scope ({Key}) but scope is already destroyed: {CreateDeepTraceback()}`)
                 return
             end
 
             -- Seam things are called as functions, so this is a wrapper
-            -- function that puts any created instances into the trove
+            -- function that puts any created instances into the bucket
             local Tuple = nil
 
             if typeof(Object) == "function" then
@@ -155,9 +155,9 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
                 return
             end
 
-            -- But yeah, let's add created things to the trove
+            -- But yeah, let's add created things to the bucket
             for _, ThisValue in Tuple do
-                self.Trove:Add(ThisValue)
+                self.Bucket:Add(ThisValue)
             end
 
             -- Unpack the tuple and return it ALLLLLLLL
@@ -167,7 +167,7 @@ function Scope.__CALLBACK(_: Types.ConstructorCompiled, ScopedObjects : {[string
 
     ScopeInstance = Compiler.CompileObject(ScopeObject)
     ScopeInstance.ScopedObjects = ScopedObjects
-    ScopeInstance.Trove = Trove.new()
+    ScopeInstance.Bucket = Bucket.new()
     ScopeInstance.ParentScope = nil
 
     return ScopeInstance

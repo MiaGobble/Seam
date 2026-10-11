@@ -6,7 +6,7 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
@@ -18,7 +18,7 @@ Value.__SEAM_INDEX = Symbol.new("Value")
 Value.__SEAM_CAN_BE_SCOPED = true
 
 function Value.__CALLBACK(_: Types.ConstructorCompiled, ThisValue : any)
-    local TroveInstance = Trove.new()
+    local BucketInstance = Bucket.new()
     local ChangedSignal = Signal.new()
     local AttachedSignal = Signal.new()
     local IsLocked = false
@@ -106,7 +106,7 @@ function Value.__CALLBACK(_: Types.ConstructorCompiled, ThisValue : any)
     }
 
     function ValueObject.Destroy()
-        TroveInstance:Destroy()
+        BucketInstance:Destroy()
     end
 
     function ValueObject.TableInsert(_: Types.ObjectCompiled, InsertedValue : any, Path : {any}?)
@@ -163,7 +163,7 @@ function Value.__CALLBACK(_: Types.ConstructorCompiled, ThisValue : any)
 
         AttachedSignal:Fire(Object)
 
-        TroveInstance:Add(StateManager.AttachStateToObject(Object, {
+        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
             Value = function()
                 if typeof(ThisValue) == "table" and ThisValue ~= nil then
                     return table.clone(ThisValue)
