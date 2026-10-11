@@ -21,27 +21,27 @@ local root = process.cwd
 local package = loadPackage(`{root}/src`)
 
 local function loadSpecs(directory: string)
-    for _, entry in fs.readDir(directory) do
-        local fullPath = `{directory}/{entry}`
-        if fs.isDir(fullPath) then
-            loadSpecs(fullPath)
-        elseif string.sub(entry, -10) == ".spec.luau" then
-            local chunk = luau.load(fs.readFile(fullPath), {
-                debugName = fullPath,
-            })
-            local exported = chunk()
-            if typeof(exported) == "function" then
-                exported({
-                    describe = describe,
-                    it = it,
-                    expect = expect,
-                    Seam = package.Seam,
-                    Compiler = package.requirePath({ "Modules", "Compiler" }),
-                    Instance = roblox.Instance,
-                })
-            end
-        end
-    end
+	for _, entry in fs.readDir(directory) do
+		local fullPath = `{directory}/{entry}`
+		if fs.isDir(fullPath) then
+			loadSpecs(fullPath)
+		elseif string.sub(entry, -10) == ".spec.luau" then
+			local chunk = luau.load(fs.readFile(fullPath), {
+				debugName = fullPath,
+			})
+			local exported = chunk()
+			if typeof(exported) == "function" then
+				exported({
+					describe = describe,
+					it = it,
+					expect = expect,
+					Seam = package.Seam,
+					Compiler = package.requirePath({ "Modules", "Compiler" }),
+					Instance = roblox.Instance,
+				})
+			end
+		end
+	end
 end
 
 loadSpecs(`{root}/tests/specs`)
