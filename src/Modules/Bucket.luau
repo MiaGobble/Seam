@@ -3,8 +3,8 @@ Bucket.__index = Bucket
 
 -- Types
 export type Bucket = typeof(setmetatable({} :: {
-	CleanupQueue: {[any]: (any) -> nil},
-	IsCleaning: boolean,
+	CleanupQueue : {[any] : (any) -> nil},
+	IsCleaning : boolean,
 }, Bucket))
 
 -- Constants
@@ -21,48 +21,48 @@ local CLEANUP_METHOD_NAMES = {
 	["RBXScriptConnection"] = "Disconnect",
 }
 
-local function GetMatchingCleanupCallback(Object : any, CleanupMethodName : string?): ((() -> (nil)) | ((Object) -> (nil)))
-	local ThisType = typeof(Object)
+local function GetMatchingCleanupCallback(object : any, cleanupMethodName : string?) : ((() -> (nil)) | ((any) -> (nil)))
+	local ThisType = typeof(object)
 
 	if ThisType == "function" then
-		return Object
+		return object
 	elseif ThisType == "thread" then
 		return function()
-			task.cancel(Object)
+			task.cancel(object)
 			return nil
 		end
 	end
 
 	if CLEANUP_METHOD_NAMES[ThisType] then
-		return Object[CLEANUP_METHOD_NAMES[ThisType]] :: (Object) -> nil
+		return object[CLEANUP_METHOD_NAMES[ThisType]] :: (any) -> nil
 	end
 
 	if ThisType == "table" then
-		if CleanupMethodName then
-			return Object[CleanupMethodName] :: (Object) -> nil
+		if cleanupMethodName then
+			return object[cleanupMethodName] :: (any) -> nil
 		end
 
-		for _, GenericCleanupName in TABLE_CLEANUP_METHODS do
-			if typeof(Object[GenericCleanupName]) == "function" then
-				return Object[GenericCleanupName] :: (Object) -> nil
+		for _, genericCleanupName in TABLE_CLEANUP_METHODS do
+			if typeof(object[genericCleanupName]) == "function" then
+				return object[genericCleanupName] :: (any) -> nil
 			end
 
-			if typeof(Object[GenericCleanupName:lower()]) == "function" then
-				return Object[GenericCleanupName:lower()] :: (Object) -> nil
+			if typeof(object[genericCleanupName:lower()]) == "function" then
+				return object[genericCleanupName:lower()] :: (any) -> nil
 			end
 		end
 	end
 
-	error(`No cleanup function found for object: {Object}`)
+	error(`No cleanup function found for object: {object}`)
 end
 
-local function AssertPromiseValidity(Object : any)
-	if type(Object) ~= "table"
-		or typeof(Object.getStatus) ~= "function"
-		or typeof(Object.finally) ~= "function"
-		or typeof(Object.cancel) ~= "function"
+local function AssertPromiseValidity(object : any)
+	if type(object) ~= "table"
+		or typeof(object.getStatus) ~= "function"
+		or typeof(object.finally) ~= "function"
+		or typeof(object.cancel) ~= "function"
 	then
-		error(`Expected object ({Object}) to be a promise`)
+		error(`Expected object ({object}) to be a promise`)
 	end
 end
 
@@ -75,46 +75,46 @@ function Bucket.new() : Bucket
 	return self
 end
 
-function Bucket.Add(self : Bucket, Object : any, CleanupMethodName : string?)
+function Bucket.Add(self : Bucket, object : any, cleanupMethodName : string?)
 	if self.IsCleaning then
 		error("Cannot add an object to bucket during cleanup")
 	end
 
-	self.CleanupQueue[Object] = GetMatchingCleanupCallback(Object, CleanupMethodName)
+	self.CleanupQueue[object] = GetMatchingCleanupCallback(object, cleanupMethodName)
 
-	return Object
+	return object
 end
 
-function Bucket.AddPromise(self : Bucket, Object : any)
+function Bucket.AddPromise(self : Bucket, object : any)
 	if self.IsCleaning then
 		error("Cannot add a promise to bucket during cleanup")
 	end
 
-	AssertPromiseValidity(Object)
+	AssertPromiseValidity(object)
 
-	if Object:getStatus() == "Started" then
-		Object:finally(function()
+	if object:getStatus() == "Started" then
+		object:finally(function()
 			if self.IsCleaning then
 				return
 			end
 
-			self.CleanupQueue[Object] = nil
+			self.CleanupQueue[object] = nil
 		end)
 
-		self:Add(Object)
+		self:Add(object)
 	end
 
-	return Object
+	return object
 end
 
-function Bucket.AttachToInstance(self : Bucket, Object : Instance)
+function Bucket.AttachToInstance(self : Bucket, object : Instance)
 	if self.IsCleaning then
 		error("Can't attach to instance when cleaning")
-	elseif not Object:IsDescendantOf(game) then
+	elseif not object:IsDescendantOf(game) then
 		error("Can't attach to already destroyed instance")
 	end
 
-	local Connection = Object.Destroying:Once(function()
+	local Connection = object.Destroying:Once(function()
 		self:Destroy()
 	end)
 
@@ -135,12 +135,12 @@ function Bucket.Extend(self : Bucket)
 	return SubBucket
 end
 
-function Bucket.Remove(self : Bucket, Object : any)
+function Bucket.Remove(self : Bucket, object : any)
 	if self.IsCleaning then
 		error("Can't remove object when cleaning")
 	end
 
-	self.CleanupQueue[Object] = nil
+	self.CleanupQueue[object] = nil
 end
 
 function Bucket.GetWrappedDestroy(self : Bucket)
@@ -153,12 +153,12 @@ function Bucket.Destroy(self : Bucket)
 	if not self.CleanupQueue or self.IsCleaning then
 		return
 	end
-	
+
 	self.IsCleaning = true
 
-	for Object : any, CleanupCallback : (any) -> nil in self.CleanupQueue do
-		task.spawn(CleanupCallback, Object)
-		self.CleanupQueue[Object] = nil
+	for object : any, cleanupCallback : (any) -> nil in self.CleanupQueue do
+		task.spawn(cleanupCallback, object)
+		self.CleanupQueue[object] = nil
 	end
 
 	table.clear(self)

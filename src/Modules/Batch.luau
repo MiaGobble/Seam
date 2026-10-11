@@ -1,88 +1,86 @@
--- Author: iGottic
-
 local Batch = {}
 
 -- Types
 type BatchedArguments = {
-    n: number,
-    [number]: any,
+	n : number,
+	[number] : any,
 }
 
-export type Batch = ((Callback: (...any) -> ...any, ...any) -> ...any)
+export type Batch = ((callback : (...any) -> ...any, ...any) -> ...any)
 
 -- Variables
 local ActiveDepth = 0
-local PendingSignals: {[any]: BatchedArguments} = {}
-local PendingOrder: {any} = {}
+local PendingSignals : {[any] : BatchedArguments} = {}
+local PendingOrder : {any} = {}
 
 local function FlushPendingSignals()
-    for _, ChangedSignal in PendingOrder do
-        local PackedArguments = PendingSignals[ChangedSignal]
+	for _, changedSignal in PendingOrder do
+		local PackedArguments = PendingSignals[changedSignal]
 
-        if PackedArguments ~= nil then
-            ChangedSignal:Fire(table.unpack(PackedArguments, 1, PackedArguments.n))
-        end
+		if PackedArguments ~= nil then
+			changedSignal:Fire(table.unpack(PackedArguments, 1, PackedArguments.n))
+		end
 
-        PendingSignals[ChangedSignal] = nil
-    end
+		PendingSignals[changedSignal] = nil
+	end
 
-    table.clear(PendingOrder)
+	table.clear(PendingOrder)
 end
 
 -- Beginning a batch does nothing but mark that it's opened
 function Batch.Begin()
-    ActiveDepth += 1
+	ActiveDepth += 1
 end
 
 -- Ending a batch closes it. If it's the top batch scope, fire everything.
 function Batch.End()
-    if ActiveDepth <= 0 then
-        error("Seam.Batch.End() called without a matching Begin()")
-    end
+	if ActiveDepth <= 0 then
+		error("Seam.Batch.End() called without a matching Begin()")
+	end
 
-    ActiveDepth -= 1
+	ActiveDepth -= 1
 
-    if ActiveDepth == 0 then
-        FlushPendingSignals()
-    end
+	if ActiveDepth == 0 then
+		FlushPendingSignals()
+	end
 end
 
 -- Instead of direcly firing changed signals in Seam, we do it through batch.
 -- If there is no active batch, then the signal fires normally.
 -- Otherwise, it adds it to pending signals.
-function Batch.Fire(ChangedSignal: any, ...: any)
-    if ActiveDepth <= 0 then
-        ChangedSignal:Fire(...)
-        return
-    end
+function Batch.Fire(changedSignal : any, ... : any)
+	if ActiveDepth <= 0 then
+		changedSignal:Fire(...)
+		return
+	end
 
-    if PendingSignals[ChangedSignal] == nil then
-        table.insert(PendingOrder, ChangedSignal)
-    end
+	if PendingSignals[changedSignal] == nil then
+		table.insert(PendingOrder, changedSignal)
+	end
 
-    PendingSignals[ChangedSignal] = table.pack(...)
+	PendingSignals[changedSignal] = table.pack(...)
 end
 
-function Batch:__call(Callback: (...any) -> ...any, ...: any)
-    Batch.Begin()
+function Batch:__call(callback : (...any) -> ...any, ... : any)
+	Batch.Begin()
 
-    local Results = table.pack(pcall(Callback, ...))
+	local Results = table.pack(pcall(callback, ...))
 
-    Batch.End()
+	Batch.End()
 
-    if not Results[1] then
-        error(Results[2], 2)
-    end
+	if not Results[1] then
+		error(Results[2], 2)
+	end
 
-    return table.unpack(Results, 2, Results.n)
+	return table.unpack(Results, 2, Results.n)
 end
 
-function Batch:__index(Key: string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
+function Batch:__index(key : string)
+	if key == "__SEAM_CAN_BE_SCOPED" then
+		return false
+	end
 
-    return rawget(Batch, Key)
+	return rawget(Batch, key)
 end
 
 local Meta = setmetatable({}, Batch)

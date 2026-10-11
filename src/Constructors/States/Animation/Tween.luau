@@ -1,4 +1,4 @@
--- Author: iGottic
+local Tween = {}
 
 -- Constants
 local EPSILON = 0.001
@@ -21,155 +21,152 @@ local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Class
-local Tween : Types.ConstructorDecompiled = {}
-
 Tween.__SEAM_OBJECT = Symbol.new("Tween")
 Tween.__SEAM_CAN_BE_SCOPED = true
 
-local function ConvertValueToUnpackedTweens(Value : any)
-    local ValueType = typeof(Value)
-    local UnpackedValue = ValuePacker.UnpackValue(Value, ValueType)
+local function ConvertValueToUnpackedTweens(value : any)
+	local ValueType = typeof(value)
+	local UnpackedValue = ValuePacker.UnpackValue(value, ValueType)
 
-    for Index, Element in UnpackedValue do
-        UnpackedValue[Index] = {Position0 = Element, Position1 = Element, Tick0 = os.clock()}
-    end
+	for index, element in UnpackedValue do
+		UnpackedValue[index] = {Position0 = element, Position1 = element, Tick0 = os.clock(),}
+	end
 
-    return UnpackedValue
+	return UnpackedValue
 end
 
-local function GetTweenPosition(ThisTween : any, ThisTweenInformation : TweenInfo)
-    local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / ThisTweenInformation.Time, 0, 1)
-    local UnitPosition = TweenService:GetValue(Alpha, ThisTweenInformation.EasingStyle, ThisTweenInformation.EasingDirection)
-    local Position = ThisTween.Position0 + (ThisTween.Position1 - ThisTween.Position0) * UnitPosition
+local function GetTweenPosition(thisTween : any, thisTweenInformation : TweenInfo)
+	local Alpha = math.clamp((os.clock() - thisTween.Tick0) / thisTweenInformation.Time, 0, 1)
+	local UnitPosition = TweenService:GetValue(Alpha, thisTweenInformation.EasingStyle, thisTweenInformation.EasingDirection)
+	local Position = thisTween.Position0 + (thisTween.Position1 - thisTween.Position0) * UnitPosition
 
-    if math.abs(Position) <= EPSILON then
-        Position = 0
-    elseif math.abs(Position - ThisTween.Position0) <= EPSILON then
-        Position = ThisTween.Position0
-    end
+	if math.abs(Position) <= EPSILON then
+		Position = 0
+	elseif math.abs(Position - thisTween.Position0) <= EPSILON then
+		Position = thisTween.Position0
+	end
 
-    return Position, Alpha
+	return Position, Alpha
 end
 
-function Tween.__CALLBACK(_: Types.ConstructorCompiled, Value : any, TweenInformation : Types.BaseState<any> | TweenInfo) : Types.TweenInstance<any>
-    local CurrentTarget = GetValue(Value)
-    local ValueType = typeof(CurrentTarget)
-    local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
-    local BucketInstance = Bucket.new()
-    local AttachedSignal = Signal.new()
-    local ChangedSignal = Signal.new()
-    local CurrentValue = CurrentTarget
-    local LastValue = CurrentTarget
-    local IsSleeping = false
-    local ActiveValue : Types.ObjectCompiled
+function Tween.__CALLBACK(_ : Types.ConstructorCompiled, value : any, tweenInformation : Types.BaseState<any> | TweenInfo) : Types.TweenInstance<any>
+	local CurrentTarget = GetValue(value)
+	local ValueType = typeof(CurrentTarget)
+	local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
+	local BucketInstance = Bucket.new()
+	local AttachedSignal = Signal.new()
+	local ChangedSignal = Signal.new()
+	local CurrentValue = CurrentTarget
+	local LastValue = CurrentTarget
+	local IsSleeping = false
+	local ActiveValue : Types.ObjectCompiled
 
-    BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
-        if IsSleeping then
-            return
-        end
+	BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+		if IsSleeping then
+			return
+		end
 
-        local PackedValues = {}
-        local CurrentTweenInformation = GetValue(TweenInformation)
-        local IsSettled = true
+		local PackedValues = {}
+		local CurrentTweenInformation = GetValue(tweenInformation)
+		local IsSettled = true
 
-        -- Each part of a value is separated into separate tweens, just like springs. For example, a Vector3 is three separate tweens.
-        for Index, ThisTween in UnpackedTweens do
-            local Position, Alpha = GetTweenPosition(ThisTween, CurrentTweenInformation)
+		-- Each part of a value is separated into separate tweens, just like springs. For example, a Vector3 is three separate tweens.
+		for index, thisTween in UnpackedTweens do
+			local Position, Alpha = GetTweenPosition(thisTween, CurrentTweenInformation)
 
-            -- Snap to value based on epsilon to prevent forever retargeting
-            if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
-                IsSettled = false
-            end
+			-- Snap to value based on epsilon to prevent forever retargeting
+			if Alpha < 1 or math.abs(Position - thisTween.Position1) > EPSILON then
+				IsSettled = false
+			end
 
-            PackedValues[Index] = Position
-        end
+			PackedValues[index] = Position
+		end
 
-        CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
+		CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
-        if IsValueChanged(LastValue, CurrentValue) then
-            Batch.Fire(ChangedSignal, "Value")
-        end
+		if IsValueChanged(LastValue, CurrentValue) then
+			Batch.Fire(ChangedSignal, "Value")
+		end
 
-        LastValue = CurrentValue
+		LastValue = CurrentValue
 
-        if IsSettled then
-            IsSleeping = true
-        end
-    end))
+		if IsSettled then
+			IsSleeping = true
+		end
+	end))
 
-    local TweenObject : Types.ObjectDecompiled = {
-        __SEAM_OBJECT = Symbol.new("Tween"),
-        Changed = ChangedSignal,
-        AttachedToInstance = AttachedSignal,
-    }
+	local TweenObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Tween"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+	}
 
-    function TweenObject.Destroy()
-        UnpackedTweens = nil
-        BucketInstance:Destroy()
-        BucketInstance = nil
-    end
+	function TweenObject.Destroy()
+		UnpackedTweens = nil
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-    function TweenObject.__CALLBACK(This : Types.ObjectCompiled, Object : any, Index : string)
-        AttachedSignal:Fire(Object)
+	function TweenObject.__CALLBACK(self : Types.ObjectCompiled, object : any, index : string)
+		AttachedSignal:Fire(object)
 
-        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
-            Value = function()
-                return This.Value
-            end,
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				return self.Value
+			end,
 
-            PropertyName = Index
-        }))
+			PropertyName = index,
+		}))
 
-        return ActiveValue
-    end
+		return ActiveValue
+	end
 
-    function TweenObject.__INDEX(_: Types.ObjectCompiled, Index : string)
-        if Index == "Value" then
-            return CurrentValue
-        elseif Index == "TweenInfo" then
-            return TweenInformation
-        end
+	function TweenObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return CurrentValue
+		elseif index == "TweenInfo" then
+			return tweenInformation
+		end
 
-        return nil
-    end
+		return nil
+	end
 
-    function TweenObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
-        if Index == "Target" then
-            IsSleeping = false
-            CurrentTarget = GetValue(NewValue)
-            local CurrentTweenInformation = GetValue(TweenInformation)
+	function TweenObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Target" then
+			IsSleeping = false
+			CurrentTarget = GetValue(newValue)
+			local CurrentTweenInformation = GetValue(tweenInformation)
 
-            local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
+			local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
 
-            for ThisIndex, ThisTween in UnpackedTweens do
-                local CurrentPosition = GetTweenPosition(ThisTween, CurrentTweenInformation)
-                ThisTween.Position0 = CurrentPosition
-                ThisTween.Position1 = UnpackedTargetValue[ThisIndex]
-                ThisTween.Tick0 = os.clock()
-            end
-        elseif Index == "Value" then
-            IsSleeping = false
-            local UnpackedValue = ValuePacker.UnpackValue(NewValue, ValueType)
+			for thisIndex, thisTween in UnpackedTweens do
+				local CurrentPosition = GetTweenPosition(thisTween, CurrentTweenInformation)
+				thisTween.Position0 = CurrentPosition
+				thisTween.Position1 = UnpackedTargetValue[thisIndex]
+				thisTween.Tick0 = os.clock()
+			end
+		elseif index == "Value" then
+			IsSleeping = false
+			local UnpackedValue = ValuePacker.UnpackValue(newValue, ValueType)
 
-            for ThisIndex, ThisTween in UnpackedTweens do
-                ThisTween.Position0 = UnpackedValue[ThisIndex]
-                ThisTween.Position1 = UnpackedValue[ThisIndex]
-                ThisTween.Tick0 = os.clock()
-            end
-        elseif Index == "TweenInfo" then
-            IsSleeping = false
-            TweenInformation = NewValue
-        end
-    end
+			for thisIndex, thisTween in UnpackedTweens do
+				thisTween.Position0 = UnpackedValue[thisIndex]
+				thisTween.Position1 = UnpackedValue[thisIndex]
+				thisTween.Tick0 = os.clock()
+			end
+		elseif index == "TweenInfo" then
+			IsSleeping = false
+			tweenInformation = newValue
+		end
+	end
 
-    ActiveValue = Compiler.CompileObject(TweenObject)
+	ActiveValue = Compiler.CompileObject(TweenObject)
 
-    if typeof(Value) == "table" and Value.__SEAM_OBJECT then
-        Value(ActiveValue, "Target")
-    end
+	if typeof(value) == "table" and value.__SEAM_OBJECT then
+		value(ActiveValue, "Target")
+	end
 
-    return ActiveValue :: Types.TweenInstance<any>
+	return ActiveValue :: Types.TweenInstance<any>
 end
 
 return Compiler.CompileConstructor(Tween) :: Types.TweenConstructor<any>

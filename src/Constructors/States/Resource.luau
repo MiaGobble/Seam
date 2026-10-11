@@ -1,4 +1,4 @@
--- Author: iGottic
+local Resource = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
@@ -10,117 +10,114 @@ local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
--- Class
-local Resource : Types.ConstructorDecompiled = {}
-
 Resource.__SEAM_OBJECT = Symbol.new("Resource")
 Resource.__SEAM_CAN_BE_SCOPED = true
 
-function Resource.__CALLBACK(_: Types.ConstructorCompiled, Callback : () -> any) : Types.ResourceInstance<any>
-    local BucketInstance = Bucket.new()
-    local ChangedSignal = Signal.new()
-    local AttachedSignal = Signal.new()
-    local CurrentValue = nil
-    local CurrentStatus : Types.ResourceStatus = "Idle"
-    local CurrentError = nil
-    local RequestId = 0
-    local ActiveResource : Types.ObjectCompiled
+function Resource.__CALLBACK(_ : Types.ConstructorCompiled, callback : () -> any) : Types.ResourceInstance<any>
+	local BucketInstance = Bucket.new()
+	local ChangedSignal = Signal.new()
+	local AttachedSignal = Signal.new()
+	local CurrentValue = nil
+	local CurrentStatus : Types.ResourceStatus = "Idle"
+	local CurrentError = nil
+	local RequestId = 0
+	local ActiveResource : Types.ObjectCompiled
 
-    local function EmitChanged()
-        Batch.Fire(ChangedSignal, "Value", CurrentValue)
-    end
+	local function EmitChanged()
+		Batch.Fire(ChangedSignal, "Value", CurrentValue)
+	end
 
-    local function Refresh()
-        RequestId += 1
-        local ThisRequestId = RequestId
+	local function Refresh()
+		RequestId += 1
+		local ThisRequestId = RequestId
 
-        CurrentStatus = "Loading"
-        CurrentError = nil
-        EmitChanged()
+		CurrentStatus = "Loading"
+		CurrentError = nil
+		EmitChanged()
 
-        task.spawn(function()
-            local Success, Result = pcall(Callback)
+		task.spawn(function()
+			local Success, Result = pcall(callback)
 
-            if ThisRequestId ~= RequestId then
-                return
-            end
+			if ThisRequestId ~= RequestId then
+				return
+			end
 
-            if Success then
-                CurrentValue = Result
-                CurrentStatus = "Ready"
-                CurrentError = nil
-            else
-                CurrentStatus = "Error"
-                CurrentError = Result
-            end
+			if Success then
+				CurrentValue = Result
+				CurrentStatus = "Ready"
+				CurrentError = nil
+			else
+				CurrentStatus = "Error"
+				CurrentError = Result
+			end
 
-            EmitChanged()
-        end)
-    end
+			EmitChanged()
+		end)
+	end
 
-    local ResourceObject : Types.ObjectDecompiled = {
-        __SEAM_OBJECT = Symbol.new("Resource"),
-        Changed = ChangedSignal,
-        AttachedToInstance = AttachedSignal,
-        Refresh = Refresh,
-    }
+	local ResourceObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Resource"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+		Refresh = Refresh,
+	}
 
-    function ResourceObject.Destroy()
-        BucketInstance:Destroy()
-        BucketInstance = nil
-    end
+	function ResourceObject.Destroy()
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-    function ResourceObject.__CALLBACK(This : Types.ObjectCompiled, Object : Instance, Index : string)
-        AttachedSignal:Fire(Object)
+	function ResourceObject.__CALLBACK(self : Types.ObjectCompiled, object : Instance, index : string)
+		AttachedSignal:Fire(object)
 
-        BucketInstance:Add(StateManager.AttachStateToObject(Object, {
-            Value = function()
-                return This.Value
-            end,
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				return self.Value
+			end,
 
-            PropertyName = Index,
-        }))
+			PropertyName = index,
+		}))
 
-        return ActiveResource
-    end
+		return ActiveResource
+	end
 
-    function ResourceObject.__INDEX(_: Types.ObjectCompiled, Index : string)
-        if Index == "Value" then
-            return CurrentValue
-        elseif Index == "Status" then
-            return CurrentStatus
-        elseif Index == "Error" then
-            return CurrentError
-        end
+	function ResourceObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return CurrentValue
+		elseif index == "Status" then
+			return CurrentStatus
+		elseif index == "Error" then
+			return CurrentError
+		end
 
-        return nil
-    end
+		return nil
+	end
 
-    function ResourceObject.__NEWINDEX(_: Types.ObjectCompiled, Index : string, NewValue : any)
-        if Index == "Value" then
-            CurrentValue = NewValue
-            CurrentStatus = "Ready"
-            CurrentError = nil
-            EmitChanged()
-            return
-        elseif Index == "Status" then
-            CurrentStatus = NewValue
-            EmitChanged()
-            return
-        elseif Index == "Error" then
-            CurrentError = NewValue
-            EmitChanged()
-            return
-        end
+	function ResourceObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Value" then
+			CurrentValue = newValue
+			CurrentStatus = "Ready"
+			CurrentError = nil
+			EmitChanged()
+			return
+		elseif index == "Status" then
+			CurrentStatus = newValue
+			EmitChanged()
+			return
+		elseif index == "Error" then
+			CurrentError = newValue
+			EmitChanged()
+			return
+		end
 
-        error("Ran into an unexpected error")
-    end
+		error("Ran into an unexpected error")
+	end
 
-    ActiveResource = Compiler.CompileObject(ResourceObject)
+	ActiveResource = Compiler.CompileObject(ResourceObject)
 
-    Refresh()
+	Refresh()
 
-    return ActiveResource :: Types.ResourceInstance<any>
+	return ActiveResource :: Types.ResourceInstance<any>
 end
 
 return Compiler.CompileConstructor(Resource) :: Types.ResourceConstructor<any>

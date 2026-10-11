@@ -1,6 +1,3 @@
--- Author: iGottic
--- Documentation: https://seam.igottic.com/
-
 -- Services
 local RunService = game:GetService("RunService")
 
@@ -13,72 +10,78 @@ local Memory = Constructors:WaitForChild("Memory")
 local States = Constructors:WaitForChild("States")
 local Utilities = Constructors:WaitForChild("Utilities")
 local Modules = script:WaitForChild("Modules")
+
 local Types = require(Modules:WaitForChild("Types"))
 local Batch = require(Modules:WaitForChild("Batch"))
+
+local OnEvent = require(Connections:WaitForChild("OnEvent"))
+local OnChanged = require(Connections:WaitForChild("OnChanged"))
+local OnAttributeChanged = require(Connections:WaitForChild("OnAttributeChanged"))
+local OnAttached = require(Connections:WaitForChild("OnAttached"))
+
 local New = require(Declarations:WaitForChild("New"))
 local Children = require(Declarations:WaitForChild("Children"))
+local Attribute = require(Declarations:WaitForChild("Attribute"))
+local Lifetime = require(Declarations:WaitForChild("Lifetime"))
+local FollowProperty = require(Declarations:WaitForChild("FollowProperty"))
+local FollowAttribute = require(Declarations:WaitForChild("FollowAttribute"))
+local Component = require(Declarations:WaitForChild("Component"))
+local Tags = require(Declarations:WaitForChild("Tags"))
+local StyleSheet = require(Declarations:WaitForChild("StyleSheet"))
+local Destroyed = require(Declarations:WaitForChild("Destroyed"))
+local EventSequence = require(Declarations:WaitForChild("EventSequence"))
+
+local Scope = require(Memory:WaitForChild("Scope"))
+
 local Value = require(States:WaitForChild("Value"))
 local Computed = require(States:WaitForChild("Computed"))
 local Resource = require(States:WaitForChild("Resource"))
 local Bezier = require(States:WaitForChild("Bezier"))
 local Spring = require(States.Animation:WaitForChild("Spring"))
 local Tween = require(States.Animation:WaitForChild("Tween"))
-local Scope = require(Memory:WaitForChild("Scope"))
-local OnEvent = require(Connections:WaitForChild("OnEvent"))
-local OnChanged = require(Connections:WaitForChild("OnChanged"))
-local Attribute = require(Declarations:WaitForChild("Attribute"))
-local OnAttributeChanged = require(Connections:WaitForChild("OnAttributeChanged"))
-local Lifetime = require(Declarations:WaitForChild("Lifetime"))
 local Rendered = require(States:WaitForChild("Rendered"))
-local FollowProperty = require(Declarations:WaitForChild("FollowProperty"))
-local FollowAttribute = require(Declarations:WaitForChild("FollowAttribute"))
+local ForPairs = require(States:WaitForChild("ForPairs"))
+
 local GetValue = require(Utilities:WaitForChild("GetValue"))
-local Component = require(Declarations:WaitForChild("Component"))
-local Tags = require(Declarations:WaitForChild("Tags"))
-local StyleSheet = require(Declarations:WaitForChild("StyleSheet"))
 local SetValue = require(Utilities:WaitForChild("SetValue"))
 local IsState = require(Utilities:WaitForChild("IsState"))
 local IsComponent = require(Utilities:WaitForChild("IsComponent"))
 local LockValue = require(Utilities:WaitForChild("LockValue"))
 local Inspect = require(Utilities:WaitForChild("Inspect"))
-local OnAttached = require(Connections:WaitForChild("OnAttached"))
-local Destroyed = require(Declarations:WaitForChild("Destroyed"))
-local EventSequence = require(Declarations:WaitForChild("EventSequence"))
-local ForPairs = require(States:WaitForChild("ForPairs"))
 
 -- Types extended
 export type Seam = {
-    Batch : Batch.Batch,
-    New : Types.NewConstructor,
-    Children : Types.Children,
-    Value : Types.ValueConstructor<any>,
-    Computed : Types.ComputedConstructor<any>,
-    Resource : Types.ResourceConstructor<any>,
-    Bezier : Types.BezierConstructor<any>,
-    Spring : Types.SpringConstructor<any>,
-    Tween : Types.TweenConstructor<any>,
-    Scope : Types.ScopeConstructor,
-    OnEvent : Types.OnEvent,
-    OnChanged : Types.OnChanged,
-    Attribute : Types.Attribute,
-    OnAttributeChanged : Types.OnAttributeChanged,
-    Lifetime : Types.Lifetime,
-    Rendered : Types.RenderedConstructor<any>,
-    FollowProperty : Types.FollowProperty,
-    FollowAttribute : Types.FollowAttribute,
-    GetValue : Types.GetValue,
-    Component : Types.Component,
-    Tags : Types.Tags,
-    StyleSheet : Types.StyleSheet,
-    SetValue : Types.SetValue,
-    IsState : Types.IsState,
-    IsComponent : Types.IsComponent,
-    LockValue : Types.LockValue,
-    Inspect : Types.Inspect,
-    OnAttached : Types.OnAttached,
-    Destroyed : Types.Destroyed,
-    EventSequence : Types.EventSequence,
-    ForPairs : Types.ForPairsConstructor<any>
+	Batch : Batch.Batch,
+	New : Types.NewConstructor,
+	Children : Types.Children,
+	Value : Types.ValueConstructor<any>,
+	Computed : Types.ComputedConstructor<any>,
+	Resource : Types.ResourceConstructor<any>,
+	Bezier : Types.BezierConstructor<any>,
+	Spring : Types.SpringConstructor<any>,
+	Tween : Types.TweenConstructor<any>,
+	Scope : Types.ScopeConstructor,
+	OnEvent : Types.OnEvent,
+	OnChanged : Types.OnChanged,
+	Attribute : Types.Attribute,
+	OnAttributeChanged : Types.OnAttributeChanged,
+	Lifetime : Types.Lifetime,
+	Rendered : Types.RenderedConstructor<any>,
+	FollowProperty : Types.FollowProperty,
+	FollowAttribute : Types.FollowAttribute,
+	GetValue : Types.GetValue,
+	Component : Types.Component,
+	Tags : Types.Tags,
+	StyleSheet : Types.StyleSheet,
+	SetValue : Types.SetValue,
+	IsState : Types.IsState,
+	IsComponent : Types.IsComponent,
+	LockValue : Types.LockValue,
+	Inspect : Types.Inspect,
+	OnAttached : Types.OnAttached,
+	Destroyed : Types.Destroyed,
+	EventSequence : Types.EventSequence,
+	ForPairs : Types.ForPairsConstructor<any>,
 }
 
 export type BaseState<T> = Types.BaseState<T>
@@ -124,20 +127,20 @@ export type EventSequence = Types.EventSequence
 export type ForPairs<T> = Types.ForPairsInstance<T>
 export type ForPairsInstance<T> = Types.ForPairsInstance<T>
 
--- Declaration
+-- Variables
 local Seam : Seam = {} :: Seam
 
 local function Init()
-    if RunService:IsServer() then
-        return -- Don't wait for game.Loaded on server
-    end
+	if RunService:IsServer() then
+		return -- Don't wait for game.Loaded on server
+	end
 
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
+	if not game:IsLoaded() then
+		game.Loaded:Wait()
 
-        -- There is this weird bug where, when loaded from ReplicatedFirst, the framework loads *too* fast and animations don't work on the frontend.
-        -- This is a hacky workaround for this while I figure out a better solution.
-    end
+		-- There is this weird bug where, when loaded from ReplicatedFirst, the framework loads *too* fast and animations don't work on the frontend.
+		-- This is a hacky workaround for this while I figure out a better solution.
+	end
 end
 
 Seam.New = New
