@@ -1,7 +1,7 @@
 --[[
-	Generates a Luau module exporting a 'Classes' type mapping Roblox Instance class names to their
-	respective types using the Roblox-Client-Tracker API Dump (requires an Internet connection):
-	https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/API-Dump.json
+	Generates a Luau module exporting a 'Classes' type mapping Roblox Instance class names to their respective types,
+	and a 'ClassNames' type union of all classes for convenience using the Roblox-Client-Tracker API Dump (requires an
+	Internet connection): https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/API-Dump.json
 
 	Example:
 		```bash
@@ -268,7 +268,19 @@ for _, className in includedClassNames do
 	table.insert(lines, `\t["{className}"]: {className},`)
 end
 
-table.insert(lines, "}\n\nreturn nil")
+table.insert(lines, "}\n")
+table.insert(lines, "export type ClassNames = ")
+
+for _, className in includedClassNames do
+	table.insert(lines, `\t| "{className}"`)
+end
+
+-- failsafe to prevent syntax error
+if not includedClassNames[1] then
+	table.insert(lines, "string")
+end
+
+table.insert(lines, "\nreturn nil")
 
 const src = table.concat(lines, "\n")
 
