@@ -19,8 +19,8 @@ jobs:
       - name: Check formatting
         run: stylua --check tests scripts
 
-  selene:
-    name: Selene
+  lint:
+    name: Lute lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint
-        run: selene src tests scripts
+        run: lute lint src tests scripts
 
   test:
     name: Jest (Lune)

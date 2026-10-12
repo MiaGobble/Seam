@@ -1,7 +1,0 @@
-std = "roblox"
-exclude = ["src/Modules/Types.luau"]
-
-[lints]
-unused_variable = "allow"
-shadowing = "allow"
-incorrect_standard_library_use = "allow"
