@@ -59,7 +59,7 @@ type function ResolveNewClass(class: type): (type)
 	elseif tag == "any" then
 		return InstanceAlias
 	else
-		print(`Can't resolve class from {tag}type.`)
+		--print(`Can't resolve class from {tag}type.`)
 		return InstanceAlias
 	end
 end
