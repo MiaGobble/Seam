@@ -1,53 +1,270 @@
 --[[
 	This file was auto-generated using generate-instance-map:
-	generate-instance-map -t '!NotCreatable,!NotReplicated,!Deprecated,!Service' -s GuiBase,UIBase,PVInstance -c Folder -o src/Modules/InstanceTypeMap.luau
+	generate-instance-map -t '!NotCreatable,!NotReplicated,!Deprecated,!Service' -o src/Modules/InstanceTypeMap.luau
 	
 	Do not manually edit!
 ]]
 
 export type Classes = {
+	["Accessory"]: Accessory,
+	["AccessoryDescription"]: AccessoryDescription,
+	["Accoutrement"]: Accoutrement,
 	["Actor"]: Actor,
 	["AdGui"]: AdGui,
+	["AdPlacement"]: AdPlacement,
+	["AdPortal"]: AdPortal,
+	["AdvancedDragger"]: AdvancedDragger,
+	["AirController"]: AirController,
+	["AlignOrientation"]: AlignOrientation,
+	["AlignPosition"]: AlignPosition,
+	["AngularVelocity"]: AngularVelocity,
+	["Animation"]: Animation,
+	["AnimationConstraint"]: AnimationConstraint,
+	["AnimationController"]: AnimationController,
+	["AnimationGraphDefinition"]: AnimationGraphDefinition,
+	["AnimationNodeDefinition"]: AnimationNodeDefinition,
+	["AnimationRigData"]: AnimationRigData,
+	["AnimationValueNodeDefinition"]: AnimationValueNodeDefinition,
+	["AnimationValueOutputDefinition"]: AnimationValueOutputDefinition,
+	["Animator"]: Animator,
+	["Annotation"]: Annotation,
 	["ArcHandles"]: ArcHandles,
+	["Atmosphere"]: Atmosphere,
+	["AtmosphereSensor"]: AtmosphereSensor,
+	["Attachment"]: Attachment,
+	["AudioAnalyzer"]: AudioAnalyzer,
+	["AudioChannelMixer"]: AudioChannelMixer,
+	["AudioChannelSplitter"]: AudioChannelSplitter,
+	["AudioChorus"]: AudioChorus,
+	["AudioCompressor"]: AudioCompressor,
+	["AudioDeviceInput"]: AudioDeviceInput,
+	["AudioDeviceOutput"]: AudioDeviceOutput,
+	["AudioDistortion"]: AudioDistortion,
+	["AudioEcho"]: AudioEcho,
+	["AudioEmitter"]: AudioEmitter,
+	["AudioEqualizer"]: AudioEqualizer,
+	["AudioFader"]: AudioFader,
+	["AudioFilter"]: AudioFilter,
+	["AudioFlanger"]: AudioFlanger,
+	["AudioGate"]: AudioGate,
+	["AudioLimiter"]: AudioLimiter,
+	["AudioListener"]: AudioListener,
+	["AudioPitchShifter"]: AudioPitchShifter,
+	["AudioPlayer"]: AudioPlayer,
+	["AudioRecorder"]: AudioRecorder,
+	["AudioReverb"]: AudioReverb,
+	["AudioSpeechToText"]: AudioSpeechToText,
+	["AudioTextToSpeech"]: AudioTextToSpeech,
+	["AudioTremolo"]: AudioTremolo,
+	["AudioWindSynthesizer"]: AudioWindSynthesizer,
+	["AvatarAbilityRules"]: AvatarAbilityRules,
+	["AvatarAccessoryRules"]: AvatarAccessoryRules,
+	["AvatarAnimationRules"]: AvatarAnimationRules,
+	["AvatarBodyRules"]: AvatarBodyRules,
+	["AvatarClothingRules"]: AvatarClothingRules,
+	["AvatarCollisionRules"]: AvatarCollisionRules,
+	["AvatarRules"]: AvatarRules,
+	["Backpack"]: Backpack,
+	["BallSocketConstraint"]: BallSocketConstraint,
+	["Beam"]: Beam,
 	["BillboardGui"]: BillboardGui,
+	["BinaryStringValue"]: BinaryStringValue,
+	["BindableEvent"]: BindableEvent,
+	["BindableFunction"]: BindableFunction,
+	["BlockMesh"]: BlockMesh,
+	["BloomEffect"]: BloomEffect,
+	["BlurEffect"]: BlurEffect,
+	["BodyColors"]: BodyColors,
+	["BodyPartDescription"]: BodyPartDescription,
+	["Bone"]: Bone,
+	["BoolValue"]: BoolValue,
 	["BoxHandleAdornment"]: BoxHandleAdornment,
+	["BrickColorValue"]: BrickColorValue,
+	["BubbleChatMessageProperties"]: BubbleChatMessageProperties,
+	["BuoyancySensor"]: BuoyancySensor,
+	["CFrameValue"]: CFrameValue,
 	["CanvasGroup"]: CanvasGroup,
+	["CharacterMesh"]: CharacterMesh,
+	["ChorusSoundEffect"]: ChorusSoundEffect,
+	["ClickDetector"]: ClickDetector,
+	["ClimbController"]: ClimbController,
+	["Clouds"]: Clouds,
+	["Color3Value"]: Color3Value,
+	["ColorCorrectionEffect"]: ColorCorrectionEffect,
+	["ColorGradingEffect"]: ColorGradingEffect,
+	["CompositeValueCurve"]: CompositeValueCurve,
+	["CompressorSoundEffect"]: CompressorSoundEffect,
 	["ConeHandleAdornment"]: ConeHandleAdornment,
+	["Configuration"]: Configuration,
+	["ControlState"]: ControlState,
+	["ControllerManager"]: ControllerManager,
+	["ControllerPartSensor"]: ControllerPartSensor,
 	["CornerWedgePart"]: CornerWedgePart,
+	["CurveAnimation"]: CurveAnimation,
 	["CylinderHandleAdornment"]: CylinderHandleAdornment,
+	["CylindricalConstraint"]: CylindricalConstraint,
+	["DebuggerWatch"]: DebuggerWatch,
+	["Decal"]: Decal,
+	["DepthOfFieldEffect"]: DepthOfFieldEffect,
+	["Dialog"]: Dialog,
+	["DialogChoice"]: DialogChoice,
+	["DigitsRigDescription"]: DigitsRigDescription,
+	["DistortionSoundEffect"]: DistortionSoundEffect,
+	["DragDetector"]: DragDetector,
+	["Dragger"]: Dragger,
+	["EchoSoundEffect"]: EchoSoundEffect,
+	["EqualizerSoundEffect"]: EqualizerSoundEffect,
+	["EulerRotationCurve"]: EulerRotationCurve,
+	["Explosion"]: Explosion,
+	["FaceControls"]: FaceControls,
+	["FileMesh"]: FileMesh,
+	["Fire"]: Fire,
+	["FlangeSoundEffect"]: FlangeSoundEffect,
+	["FloatCurve"]: FloatCurve,
+	["FluidForceSensor"]: FluidForceSensor,
 	["Folder"]: Folder,
+	["ForceField"]: ForceField,
 	["Frame"]: Frame,
+	["GeneratedFolder"]: GeneratedFolder,
+	["GroundController"]: GroundController,
 	["Handles"]: Handles,
+	["HapticEffect"]: HapticEffect,
+	["HiddenSurfaceRemovalAsset"]: HiddenSurfaceRemovalAsset,
+	["Highlight"]: Highlight,
+	["HingeConstraint"]: HingeConstraint,
+	["Humanoid"]: Humanoid,
+	["HumanoidController"]: HumanoidController,
+	["HumanoidDescription"]: HumanoidDescription,
+	["HumanoidRigDescription"]: HumanoidRigDescription,
+	["IKControl"]: IKControl,
 	["ImageButton"]: ImageButton,
 	["ImageHandleAdornment"]: ImageHandleAdornment,
 	["ImageLabel"]: ImageLabel,
+	["InputAction"]: InputAction,
 	["InputActionLabel"]: InputActionLabel,
+	["InputBinding"]: InputBinding,
+	["InputContext"]: InputContext,
+	["IntValue"]: IntValue,
 	["IntersectOperation"]: IntersectOperation,
+	["Keyframe"]: Keyframe,
+	["KeyframeMarker"]: KeyframeMarker,
+	["KeyframeSequence"]: KeyframeSequence,
+	["LineForce"]: LineForce,
 	["LineHandleAdornment"]: LineHandleAdornment,
+	["LinearVelocity"]: LinearVelocity,
+	["LocalScript"]: LocalScript,
+	["LocalizationTable"]: LocalizationTable,
+	["MakeupDescription"]: MakeupDescription,
+	["MarkerCurve"]: MarkerCurve,
+	["MaterialVariant"]: MaterialVariant,
 	["MeshPart"]: MeshPart,
 	["Model"]: Model,
+	["ModuleScript"]: ModuleScript,
+	["Motor"]: Motor,
+	["Motor6D"]: Motor6D,
 	["NegateOperation"]: NegateOperation,
+	["NoCollisionConstraint"]: NoCollisionConstraint,
+	["NumberPose"]: NumberPose,
+	["NumberValue"]: NumberValue,
+	["ObjectValue"]: ObjectValue,
+	["OperationGraph"]: OperationGraph,
+	["Pants"]: Pants,
 	["ParabolaAdornment"]: ParabolaAdornment,
 	["Part"]: Part,
 	["PartOperation"]: PartOperation,
+	["PartOperationAsset"]: PartOperationAsset,
+	["ParticleEmitter"]: ParticleEmitter,
 	["Path2D"]: Path2D,
+	["Path3D"]: Path3D,
+	["PathfindingLink"]: PathfindingLink,
+	["PathfindingModifier"]: PathfindingModifier,
+	["PitchShiftSoundEffect"]: PitchShiftSoundEffect,
+	["PlaneConstraint"]: PlaneConstraint,
+	["Player"]: Player,
+	["PluginCapabilities"]: PluginCapabilities,
+	["PointLight"]: PointLight,
+	["Pose"]: Pose,
+	["PrismaticConstraint"]: PrismaticConstraint,
 	["ProceduralModel"]: ProceduralModel,
+	["ProximityPrompt"]: ProximityPrompt,
 	["PyramidHandleAdornment"]: PyramidHandleAdornment,
+	["RayValue"]: RayValue,
+	["RealtimeMedia"]: RealtimeMedia,
+	["ReflectionMetadata"]: ReflectionMetadata,
+	["ReflectionMetadataCallbacks"]: ReflectionMetadataCallbacks,
+	["ReflectionMetadataClass"]: ReflectionMetadataClass,
+	["ReflectionMetadataClasses"]: ReflectionMetadataClasses,
+	["ReflectionMetadataEnum"]: ReflectionMetadataEnum,
+	["ReflectionMetadataEnumItem"]: ReflectionMetadataEnumItem,
+	["ReflectionMetadataEnums"]: ReflectionMetadataEnums,
+	["ReflectionMetadataEvents"]: ReflectionMetadataEvents,
+	["ReflectionMetadataFunctions"]: ReflectionMetadataFunctions,
+	["ReflectionMetadataMember"]: ReflectionMetadataMember,
+	["ReflectionMetadataProperties"]: ReflectionMetadataProperties,
+	["ReflectionMetadataYieldFunctions"]: ReflectionMetadataYieldFunctions,
+	["RemoteEvent"]: RemoteEvent,
+	["RemoteFunction"]: RemoteFunction,
+	["RenderingTest"]: RenderingTest,
+	["ReverbSoundEffect"]: ReverbSoundEffect,
+	["RigidConstraint"]: RigidConstraint,
+	["RodConstraint"]: RodConstraint,
+	["RopeConstraint"]: RopeConstraint,
+	["RotationCurve"]: RotationCurve,
 	["ScreenGui"]: ScreenGui,
+	["Script"]: Script,
 	["ScrollingFrame"]: ScrollingFrame,
 	["Seat"]: Seat,
 	["SelectionBox"]: SelectionBox,
 	["SelectionSphere"]: SelectionSphere,
+	["Shirt"]: Shirt,
+	["ShirtGraphic"]: ShirtGraphic,
+	["SkateboardController"]: SkateboardController,
+	["Sky"]: Sky,
+	["Smoke"]: Smoke,
+	["Sound"]: Sound,
+	["SoundGroup"]: SoundGroup,
+	["Sparkles"]: Sparkles,
 	["SpawnLocation"]: SpawnLocation,
+	["SpecialMesh"]: SpecialMesh,
 	["SphereHandleAdornment"]: SphereHandleAdornment,
+	["SpotLight"]: SpotLight,
+	["SpringConstraint"]: SpringConstraint,
+	["StandalonePluginScripts"]: StandalonePluginScripts,
+	["StarterGear"]: StarterGear,
+	["StateMachineTransitionDefinition"]: StateMachineTransitionDefinition,
+	["StringValue"]: StringValue,
+	["StyleDerive"]: StyleDerive,
+	["StyleLink"]: StyleLink,
+	["StyleQuery"]: StyleQuery,
+	["StyleRule"]: StyleRule,
+	["StyleSheet"]: StyleSheet,
+	["SunRaysEffect"]: SunRaysEffect,
+	["SurfaceAppearance"]: SurfaceAppearance,
 	["SurfaceGui"]: SurfaceGui,
+	["SurfaceLight"]: SurfaceLight,
 	["SurfaceSelection"]: SurfaceSelection,
+	["SwimController"]: SwimController,
+	["Team"]: Team,
+	["TeleportOptions"]: TeleportOptions,
+	["TerrainDetail"]: TerrainDetail,
+	["TerrainRegion"]: TerrainRegion,
 	["TextBox"]: TextBox,
 	["TextButton"]: TextButton,
+	["TextChannel"]: TextChannel,
 	["TextChannelWindow"]: TextChannelWindow,
+	["TextChatCommand"]: TextChatCommand,
+	["TextChatMessageProperties"]: TextChatMessageProperties,
+	["TextDocument"]: TextDocument,
+	["TextGenerator"]: TextGenerator,
 	["TextLabel"]: TextLabel,
+	["Texture"]: Texture,
 	["Tool"]: Tool,
+	["Torque"]: Torque,
+	["TorsionSpringConstraint"]: TorsionSpringConstraint,
+	["Trail"]: Trail,
+	["TremoloSoundEffect"]: TremoloSoundEffect,
 	["TrussPart"]: TrussPart,
+	["Tween"]: Tween,
 	["UIAspectRatioConstraint"]: UIAspectRatioConstraint,
 	["UIBlur"]: UIBlur,
 	["UICorner"]: UICorner,
@@ -65,59 +282,295 @@ export type Classes = {
 	["UITableLayout"]: UITableLayout,
 	["UITextSizeConstraint"]: UITextSizeConstraint,
 	["UnionOperation"]: UnionOperation,
+	["UniversalConstraint"]: UniversalConstraint,
+	["UnreliableRemoteEvent"]: UnreliableRemoteEvent,
+	["ValueCurve"]: ValueCurve,
+	["Vector3Curve"]: Vector3Curve,
+	["Vector3Value"]: Vector3Value,
+	["VectorForce"]: VectorForce,
+	["VehicleController"]: VehicleController,
 	["VehicleSeat"]: VehicleSeat,
+	["VelocityMotor"]: VelocityMotor,
 	["VideoDisplay"]: VideoDisplay,
 	["VideoFrame"]: VideoFrame,
+	["VideoPlayer"]: VideoPlayer,
 	["ViewportCamera"]: ViewportCamera,
 	["ViewportFrame"]: ViewportFrame,
+	["VisualizationMode"]: VisualizationMode,
+	["VisualizationModeCategory"]: VisualizationModeCategory,
 	["WedgePart"]: WedgePart,
+	["Weld"]: Weld,
+	["WeldConstraint"]: WeldConstraint,
+	["Wire"]: Wire,
 	["WireframeHandleAdornment"]: WireframeHandleAdornment,
+	["WorkspaceAnnotation"]: WorkspaceAnnotation,
 	["WorldModel"]: WorldModel,
+	["WrapDeformer"]: WrapDeformer,
+	["WrapLayer"]: WrapLayer,
+	["WrapTarget"]: WrapTarget,
+	["WrapTextureTransfer"]: WrapTextureTransfer,
 }
 
 export type ClassNames = 
+	| "Accessory"
+	| "AccessoryDescription"
+	| "Accoutrement"
 	| "Actor"
 	| "AdGui"
+	| "AdPlacement"
+	| "AdPortal"
+	| "AdvancedDragger"
+	| "AirController"
+	| "AlignOrientation"
+	| "AlignPosition"
+	| "AngularVelocity"
+	| "Animation"
+	| "AnimationConstraint"
+	| "AnimationController"
+	| "AnimationGraphDefinition"
+	| "AnimationNodeDefinition"
+	| "AnimationRigData"
+	| "AnimationValueNodeDefinition"
+	| "AnimationValueOutputDefinition"
+	| "Animator"
+	| "Annotation"
 	| "ArcHandles"
+	| "Atmosphere"
+	| "AtmosphereSensor"
+	| "Attachment"
+	| "AudioAnalyzer"
+	| "AudioChannelMixer"
+	| "AudioChannelSplitter"
+	| "AudioChorus"
+	| "AudioCompressor"
+	| "AudioDeviceInput"
+	| "AudioDeviceOutput"
+	| "AudioDistortion"
+	| "AudioEcho"
+	| "AudioEmitter"
+	| "AudioEqualizer"
+	| "AudioFader"
+	| "AudioFilter"
+	| "AudioFlanger"
+	| "AudioGate"
+	| "AudioLimiter"
+	| "AudioListener"
+	| "AudioPitchShifter"
+	| "AudioPlayer"
+	| "AudioRecorder"
+	| "AudioReverb"
+	| "AudioSpeechToText"
+	| "AudioTextToSpeech"
+	| "AudioTremolo"
+	| "AudioWindSynthesizer"
+	| "AvatarAbilityRules"
+	| "AvatarAccessoryRules"
+	| "AvatarAnimationRules"
+	| "AvatarBodyRules"
+	| "AvatarClothingRules"
+	| "AvatarCollisionRules"
+	| "AvatarRules"
+	| "Backpack"
+	| "BallSocketConstraint"
+	| "Beam"
 	| "BillboardGui"
+	| "BinaryStringValue"
+	| "BindableEvent"
+	| "BindableFunction"
+	| "BlockMesh"
+	| "BloomEffect"
+	| "BlurEffect"
+	| "BodyColors"
+	| "BodyPartDescription"
+	| "Bone"
+	| "BoolValue"
 	| "BoxHandleAdornment"
+	| "BrickColorValue"
+	| "BubbleChatMessageProperties"
+	| "BuoyancySensor"
+	| "CFrameValue"
 	| "CanvasGroup"
+	| "CharacterMesh"
+	| "ChorusSoundEffect"
+	| "ClickDetector"
+	| "ClimbController"
+	| "Clouds"
+	| "Color3Value"
+	| "ColorCorrectionEffect"
+	| "ColorGradingEffect"
+	| "CompositeValueCurve"
+	| "CompressorSoundEffect"
 	| "ConeHandleAdornment"
+	| "Configuration"
+	| "ControlState"
+	| "ControllerManager"
+	| "ControllerPartSensor"
 	| "CornerWedgePart"
+	| "CurveAnimation"
 	| "CylinderHandleAdornment"
+	| "CylindricalConstraint"
+	| "DebuggerWatch"
+	| "Decal"
+	| "DepthOfFieldEffect"
+	| "Dialog"
+	| "DialogChoice"
+	| "DigitsRigDescription"
+	| "DistortionSoundEffect"
+	| "DragDetector"
+	| "Dragger"
+	| "EchoSoundEffect"
+	| "EqualizerSoundEffect"
+	| "EulerRotationCurve"
+	| "Explosion"
+	| "FaceControls"
+	| "FileMesh"
+	| "Fire"
+	| "FlangeSoundEffect"
+	| "FloatCurve"
+	| "FluidForceSensor"
 	| "Folder"
+	| "ForceField"
 	| "Frame"
+	| "GeneratedFolder"
+	| "GroundController"
 	| "Handles"
+	| "HapticEffect"
+	| "HiddenSurfaceRemovalAsset"
+	| "Highlight"
+	| "HingeConstraint"
+	| "Humanoid"
+	| "HumanoidController"
+	| "HumanoidDescription"
+	| "HumanoidRigDescription"
+	| "IKControl"
 	| "ImageButton"
 	| "ImageHandleAdornment"
 	| "ImageLabel"
+	| "InputAction"
 	| "InputActionLabel"
+	| "InputBinding"
+	| "InputContext"
+	| "IntValue"
 	| "IntersectOperation"
+	| "Keyframe"
+	| "KeyframeMarker"
+	| "KeyframeSequence"
+	| "LineForce"
 	| "LineHandleAdornment"
+	| "LinearVelocity"
+	| "LocalScript"
+	| "LocalizationTable"
+	| "MakeupDescription"
+	| "MarkerCurve"
+	| "MaterialVariant"
 	| "MeshPart"
 	| "Model"
+	| "ModuleScript"
+	| "Motor"
+	| "Motor6D"
 	| "NegateOperation"
+	| "NoCollisionConstraint"
+	| "NumberPose"
+	| "NumberValue"
+	| "ObjectValue"
+	| "OperationGraph"
+	| "Pants"
 	| "ParabolaAdornment"
 	| "Part"
 	| "PartOperation"
+	| "PartOperationAsset"
+	| "ParticleEmitter"
 	| "Path2D"
+	| "Path3D"
+	| "PathfindingLink"
+	| "PathfindingModifier"
+	| "PitchShiftSoundEffect"
+	| "PlaneConstraint"
+	| "Player"
+	| "PluginCapabilities"
+	| "PointLight"
+	| "Pose"
+	| "PrismaticConstraint"
 	| "ProceduralModel"
+	| "ProximityPrompt"
 	| "PyramidHandleAdornment"
+	| "RayValue"
+	| "RealtimeMedia"
+	| "ReflectionMetadata"
+	| "ReflectionMetadataCallbacks"
+	| "ReflectionMetadataClass"
+	| "ReflectionMetadataClasses"
+	| "ReflectionMetadataEnum"
+	| "ReflectionMetadataEnumItem"
+	| "ReflectionMetadataEnums"
+	| "ReflectionMetadataEvents"
+	| "ReflectionMetadataFunctions"
+	| "ReflectionMetadataMember"
+	| "ReflectionMetadataProperties"
+	| "ReflectionMetadataYieldFunctions"
+	| "RemoteEvent"
+	| "RemoteFunction"
+	| "RenderingTest"
+	| "ReverbSoundEffect"
+	| "RigidConstraint"
+	| "RodConstraint"
+	| "RopeConstraint"
+	| "RotationCurve"
 	| "ScreenGui"
+	| "Script"
 	| "ScrollingFrame"
 	| "Seat"
 	| "SelectionBox"
 	| "SelectionSphere"
+	| "Shirt"
+	| "ShirtGraphic"
+	| "SkateboardController"
+	| "Sky"
+	| "Smoke"
+	| "Sound"
+	| "SoundGroup"
+	| "Sparkles"
 	| "SpawnLocation"
+	| "SpecialMesh"
 	| "SphereHandleAdornment"
+	| "SpotLight"
+	| "SpringConstraint"
+	| "StandalonePluginScripts"
+	| "StarterGear"
+	| "StateMachineTransitionDefinition"
+	| "StringValue"
+	| "StyleDerive"
+	| "StyleLink"
+	| "StyleQuery"
+	| "StyleRule"
+	| "StyleSheet"
+	| "SunRaysEffect"
+	| "SurfaceAppearance"
 	| "SurfaceGui"
+	| "SurfaceLight"
 	| "SurfaceSelection"
+	| "SwimController"
+	| "Team"
+	| "TeleportOptions"
+	| "TerrainDetail"
+	| "TerrainRegion"
 	| "TextBox"
 	| "TextButton"
+	| "TextChannel"
 	| "TextChannelWindow"
+	| "TextChatCommand"
+	| "TextChatMessageProperties"
+	| "TextDocument"
+	| "TextGenerator"
 	| "TextLabel"
+	| "Texture"
 	| "Tool"
+	| "Torque"
+	| "TorsionSpringConstraint"
+	| "Trail"
+	| "TremoloSoundEffect"
 	| "TrussPart"
+	| "Tween"
 	| "UIAspectRatioConstraint"
 	| "UIBlur"
 	| "UICorner"
@@ -135,13 +588,32 @@ export type ClassNames =
 	| "UITableLayout"
 	| "UITextSizeConstraint"
 	| "UnionOperation"
+	| "UniversalConstraint"
+	| "UnreliableRemoteEvent"
+	| "ValueCurve"
+	| "Vector3Curve"
+	| "Vector3Value"
+	| "VectorForce"
+	| "VehicleController"
 	| "VehicleSeat"
+	| "VelocityMotor"
 	| "VideoDisplay"
 	| "VideoFrame"
+	| "VideoPlayer"
 	| "ViewportCamera"
 	| "ViewportFrame"
+	| "VisualizationMode"
+	| "VisualizationModeCategory"
 	| "WedgePart"
+	| "Weld"
+	| "WeldConstraint"
+	| "Wire"
 	| "WireframeHandleAdornment"
+	| "WorkspaceAnnotation"
 	| "WorldModel"
+	| "WrapDeformer"
+	| "WrapLayer"
+	| "WrapTarget"
+	| "WrapTextureTransfer"
 
 return nil
