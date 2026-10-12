@@ -198,11 +198,11 @@ const function isSubClassIncluded(class: string): (boolean)
 end
 
 const function isIncluded(className: string): boolean
-	const classIncluded = if inclClassSet
-			then inclClassSet[className] ~= nil
-		elseif inclSuperclassSet
-			then isSubClassIncluded(className)
-		else true -- No class filter specified, include every class
+	const classIncluded = inclClassSet
+			and inclClassSet[className] ~= nil
+		or inclSuperclassSet
+			and isSubClassIncluded(className)
+		or not inclClassSet and not inclSuperclassSet
 
 	if not classIncluded then return false end
 
