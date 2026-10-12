@@ -51,10 +51,10 @@ type function ResolveNewClass(class: type): (type)
 		const exists, classType = pcall(fnIndex, Classes, class)
 		if exists then return classType end
 
-		print(`{class} isn't a registered class and can't be checked (is the type map outdated?)\nAnnotate the class type to silence.`)
+		print(`{class} isn't a registered class and can't be checked.\nAnnotate the class type to silence.`)
 		return InstanceAlias
 	elseif tag == "string" then
-		print(`Can't resolve class from string primitive, did you mean to use a string literal?\nAnnotate as \`any\` to silence.`)
+		print(`Can't resolve class from string primitive, consider annotating the class.\nAnnotate as \`any\` to silence.`)
 		return InstanceAlias
 	elseif tag == "any" then
 		return InstanceAlias
@@ -64,7 +64,7 @@ type function ResolveNewClass(class: type): (type)
 	end
 end
 
-type UsedAs<T> = T | ComputedInstance<T> | ValueInstance<T> | SpringInstance<T> | BaseState<any>
+type UsedAs<T> = T | BaseState<any> | (...any) -> (...any)
 type function NewProperties(tbl: type): (type)
 	const EXCLUDE = {
 		["ClassName"] = true,
@@ -75,7 +75,9 @@ type function NewProperties(tbl: type): (type)
 		["Localize"] = true,
 	}
 
+	-- Luau appears to infer an indexer for us, probably a bug, but it complains if we set the indexer ourselves.
 	const props = types.newtable()
+
 	local node = tbl
 	while node do
 		for keyType, rwType in node:properties() do
@@ -85,7 +87,7 @@ type function NewProperties(tbl: type): (type)
 
 			-- Filter out read-only members
 			-- LUAU FIXME: This doesn't work right now because there is no serialized distinction
-			-- between read-only and other members. Both read and write are set to the same type.
+			-- between read-only and other members. Both read and write are always set.
 			if not writeType then continue end
 
 			-- Filter out methods
