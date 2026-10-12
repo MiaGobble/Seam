@@ -1,6 +1,6 @@
 --!strict
 
-const InstanceTypeMap = require("./InstanceTypeMap")
+const InstanceTypeMap = require(script.Parent.InstanceTypeMap)
 
 -- Primitives
 export type BaseState<T> = {
