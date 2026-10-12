@@ -1,4 +1,5 @@
 std = "roblox"
+exclude = ["src/Modules/Types.luau"]
 
 [lints]
 unused_variable = "allow"
