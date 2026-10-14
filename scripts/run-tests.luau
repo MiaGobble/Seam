@@ -33,11 +33,27 @@ local function loadSpecs(directory: string)
 			if typeof(exported) == "function" then
 				exported({
 					describe = describe,
-					it = it,
+					it = function(name, callback)
+						it(name, function()
+							package.clearOutput()
+							callback()
+						end)
+					end,
 					expect = expect,
 					Seam = package.Seam,
 					Compiler = package.requirePath({ "Modules", "Compiler" }),
+					requirePath = package.requirePath,
 					Instance = roblox.Instance,
+					roblox = roblox,
+					step = package.step,
+					advance = package.advance,
+					task = package.task,
+					changeProperty = package.changeProperty,
+					setAttribute = package.setAttribute,
+					destroyInstance = package.destroyInstance,
+					fireEvent = package.fireEvent,
+					takePrints = package.takePrints,
+					takeWarns = package.takeWarns,
 				})
 			end
 		end

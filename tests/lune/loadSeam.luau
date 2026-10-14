@@ -3,6 +3,34 @@ local luau = require("@lune/luau")
 local roblox = require("@lune/roblox")
 local task = require("@lune/task")
 local createSignal = require("./signal")
+local instancePolyfill = require("./instancePolyfill")
+
+local DATATYPE_GLOBALS = {
+	Vector2 = roblox.Vector2,
+	Vector2int16 = roblox.Vector2int16,
+	Vector3 = roblox.Vector3,
+	Vector3int16 = roblox.Vector3int16,
+	CFrame = roblox.CFrame,
+	Color3 = roblox.Color3,
+	ColorSequenceKeypoint = roblox.ColorSequenceKeypoint,
+	NumberRange = roblox.NumberRange,
+	NumberSequenceKeypoint = roblox.NumberSequenceKeypoint,
+	PhysicalProperties = roblox.PhysicalProperties,
+	Ray = roblox.Ray,
+	Rect = roblox.Rect,
+	Region3 = roblox.Region3,
+	Region3int16 = roblox.Region3int16,
+	UDim = roblox.UDim,
+	UDim2 = roblox.UDim2,
+	Enum = roblox.Enum,
+	DateTime = {
+		fromUnixTimestampMillis = function(millis)
+			return {
+				UnixTimestampMillis = millis,
+			}
+		end,
+	},
+}
 
 export type ModuleNode = {
 	name: string,
@@ -39,14 +67,24 @@ local function createGame()
 	local services = {
 		RunService = runService,
 		CollectionService = {
-			HasTag = function()
-				return false
+			HasTag = function(_, instance, tag)
+				return instance:HasTag(tag)
 			end,
-			AddTag = function() end,
-			RemoveTag = function() end,
+			AddTag = function(_, instance, tag)
+				instance:AddTag(tag)
+			end,
+			RemoveTag = function(_, instance, tag)
+				instance:RemoveTag(tag)
+			end,
 		},
 		Debris = {
-			AddItem = function() end,
+			AddItem = function(_, object, delayTime)
+				task.delay(delayTime, function()
+					pcall(function()
+						object:Destroy()
+					end)
+				end)
+			end,
 		},
 		TweenService = {
 			GetValue = function(_, alpha)
@@ -109,8 +147,30 @@ local function buildTree(directory: string, name: string, parent: ModuleNode?): 
 	return node
 end
 
+local function snapshot(values)
+	local copy = {}
+	for index, value in values do
+		copy[index] = value
+	end
+
+	return copy
+end
+
 local function loadPackage(srcDirectory: string)
+	local virtualClock = {
+		now = 0,
+	}
+	local output = {
+		prints = {},
+		warns = {},
+	}
 	local game = createGame()
+	local heartbeat = game:GetService("RunService").Heartbeat
+	local osLib = setmetatable({
+		clock = function()
+			return virtualClock.now
+		end,
+	}, { __index = os })
 	local root = buildTree(srcDirectory, "Seam", nil)
 	if root.kind ~= "module" then
 		error(`Expected {srcDirectory}/init.luau`)
@@ -188,8 +248,15 @@ local function loadPackage(srcDirectory: string)
 			Instance = roblox.Instance,
 			task = task,
 			typeof = typeof,
-			print = print,
-			warn = warn,
+			print = function(...)
+				table.insert(output.prints, instancePolyfill.concat({ ... }))
+				print(...)
+			end,
+			warn = function(...)
+				table.insert(output.warns, instancePolyfill.concat({ ... }))
+				warn(...)
+			end,
+			os = osLib,
 			error = error,
 			assert = assert,
 			pcall = pcall,
@@ -205,7 +272,6 @@ local function loadPackage(srcDirectory: string)
 			bit32 = bit32,
 			buffer = buffer,
 			utf8 = utf8,
-			os = os,
 			coroutine = coroutine,
 			debug = debug,
 			newproxy = newproxy,
@@ -218,19 +284,24 @@ local function loadPackage(srcDirectory: string)
 			tonumber = tonumber,
 			tostring = tostring,
 			type = type,
-			require = function(target: any)
-				if typeof(target) == "string" then
-					error(`String requires are not supported from Seam modules (got '{target}')`)
-				end
-
-				local targetNode = proxyToNode[target]
-				if not targetNode then
-					error("Invalid require target in Lune Seam loader")
-				end
-
-				return requireModule(targetNode)
-			end,
 		}
+
+		for name, value in DATATYPE_GLOBALS do
+			environment[name] = value
+		end
+
+		environment.require = function(target: any)
+			if typeof(target) == "string" then
+				error(`String requires are not supported from Seam modules (got '{target}')`)
+			end
+
+			local targetNode = proxyToNode[target]
+			if not targetNode then
+				error("Invalid require target in Lune Seam loader")
+			end
+
+			return requireModule(targetNode)
+		end
 
 		local chunk = luau.load(node.source :: string, {
 			debugName = node.path,
@@ -259,6 +330,27 @@ local function loadPackage(srcDirectory: string)
 	return {
 		Seam = requireModule(root),
 		requirePath = requirePath,
+		step = function(deltaTime: number?)
+			heartbeat:Fire(if deltaTime == nil then 0 else deltaTime)
+		end,
+		advance = function(seconds: number)
+			virtualClock.now += seconds
+		end,
+		task = task,
+		changeProperty = instancePolyfill.changeProperty,
+		setAttribute = instancePolyfill.setAttribute,
+		destroyInstance = instancePolyfill.destroyInstance,
+		fireEvent = instancePolyfill.fireEvent,
+		takePrints = function()
+			return snapshot(output.prints)
+		end,
+		takeWarns = function()
+			return snapshot(output.warns)
+		end,
+		clearOutput = function()
+			table.clear(output.prints)
+			table.clear(output.warns)
+		end,
 	}
 end
 

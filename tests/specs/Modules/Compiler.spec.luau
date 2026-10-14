@@ -62,5 +62,11 @@ return function(context)
 
 			expect(Compiled.__SEAM_CAN_BE_SCOPED).toBe(false)
 		end)
+
+		it("rejects a constructor without __CALLBACK", function()
+			expect(function()
+				Compiler.CompileConstructor({})
+			end).toThrow("__CALLBACK")
+		end)
 	end)
 end

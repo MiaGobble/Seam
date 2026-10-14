@@ -66,6 +66,34 @@ local function expect(received: any)
 		end
 	end
 
+	function assertion.toBeCloseTo(expected: number, epsilon: number?)
+		local tolerance = if epsilon == nil then 1e-4 else epsilon
+		if typeof(received) ~= "number" or math.abs(received - expected) > tolerance then
+			error(`Expected {tostring(received)} to be close to {tostring(expected)}`, 2)
+		end
+	end
+
+	function assertion.toContain(expected: string)
+		if string.find(tostring(received), tostring(expected), 1, true) == nil then
+			error(`Expected {tostring(received)} to contain {tostring(expected)}`, 2)
+		end
+	end
+
+	function assertion.toThrow(expected: string?)
+		if typeof(received) ~= "function" then
+			error("toThrow expected a function", 2)
+		end
+
+		local ok, err = pcall(received)
+		if ok then
+			error("Expected function to throw", 2)
+		end
+
+		if expected ~= nil and string.find(tostring(err), expected, 1, true) == nil then
+			error(`Expected error to contain "{expected}", got {err}`, 2)
+		end
+	end
+
 	return assertion
 end
 
