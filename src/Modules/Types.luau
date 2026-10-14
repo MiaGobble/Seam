@@ -214,6 +214,7 @@ export type ScopeInstance = {
 	InnerScope : (self : ScopeInstance, scopedObjects : {[string] : any}?) -> ScopeInstance,
 	AddObject : <T>(self : ScopeInstance, object : T) -> (T),
 	RemoveObject : (self : ScopeInstance, object : any) -> (),
+	CleanInnerScopes : (self : ScopeInstance) -> (),
 	Destroy : (self : ScopeInstance) -> (),
 }
 

@@ -71,6 +71,20 @@ function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[strin
 		self.Bucket:Remove(object)
 	end
 
+	function ScopeObject.CleanInnerScopes(self : Types.ObjectCompiled)
+		if IsDestroyed then
+			warn(`Attempted to clean inner scopes but scope is already destroyed: {CreateDeepTraceback()}`)
+			return
+		end
+
+		for object in self.Bucket.CleanupQueue do
+			if typeof(object) == "table" and object.__SEAM_OBJECT and tostring(object.__SEAM_OBJECT) == "Scope" then
+				object:Destroy()
+				self.Bucket:Remove(object)
+			end
+		end
+	end
+
 	function ScopeObject.Destroy(self : Types.ObjectCompiled)
 		if IsDestroyed then
 			warn(`Attempted to destroy scope but scope is already destroyed: {CreateDeepTraceback()}`)
