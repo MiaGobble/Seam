@@ -1,250 +1,225 @@
--- Author: iGottic
-
 local Value = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("Value")
+Value.__SEAM_INDEX = Symbol.new("Value")
+Value.__SEAM_CAN_BE_SCOPED = true
 
--- Types Extended
-export type ValueInstance<T> = {
-    Changed : RBXScriptSignal,
-    TableInsert : (self : ValueInstance<T>, InsertedValue : any, Path : {any}?) -> (),
-    TableRemove : (self : ValueInstance<T>, RemovedValueIndex : number, Path : {any}?) -> (),
-    TableSet : (self : ValueInstance<T>, NewTargetValue : any, Path : {any}?) -> (),
-} & Types.BaseState<T>
+function Value.__CALLBACK(_ : Types.ConstructorCompiled, thisValue : any)
+	local BucketInstance = Bucket.new()
+	local ChangedSignal = Signal.new()
+	local AttachedSignal = Signal.new()
+	local IsLocked = false
+	local ValueType = if thisValue ~= nil then typeof(thisValue) else nil
+	local ActiveValue : Types.ObjectCompiled
 
-export type ValueConstructor<T> = (Value : T) -> ValueInstance<T>
+	if ValueType == "table" then
+		-- Seam values clone tables before using them
+		thisValue = table.clone(thisValue)
+	end
 
-function Value:__call(ThisValue : any)
-    local TroveInstance = Trove.new()
-    local ChangedSignal = Signal.new()
-    local AttachedSignal = Signal.new()
-    local InstanceSymbol = Symbol.new("Value")
-    local IsLocked = false
-    local ValueType = if ThisValue ~= nil then typeof(ThisValue) else nil
+	local function CloneTableToPath(path : {any}?)
+		if typeof(thisValue) ~= "table" then
+			error("TableInsert, TableRemove, and TableSet can only be used when Value is a table")
+		end
 
-    if ValueType == "table" then
-        -- Seam values clone tables before using them
-        ThisValue = table.clone(ThisValue)
-    end
+		local SafePath = if path ~= nil then path else {}
 
-    local function CloneTableToPath(Path : {any}?)
-        if typeof(ThisValue) ~= "table" then
-            error("TableInsert, TableRemove, and TableSet can only be used when Value is a table")
-        end
+		if typeof(SafePath) ~= "table" then
+			error("Path must be a table of keys")
+		end
 
-        local SafePath = if Path ~= nil then Path else {}
+		local OldRoot = thisValue
+		local NewRoot = table.clone(OldRoot)
+		local OldCursor = OldRoot
+		local NewCursor = NewRoot
 
-        if typeof(SafePath) ~= "table" then
-            error("Path must be a table of keys")
-        end
+		for _, thisKey in SafePath do
+			local OldNext = OldCursor[thisKey]
 
-        local OldRoot = ThisValue
-        local NewRoot = table.clone(OldRoot)
-        local OldCursor = OldRoot
-        local NewCursor = NewRoot
+			if typeof(OldNext) ~= "table" then
+				error("Path points to a non-table value")
+			end
 
-        for _, ThisKey in SafePath do
-            local OldNext = OldCursor[ThisKey]
+			local NewNext = table.clone(OldNext)
+			NewCursor[thisKey] = NewNext
+			OldCursor = OldNext
+			NewCursor = NewNext
+		end
 
-            if typeof(OldNext) ~= "table" then
-                error("Path points to a non-table value")
-            end
+		return NewRoot, NewCursor
+	end
 
-            local NewNext = table.clone(OldNext)
-            NewCursor[ThisKey] = NewNext
-            OldCursor = OldNext
-            NewCursor = NewNext
-        end
+	local function CloneTableToParentPath(path : {any})
+		if typeof(thisValue) ~= "table" then
+			error("TableSet with a path can only be used when Value is a table")
+		end
 
-        return NewRoot, NewCursor
-    end
+		if #path == 0 then
+			error("Path must contain at least one key")
+		end
 
-    local function CloneTableToParentPath(Path : {any})
-        if typeof(ThisValue) ~= "table" then
-            error("TableSet with a path can only be used when Value is a table")
-        end
+		local OldRoot = thisValue
+		local NewRoot = table.clone(OldRoot)
+		local OldCursor = OldRoot
+		local NewCursor = NewRoot
 
-        if #Path == 0 then
-            error("Path must contain at least one key")
-        end
+		for thisIndex = 1, #path - 1 do
+			local ThisKey = path[thisIndex]
+			local OldNext = OldCursor[ThisKey]
 
-        local OldRoot = ThisValue
-        local NewRoot = table.clone(OldRoot)
-        local OldCursor = OldRoot
-        local NewCursor = NewRoot
+			if typeof(OldNext) ~= "table" then
+				error("Path points to a non-table value")
+			end
 
-        for ThisIndex = 1, #Path - 1 do
-            local ThisKey = Path[ThisIndex]
-            local OldNext = OldCursor[ThisKey]
+			local NewNext = table.clone(OldNext)
+			NewCursor[ThisKey] = NewNext
+			OldCursor = OldNext
+			NewCursor = NewNext
+		end
 
-            if typeof(OldNext) ~= "table" then
-                error("Path points to a non-table value")
-            end
+		return NewRoot, OldCursor, NewCursor, path[#path]
+	end
 
-            local NewNext = table.clone(OldNext)
-            NewCursor[ThisKey] = NewNext
-            OldCursor = OldNext
-            NewCursor = NewNext
-        end
+	--[[
+		local This = Value(...)
+		This.Value = x OR x = This.Value
+		This.Changed -> As rbxscriptsignal
+	--]]
 
-        return NewRoot, OldCursor, NewCursor, Path[#Path]
-    end
+	local ValueObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Value"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+	}
 
-    --[[
-        local This = Value(...)
-        This.Value = x OR x = This.Value
-        This.Changed -> As rbxscriptsignal
-    --]]
+	function ValueObject.Destroy()
+		BucketInstance:Destroy()
+	end
 
-    local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function(_)
-            TroveInstance:Destroy()
-        end
-    }, {
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                return ThisValue
-            elseif Index == "Changed" then
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
-            elseif Index == "TableInsert" then
-                return function(_, InsertedValue : any, Path : {any}?)
-                    local NewRoot, TargetTable = CloneTableToPath(Path)
+	function ValueObject.TableInsert(_ : Types.ObjectCompiled, insertedValue : any, path : {any}?)
+		local NewRoot, TargetTable = CloneTableToPath(path)
 
-                    table.insert(TargetTable, InsertedValue)
+		table.insert(TargetTable, insertedValue)
 
-                    ActiveValue.Value = NewRoot
-                end
-            elseif Index == "TableRemove" then
-                return function(_, RemovedValueIndex : number, Path : {any}?)
-                    if typeof(RemovedValueIndex) ~= "number" then
-                        error("RemovedValueIndex must be a number")
-                    end
+		ActiveValue.Value = NewRoot
+	end
 
-                    local NewRoot, TargetTable = CloneTableToPath(Path)
+	function ValueObject.TableRemove(_ : Types.ObjectCompiled, removedValueIndex : number, path : {any}?)
+		if typeof(removedValueIndex) ~= "number" then
+			error("RemovedValueIndex must be a number")
+		end
 
-                    table.remove(TargetTable, RemovedValueIndex)
+		local NewRoot, TargetTable = CloneTableToPath(path)
 
-                    ActiveValue.Value = NewRoot
-                end
-            elseif Index == "TableSet" then
-                return function(_, NewTargetValue : any, Path : {any}?)
-                    local SafePath = if Path ~= nil then Path else {}
+		table.remove(TargetTable, removedValueIndex)
 
-                    if typeof(SafePath) ~= "table" then
-                        error("Path must be a table of keys")
-                    end
+		ActiveValue.Value = NewRoot
+	end
 
-                    if #SafePath == 0 then
-                        ActiveValue.Value = NewTargetValue
-                        return
-                    end
+	function ValueObject.TableSet(_ : Types.ObjectCompiled, newTargetValue : any, path : {any}?)
+		local SafePath = if path ~= nil then path else {}
 
-                    local NewRoot, _, NewParent, LastKey = CloneTableToParentPath(SafePath)
-                    NewParent[LastKey] = NewTargetValue
-                    ActiveValue.Value = NewRoot
-                end
-            end
+		if typeof(SafePath) ~= "table" then
+			error("Path must be a table of keys")
+		end
 
-            return nil
-        end,
+		if #SafePath == 0 then
+			ActiveValue.Value = newTargetValue
+			return
+		end
 
-        __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Value" then
-                if IsLocked then
-                    error("Attempt to modify value when locked.")
-                end
+		local NewRoot, _, NewParent, LastKey = CloneTableToParentPath(SafePath)
+		NewParent[LastKey] = newTargetValue
+		ActiveValue.Value = NewRoot
+	end
 
-                if ValueType ~= nil then
-                    if NewValue ~= nil and typeof(NewValue) ~= ValueType then
-                        error("Invalid value type! Expected " .. ValueType .. ", got " .. typeof(NewValue))
-                    end
-                elseif NewValue ~= nil then
-                    ValueType = typeof(NewValue)
-                end
+	function ValueObject.__CALLBACK(_ : Types.ObjectCompiled, object : any, index : string)
+		if not object then
+			return
+		end
 
-                if not IsValueChanged(ThisValue, NewValue) then
-                    return
-                end
+		if not index then
+			return
+		end
 
-                ThisValue = NewValue
+		if typeof(thisValue) == "table" and thisValue ~= nil then
+			object[index] = table.clone(thisValue)
+		else
+			object[index] = thisValue
+		end
 
-                -- Make sure to fire the changed signal for other states
-                Batch.Fire(ChangedSignal, "Value", ThisValue)
-                return
-            elseif Index == "__LOCKED" then
-                if NewValue == true then
-                    IsLocked = true
-                    ActiveValue:Destroy()
-                    return
-                else
-                    error("Can not unlock values.")
-                end
-            elseif Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            else
-                error("Ran into an unexpected error")
-            end
-        end,
+		AttachedSignal:Fire(object)
 
-        __call = function(_, Object, Index : string)
-            if not Object then
-                return
-            end
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				if typeof(thisValue) == "table" and thisValue ~= nil then
+					return table.clone(thisValue)
+				else
+					return thisValue
+				end
+			end,
 
-            if not Index then
-                return
-            end
+			PropertyName = index,
+		}))
+	end
 
-            if typeof(ThisValue) == "table" and ThisValue ~= nil then
-                Object[Index] = table.clone(ThisValue)
-            else
-                Object[Index] = ThisValue
-            end
+	function ValueObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return thisValue
+		end
 
-            AttachedSignal:Fire(Object)
+		return nil
+	end
 
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    if typeof(ThisValue) == "table" and ThisValue ~= nil then
-                        return table.clone(ThisValue)
-                    else
-                        return ThisValue
-                    end
-                end,
-                
-                PropertyName = Index
-            }))
-        end
-    })
+	function ValueObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Value" then
+			if IsLocked then
+				error("Attempt to modify value when locked.")
+			end
 
-    return ActiveValue :: ValueInstance<any>
+			if ValueType ~= nil then
+				if newValue ~= nil and typeof(newValue) ~= ValueType then
+					error(`Invalid value type! Expected {ValueType}, got {typeof(newValue)}`)
+				end
+			elseif newValue ~= nil then
+				ValueType = typeof(newValue)
+			end
+
+			if not IsValueChanged(thisValue, newValue) then
+				return
+			end
+
+			thisValue = newValue
+
+			-- Make sure to fire the changed signal for other states
+			Batch.Fire(ChangedSignal, "Value", thisValue)
+			return
+		elseif index == "__LOCKED" then
+			if newValue == true then
+				IsLocked = true
+				ActiveValue:Destroy()
+				return
+			else
+				error("Can not unlock values.")
+			end
+		else
+			error("Ran into an unexpected error")
+		end
+	end
+
+	ActiveValue = Compiler.CompileObject(ValueObject)
+
+	return ActiveValue :: Types.ValueInstance<any>
 end
 
-function Value:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Value)
-
-return Meta :: ValueConstructor<any>
+return Compiler.CompileConstructor(Value) :: Types.ValueConstructor<any>

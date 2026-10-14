@@ -1,0 +1,9 @@
+seam:
+  label: Seam
+  permalink: /seam
+  description: Seam framework
+
+update:
+  label: Update
+  permalink: /update
+  description: Updates and news

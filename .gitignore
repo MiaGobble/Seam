@@ -41,6 +41,16 @@ luac.out
 
 sourcemap.json
 build
+test-place.rbxl
+test-place.rbxlx
+.tools/
+
+# wally
+Packages/
+ServerPackages/
+DevPackages/
+wally.lock
+wally-package-types.d.luau
 
 # pesde
 luau_packages/
@@ -48,3 +58,8 @@ roblox_packages/
 lune_packages/
 .pesde/
 pesde.lock
+
+# docs site (Docusaurus)
+website/node_modules/
+website/.docusaurus/
+website/.cache-loader/

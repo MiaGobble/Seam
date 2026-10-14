@@ -1,27 +1,16 @@
--- Author: iGottic
-
 local OnAttached = {}
 
--- Types
-export type OnAttached = (Object : any, Callback : (AttachedInstance : Instance) -> nil) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Symbol = require(Modules.Symbol)
 
-function OnAttached:__call(Object : any, Callback : (AttachedInstance : Instance) -> nil)
-    return (Object.AttachedToInstance :: RBXScriptSignal):Connect(function(...)
-        -- When something changes, call the callback function
-        Callback(...)
-    end)
+OnAttached.__SEAM_INDEX = Symbol.new("OnAttached")
+OnAttached.__SEAM_CAN_BE_SCOPED = true
+
+function OnAttached.__CALLBACK(self : Types.ConstructorCompiled, object : any, callback : (attachedInstance : Instance) -> nil)
+	return (object.AttachedToInstance :: RBXScriptSignal):Connect(callback)
 end
 
-function OnAttached:__index(Index : string)
-    if Index == "__SEAM_INDEX" then
-        return "OnAttached"
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, OnAttached)
-
-return Meta :: OnAttached
+return Compiler.CompileConstructor(OnAttached) :: Types.OnAttached

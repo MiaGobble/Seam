@@ -1,30 +1,22 @@
--- Author: iGottic
-
 local SetValue = {}
 
--- Types
-export type SetValue = (State : any?, NewValue : any?) -> any?
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 
-function SetValue:__call(State : any?, NewValue : any?) : any?
-    if State == nil then
-        return NewValue
-    end
+SetValue.__SEAM_CAN_BE_SCOPED = false
 
-    if typeof(State) == "table" and State.Value ~= nil then
-        State.Value = NewValue
-    end
+function SetValue.__CALLBACK(_ : Types.ConstructorCompiled, state : any?, newValue : any?) : any?
+	if state == nil then
+		return newValue
+	end
 
-    return NewValue
+	if typeof(state) == "table" and state.Value ~= nil then
+		state.Value = newValue
+	end
+
+	return newValue
 end
 
-function SetValue:__index(Key : string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return nil
-end
-
-local Meta = setmetatable({}, SetValue)
-
-return Meta :: SetValue
+return Compiler.CompileConstructor(SetValue) :: Types.SetValue

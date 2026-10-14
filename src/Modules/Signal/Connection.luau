@@ -1,26 +1,11 @@
---[=[
-	@within Signal
-	@interface SignalConnection
-	.Connected boolean
-	.Disconnect (SignalConnection) -> ()
-
-	Represents a connection to a signal.
-	```lua
-	local ConnectionObj = SignalInstance:Connect(function() end)
-	print(ConnectionObj.Connected) --> true
-	ConnectionObj:Disconnect()
-	print(ConnectionObj.Connected) --> false
-	```
-]=]
-
 local Connection = {}
 Connection.__index = Connection
 
 -- Types
 export type Connection = {
-	Disconnect: (self: Connection) -> (),
-	Destroy: (self: Connection) -> (),
-	Connected: boolean,
+	Disconnect : (self : Connection) -> (),
+	Destroy : (self : Connection) -> (),
+	Connected : boolean,
 }
 
 function Connection.Disconnect(self : Connection)
@@ -30,17 +15,17 @@ function Connection.Disconnect(self : Connection)
 
 	self.Connected = false
 
-	if self._Signal._HandlerListHead == self then
-		self._Signal._HandlerListHead = self._Next
+	if (self :: any)._Signal._HandlerListHead == self then
+		self._Signal._HandlerListHead = (self :: any)._Next
 	else
-		local prev = self._Signal._HandlerListHead
+		local Prev = self._Signal._HandlerListHead
 
-		while prev and prev._Next ~= self do
-			prev = prev._Next
+		while Prev and Prev._Next ~= self do
+			Prev = Prev._Next
 		end
 
-		if prev then
-			prev._Next = self._Next
+		if Prev then
+			Prev._Next = (self :: any)._Next
 		end
 	end
 end
@@ -49,10 +34,10 @@ Connection.Destroy = Connection.Disconnect
 
 setmetatable(Connection, {
 	__index = function(_tb, key)
-		error(("Attempt to get Connection::%s (not a valid member)"):format(tostring(key)), 2)
+		error(`Attempt to get Connection::{key} (not a valid member)`, 2)
 	end,
 	__newindex = function(_tb, key, _value)
-		error(("Attempt to set Connection::%s (not a valid member)"):format(tostring(key)), 2)
+		error(`Attempt to set Connection::{key} (not a valid member)`, 2)
 	end,
 })
 

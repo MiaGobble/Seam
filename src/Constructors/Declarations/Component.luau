@@ -1,52 +1,45 @@
--- Author: iGottic
+local Component = {}
 
 -- Imports
-local Scope = require(script.Parent.Parent.Memory.Scope)
-local Symbol = require(script.Parent.Parent.Parent.Modules.Symbol)
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Symbol = require(Modules.Symbol)
 
--- Types extended
-export type Component = ({[any] : any}) -> (Scope.ScopeInstance?, {[string] : any}) -> any
+function Component.__CALLBACK(_ : Types.ConstructorCompiled, componentModule : {[any] : any})
+	-- This function just validates what we have and turns the module into a class
 
-local function Component(ComponentModule : {[any] : any})
-    -- This function just validates what we have and turns the module into a class
-    
-    if not ComponentModule.Init then
-        error("Component requires an Init() method")
-    end
+	if not componentModule.Init then
+		error("Component requires an Init() method")
+	end
 
-    if not ComponentModule.Construct then
-        error("Component requires a Construct() method")
-    end
+	if not componentModule.Construct then
+		error("Component requires a Construct() method")
+	end
 
-    ComponentModule.__index = ComponentModule
+	componentModule.__index = componentModule
 
-    -- ThisScope : Scope.ScopeInstance?, Properties : {[string] : any}
+	local ComponentObject : Types.ObjectDecompiled = {
+		__SEAM_COMPONENT = Symbol.new("Component"),
+	}
 
-    local ComponentSymbol = Symbol.new("Component")
+	function ComponentObject.__CALLBACK(_ : Types.ObjectCompiled, thisScope : Types.ScopeInstance?, properties : {[string] : any}) : any
+		local ClassInstance = setmetatable({}, componentModule) -- OOP but only kinda
 
-    local Meta = setmetatable({}, {
-        __call = function(_, ThisScope : Scope.ScopeInstance?, Properties : {[string] : any}) : any
-            local ClassInstance = setmetatable({}, ComponentModule) -- OOP but only kinda
+		ClassInstance:Init(thisScope, properties)
 
-            ClassInstance:Init(ThisScope, Properties)
+		return ClassInstance:Construct(thisScope, properties)
+	end
 
-            return ClassInstance:Construct(ThisScope, Properties)
-        end,
+	function ComponentObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		return componentModule[index]
+	end
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_COMPONENT" then
-                return ComponentSymbol
-            end
+	function ComponentObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, value : any?)
+		componentModule[index] = value
+	end
 
-            return ComponentModule[Index]
-        end,
-
-        __newindex = function(_, Index : string, Value : any?)
-            ComponentModule[Index] = Value
-        end
-    })
-
-    return Meta :: (ThisScope : Scope.ScopeInstance?, Properties : {[string] : any}) -> any
+	return Compiler.CompileObject(ComponentObject) :: (thisScope : Types.ScopeInstance?, properties : {[string] : any}) -> any
 end
 
-return Component :: Component
+return Compiler.CompileConstructor(Component) :: Types.Component

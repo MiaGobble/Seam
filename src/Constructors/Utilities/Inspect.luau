@@ -1,33 +1,25 @@
--- Author: iGottic
-
 local Inspect = {}
 
--- Types
-export type Inspect = (Object : any, DebugName : string) -> RBXScriptConnection
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 
-function Inspect:__call(Object : any, DebugName : string)
-    if not DebugName then
-        error("Expected DebugName, got nil")
-    end
+Inspect.__SEAM_CAN_BE_SCOPED = true
 
-    return (Object.Changed :: RBXScriptSignal):Connect(function(PropertyName : string)
-        if not PropertyName then
-            print(`SEAM_INSPECT | {DebugName} | Value changed, unknown property that changed`)
-            return
-        end
+function Inspect.__CALLBACK(_ : Types.ConstructorCompiled, object : any, debugName : string)
+	if not debugName then
+		error("Expected DebugName, got nil")
+	end
 
-        print(`SEAM_INSPECT | {DebugName} | Value changed to {Object[PropertyName]}`)
-    end)
+	return (object.Changed :: RBXScriptSignal):Connect(function(propertyName : string)
+		if not propertyName then
+			print(`SEAM_{debugName}.Value changed, unknown property that changed`)
+			return
+		end
+
+		print(`SEAM_{debugName}.Value = {object[propertyName]}`)
+	end)
 end
 
-function Inspect:__index(Index : string)
-    if Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Inspect)
-
-return Meta :: Inspect
+return Compiler.CompileConstructor(Inspect) :: Types.Inspect

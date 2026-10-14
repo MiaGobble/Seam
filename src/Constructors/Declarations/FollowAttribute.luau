@@ -1,84 +1,74 @@
--- Author: iGottic
-
 local FollowAttribute = {}
+
+-- Types
+type EventBinding = {Destroy : () -> nil} & typeof(setmetatable({}, {__call = function(_, object : Instance, valueState : any) end}))
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
 local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("FollowAttribute")
+FollowAttribute.__SEAM_CAN_BE_SCOPED = false
 
--- Types Extended
-export type FollowAttribute = (AttributeName : string) -> (Object : Instance, ValueState : Types.BaseState<any>) -> nil
+function FollowAttribute.__CALLBACK(_ : Types.ConstructorCompiled, attributeName : string) : EventBinding
+	local EventBinding : Types.ObjectDecompiled = {}
+	local ActiveConnections = setmetatable({}, {__mode = "k"})
 
-function FollowAttribute:__call(AttributeName : string)
-    local ActiveConnections = setmetatable({}, {__mode = "k"})
+	local function CleanupObjectConnection(object : Instance)
+		local ConnectionBucket = ActiveConnections[object]
 
-    local function CleanupObjectConnection(Object : Instance)
-        local ConnectionBucket = ActiveConnections[Object]
+		if ConnectionBucket == nil then
+			return
+		end
 
-        if ConnectionBucket == nil then
-            return
-        end
+		if ConnectionBucket.AttributeConnection ~= nil and ConnectionBucket.AttributeConnection.Connected then
+			ConnectionBucket.AttributeConnection:Disconnect()
+		end
 
-        if ConnectionBucket.AttributeConnection ~= nil and ConnectionBucket.AttributeConnection.Connected then
-            ConnectionBucket.AttributeConnection:Disconnect()
-        end
+		if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
+			ConnectionBucket.DestroyingConnection:Disconnect()
+		end
 
-        if ConnectionBucket.DestroyingConnection ~= nil and ConnectionBucket.DestroyingConnection.Connected then
-            ConnectionBucket.DestroyingConnection:Disconnect()
-        end
+		ActiveConnections[object] = nil
+	end
 
-        ActiveConnections[Object] = nil
-    end
+	EventBinding.__SEAM_INDEX = Symbol.new("FollowAttribute")
+	EventBinding.__SEAM_CAN_BE_SCOPED = false
 
-    return setmetatable({
-        Destroy = function()
-            for Object in ActiveConnections do
-                CleanupObjectConnection(Object)
-            end
-        end,
-    }, {
-        __call = function(_, Object : Instance, ValueState : Types.BaseState<any>)
-            -- Literally just a simple connection and value update
-            CleanupObjectConnection(Object)
-            
-            local AttributeConnection = Object:GetAttributeChangedSignal(AttributeName):Connect(function()
-                if Object:GetAttribute(AttributeName) ~= ValueState.Value then
-                    ValueState.Value = Object:GetAttribute(AttributeName)
-                end
+	function EventBinding.Destroy(_ : EventBinding)
+		for object in ActiveConnections do
+			CleanupObjectConnection(object)
+		end
+	end
 
-                ValueState.Value = Object:GetAttribute(AttributeName)
-            end)
+	function EventBinding.__CALLBACK(_ : EventBinding, object : Instance, valueState : Types.BaseState<any>)
+		-- Literally just a simple connection and value update
+		CleanupObjectConnection(object)
 
-            local DestroyingConnection = Object.Destroying:Connect(function()
-                CleanupObjectConnection(Object)
-            end)
+		local AttributeConnection = object:GetAttributeChangedSignal(attributeName):Connect(function()
+			if object:GetAttribute(attributeName) ~= valueState.Value then
+				valueState.Value = object:GetAttribute(attributeName)
+			end
 
-            ActiveConnections[Object] = {
-                AttributeConnection = AttributeConnection,
-                DestroyingConnection = DestroyingConnection,
-            }
+			valueState.Value = object:GetAttribute(attributeName)
+		end)
 
-            return function()
-                CleanupObjectConnection(Object)
-            end
-        end,
+		local DestroyingConnection = object.Destroying:Connect(function()
+			CleanupObjectConnection(object)
+		end)
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_INDEX" then
-                return ClassSymbol
-            elseif Index == "__SEAM_CAN_BE_SCOPED" then
-                return false
-            else
-                return nil
-            end
-        end,
-    })
+		ActiveConnections[object] = {
+			AttributeConnection = AttributeConnection,
+			DestroyingConnection = DestroyingConnection,
+		}
+
+		return function()
+			CleanupObjectConnection(object)
+		end
+	end
+
+	return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
-local Meta = setmetatable({}, FollowAttribute)
-
-return Meta :: FollowAttribute
+return Compiler.CompileConstructor(FollowAttribute) :: Types.FollowAttribute

@@ -1,149 +1,123 @@
--- Author: iGottic
-
 local Resource = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local StateManager = require(Modules.StateManager)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local Symbol = require(Modules.Symbol)
 
--- Variables
-local ClassSymbol = Symbol.new("Resource")
+Resource.__SEAM_OBJECT = Symbol.new("Resource")
+Resource.__SEAM_CAN_BE_SCOPED = true
 
--- Types Extended
-export type ResourceStatus = "Idle" | "Loading" | "Ready" | "Error"
+function Resource.__CALLBACK(_ : Types.ConstructorCompiled, callback : () -> any) : Types.ResourceInstance<any>
+	local BucketInstance = Bucket.new()
+	local ChangedSignal = Signal.new()
+	local AttachedSignal = Signal.new()
+	local CurrentValue = nil
+	local CurrentStatus : Types.ResourceStatus = "Idle"
+	local CurrentError = nil
+	local RequestId = 0
+	local ActiveResource : Types.ObjectCompiled
 
-export type ResourceInstance<T> = {
-    Changed : RBXScriptSignal,
-    Status : ResourceStatus,
-    Error : any,
-    Refresh : (self : ResourceInstance<T>) -> (),
-} & Types.BaseState<T>
+	local function EmitChanged()
+		Batch.Fire(ChangedSignal, "Value", CurrentValue)
+	end
 
-export type ResourceConstructor<T> = (Callback : () -> T) -> ResourceInstance<T>
+	local function Refresh()
+		RequestId += 1
+		local ThisRequestId = RequestId
 
-function Resource:__call(Callback : () -> any) : ResourceInstance<any>
-    local TroveInstance = Trove.new()
-    local ChangedSignal = Signal.new()
-    local AttachedSignal = Signal.new()
-    local InstanceSymbol = Symbol.new("Resource")
-    local CurrentValue = nil
-    local CurrentStatus : ResourceStatus = "Idle"
-    local CurrentError = nil
-    local RequestId = 0
+		CurrentStatus = "Loading"
+		CurrentError = nil
+		EmitChanged()
 
-    local function EmitChanged()
-        Batch.Fire(ChangedSignal, "Value", CurrentValue)
-    end
+		task.spawn(function()
+			local Success, Result = pcall(callback)
 
-    local function Refresh()
-        RequestId += 1
-        local ThisRequestId = RequestId
+			if ThisRequestId ~= RequestId then
+				return
+			end
 
-        CurrentStatus = "Loading"
-        CurrentError = nil
-        EmitChanged()
+			if Success then
+				CurrentValue = Result
+				CurrentStatus = "Ready"
+				CurrentError = nil
+			else
+				CurrentStatus = "Error"
+				CurrentError = Result
+			end
 
-        task.spawn(function()
-            local Success, Result = pcall(Callback)
+			EmitChanged()
+		end)
+	end
 
-            if ThisRequestId ~= RequestId then
-                return
-            end
+	local ResourceObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Resource"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+		Refresh = Refresh,
+	}
 
-            if Success then
-                CurrentValue = Result
-                CurrentStatus = "Ready"
-                CurrentError = nil
-            else
-                CurrentStatus = "Error"
-                CurrentError = Result
-            end
+	function ResourceObject.Destroy()
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-            EmitChanged()
-        end)
-    end
+	function ResourceObject.__CALLBACK(self : Types.ObjectCompiled, object : Instance, index : string)
+		AttachedSignal:Fire(object)
 
-    local ActiveResource; ActiveResource = setmetatable({
-        Destroy = function()
-            TroveInstance:Destroy()
-            TroveInstance = nil
-        end,
-    }, {
-        __call = function(This, Object : Instance, Index : string)
-            AttachedSignal:Fire(Object)
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				return self.Value
+			end,
 
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    return This.Value
-                end,
+			PropertyName = index,
+		}))
 
-                PropertyName = Index,
-            }))
+		return ActiveResource
+	end
 
-            return ActiveResource
-        end,
+	function ResourceObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return CurrentValue
+		elseif index == "Status" then
+			return CurrentStatus
+		elseif index == "Error" then
+			return CurrentError
+		end
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                return CurrentValue
-            elseif Index == "Status" then
-                return CurrentStatus
-            elseif Index == "Error" then
-                return CurrentError
-            elseif Index == "Changed" then
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
-            elseif Index == "Refresh" then
-                return Refresh
-            end
+		return nil
+	end
 
-            return nil
-        end,
+	function ResourceObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Value" then
+			CurrentValue = newValue
+			CurrentStatus = "Ready"
+			CurrentError = nil
+			EmitChanged()
+			return
+		elseif index == "Status" then
+			CurrentStatus = newValue
+			EmitChanged()
+			return
+		elseif index == "Error" then
+			CurrentError = newValue
+			EmitChanged()
+			return
+		end
 
-        __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Value" then
-                CurrentValue = NewValue
-                CurrentStatus = "Ready"
-                CurrentError = nil
-                EmitChanged()
-                return
-            elseif Index == "Status" then
-                CurrentStatus = NewValue
-                EmitChanged()
-                return
-            elseif Index == "Error" then
-                CurrentError = NewValue
-                EmitChanged()
-                return
-            end
+		error("Ran into an unexpected error")
+	end
 
-            error("Ran into an unexpected error")
-        end,
-    })
+	ActiveResource = Compiler.CompileObject(ResourceObject)
 
-    Refresh()
+	Refresh()
 
-    return ActiveResource :: ResourceInstance<any>
+	return ActiveResource :: Types.ResourceInstance<any>
 end
 
-function Resource:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Resource)
-
-return Meta :: ResourceConstructor<any>
+return Compiler.CompileConstructor(Resource) :: Types.ResourceConstructor<any>

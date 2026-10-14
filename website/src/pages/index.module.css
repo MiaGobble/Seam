@@ -1,0 +1,106 @@
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
+  background: #121212; /* single solid color as requested */
+  text-align: center;
+}
+
+.inner {
+  max-width: 1100px;
+}
+
+.taglineLarge {
+  color: #C2C2C2;
+  font-size: 2.8rem; /* significantly larger */
+  margin-bottom: 1.5rem;
+  font-weight: 900; /* boldest */
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.05;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: left;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.button {
+  background-color: #DBDBDB;
+  color: #000000; /* black text on white background for API */
+  padding: 0.6rem 1rem;
+  border-radius: 0; /* no rounding */
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.buttonSecondary {
+  background-color: #303030; /* normal dark-grey button */
+  color: #FFFFFF;
+  padding: 0.6rem 1rem;
+  border-radius: 0;
+  text-decoration: none;
+  border: none; /* remove outline */
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.feature {
+  text-align: left;
+  background: transparent;
+}
+
+.feature h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #E6E6E6;
+  margin: 0 0 0.6rem 0;
+  font-size: 2rem; /* MUCH bigger headings */
+  font-weight: 600; /* slightly lighter than before */
+  line-height: 1.02;
+}
+
+.feature p {
+  color: #C2C2C2;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 700px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+  .taglineLarge {
+    font-size: 1.9rem;
+  }
+}
+
+/* CTA section and button spacing */
+.buttons {
+  padding-top: 0.8rem; /* a bit of padding above buttons */
+}
+
+.ctaSection {
+  margin-top: 1.25rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.ctaSection h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #E6E6E6;
+  font-size: 2rem;
+  margin: 0 0 0.4rem 0;
+}
+
+.ctaSection p {
+  color: #C2C2C2;
+  margin: 0 0 0.8rem 0;
+}

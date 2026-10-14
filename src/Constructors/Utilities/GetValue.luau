@@ -1,36 +1,26 @@
--- Author: iGottic
-
 local GetValue = {}
 
--- Types
-export type GetValue = (State : any?) -> any?
-
 -- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local IsState = require(script.Parent.IsState)
 
-function GetValue:__call(State : any?) : any?
-    -- Nothing exists? No problem.
-    if State == nil then
-        return nil
-    end
+GetValue.__SEAM_CAN_BE_SCOPED = false
 
-    -- Is it a state? Return the value of that state.
-    if IsState(State) then
-        return State.Value
-    end
+function GetValue.__CALLBACK(_ : Types.ConstructorCompiled, state : any?) : any?
+	-- Nothing exists? No problem.
+	if state == nil then
+		return nil
+	end
 
-    -- Just normal userdata? That's cool too.
-    return State
+	-- Is it a state? Return the value of that state.
+	if IsState(state) then
+		return state.Value
+	end
+
+	-- Just normal userdata? That's cool too.
+	return state
 end
 
-function GetValue:__index(Key : string)
-    if Key == "__SEAM_CAN_BE_SCOPED" then
-        return false
-    end
-
-    return nil
-end
-
-local Meta = setmetatable({}, GetValue)
-
-return Meta :: GetValue
+return Compiler.CompileConstructor(GetValue) :: Types.GetValue

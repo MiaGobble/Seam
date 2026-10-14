@@ -1,58 +1,46 @@
--- Author: iGottic
-
 local OnEvent = {}
 
 -- Types
-export type OnEvent = (EventName : string) -> (...any) -> RBXScriptConnection
+type EventBinding = {Destroy : () -> nil,} & typeof(setmetatable({}, {__call = function(_, object : Instance, callback : (...any?) -> nil) end,}))
 
-function OnEvent:__call(EventName : string)
-    local ActiveConnections = setmetatable({}, {__mode = "k"})
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Symbol = require(Modules.Symbol)
 
-    local EventBinding = setmetatable({
-        Destroy = function()
-            for Object, Connection in ActiveConnections do
-                if Connection.Connected then
-                    Connection:Disconnect()
-                end
+OnEvent.__SEAM_CAN_BE_SCOPED = true
 
-                ActiveConnections[Object] = nil
-            end
-        end,
-    }, {
-        __call = function(_, Object : Instance, Callback : (...any?) -> nil)
-            -- So for example, if we do OnEvent "Activated", EventName will equal "Activated"
+function OnEvent.__CALLBACK(self : Types.ConstructorCompiled, eventName : string) : RBXScriptConnection
+	local EventBinding : Types.ObjectDecompiled = {}
+	local ActiveConnections = setmetatable({}, {__mode = "k",})
 
-            local ExistingConnection = ActiveConnections[Object]
-            if ExistingConnection and ExistingConnection.Connected then
-                ExistingConnection:Disconnect()
-            end
+	EventBinding.__SEAM_INDEX = Symbol.new("OnEvent")
+	EventBinding.__SEAM_CAN_BE_SCOPED = false
 
-            local Connection = (Object[EventName] :: RBXScriptSignal):Connect(Callback)
-            ActiveConnections[Object] = Connection
+	function EventBinding.Destroy(self : EventBinding)
+		for object, connection in ActiveConnections do
+			if connection.Connected then
+				connection:Disconnect()
+			end
 
-            return Connection
-        end,
+			ActiveConnections[object] = nil
+		end
+	end
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_INDEX" then
-                return "OnEvent"
-            else
-                return nil
-            end
-        end
-    })
+	function EventBinding.__CALLBACK(self : EventBinding, object : Instance, callback : (...any?) -> nil)
+		local ExistingConnection = ActiveConnections[object]
+		if ExistingConnection and ExistingConnection.Connected then
+			ExistingConnection:Disconnect()
+		end
 
-    return EventBinding
+		local Connection = (object[eventName] :: RBXScriptSignal):Connect(callback)
+		ActiveConnections[object] = Connection
+
+		return Connection
+	end
+
+	return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
-function OnEvent:__index(Index : string)
-    if Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, OnEvent)
-
-return Meta :: OnEvent
+return Compiler.CompileConstructor(OnEvent) :: Types.OnEvent

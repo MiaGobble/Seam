@@ -1,5 +1,3 @@
--- Author: iGottic
-
 local Tween = {}
 
 -- Constants
@@ -11,180 +9,164 @@ local TweenService = game:GetService("TweenService")
 -- Imports
 local Constructors = script.Parent.Parent.Parent
 local Modules = Constructors.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Batch = require(Modules.Batch)
 local GetValue = require(Constructors.Utilities.GetValue)
 local StateManager = require(Modules.StateManager)
 local ValuePacker = require(Modules.ValuePacker)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
-local Types = require(Modules.Types)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Variables
-local ClassSymbol = Symbol.new("Tween")
+Tween.__SEAM_OBJECT = Symbol.new("Tween")
+Tween.__SEAM_CAN_BE_SCOPED = true
 
--- Types Extended
-export type TweenInstance<T> = {
-    Target : T
-} & Types.BaseState<T>
+local function ConvertValueToUnpackedTweens(value : any)
+	local ValueType = typeof(value)
+	local UnpackedValue = ValuePacker.UnpackValue(value, ValueType)
 
-export type TweenConstructor<T> = (Value : Types.BaseState<T> | any, TweenInformation : Types.BaseState<T> | TweenInfo) -> TweenInstance<T>
+	for index, element in UnpackedValue do
+		UnpackedValue[index] = {Position0 = element, Position1 = element, Tick0 = os.clock(),}
+	end
 
-local function ConvertValueToUnpackedTweens(Value : any)
-    local ValueType = typeof(Value)
-    local UnpackedValue = ValuePacker.UnpackValue(Value, ValueType)
-
-    for Index, Element in UnpackedValue do
-        UnpackedValue[Index] = {Position0 = Element, Position1 = Element, Tick0 = os.clock()}
-    end
-
-    return UnpackedValue
+	return UnpackedValue
 end
 
-local function GetTweenPosition(ThisTween : any, ThisTweenInformation : TweenInfo)
-    local Alpha = math.clamp((os.clock() - ThisTween.Tick0) / ThisTweenInformation.Time, 0, 1)
-    local UnitPosition = TweenService:GetValue(Alpha, ThisTweenInformation.EasingStyle, ThisTweenInformation.EasingDirection)
-    local Position = ThisTween.Position0 + (ThisTween.Position1 - ThisTween.Position0) * UnitPosition
+local function GetTweenPosition(thisTween : any, thisTweenInformation : TweenInfo)
+	local Alpha = math.clamp((os.clock() - thisTween.Tick0) / thisTweenInformation.Time, 0, 1)
+	local UnitPosition = TweenService:GetValue(Alpha, thisTweenInformation.EasingStyle, thisTweenInformation.EasingDirection)
+	local Position = thisTween.Position0 + (thisTween.Position1 - thisTween.Position0) * UnitPosition
 
-    if math.abs(Position) <= EPSILON then
-        Position = 0
-    elseif math.abs(Position - ThisTween.Position0) <= EPSILON then
-        Position = ThisTween.Position0
-    end
+	if math.abs(Position) <= EPSILON then
+		Position = 0
+	elseif math.abs(Position - thisTween.Position0) <= EPSILON then
+		Position = thisTween.Position0
+	end
 
-    return Position, Alpha
+	return Position, Alpha
 end
 
-function Tween:__call(Value : any, TweenInformation : Types.BaseState<any> | TweenInfo) : TweenInstance<any>
-    local CurrentTarget = GetValue(Value)
-    local ValueType = typeof(CurrentTarget)
-    local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
-    local TroveInstance = Trove.new()
-    local AttachedSignal = Signal.new()
-    local ChangedSignal = Signal.new()
-    local CurrentValue = CurrentTarget
-    local LastValue = CurrentTarget
-    local InstanceSymbol = Symbol.new("Tween")
-    local IsSleeping = false
+function Tween.__CALLBACK(_ : Types.ConstructorCompiled, value : any, tweenInformation : Types.BaseState<any> | TweenInfo) : Types.TweenInstance<any>
+	local CurrentTarget = GetValue(value)
+	local ValueType = typeof(CurrentTarget)
+	local UnpackedTweens = ConvertValueToUnpackedTweens(CurrentTarget)
+	local BucketInstance = Bucket.new()
+	local AttachedSignal = Signal.new()
+	local ChangedSignal = Signal.new()
+	local CurrentValue = CurrentTarget
+	local LastValue = CurrentTarget
+	local IsSleeping = false
+	local ActiveValue : Types.ObjectCompiled
 
-    TroveInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
-        if IsSleeping then
-            return
-        end
+	BucketInstance:Add(UpdateSignals.OnFramePreUpdate:Connect(function()
+		if IsSleeping then
+			return
+		end
 
-        local PackedValues = {}
-        local CurrentTweenInformation = GetValue(TweenInformation)
-        local IsSettled = true
+		local PackedValues = {}
+		local CurrentTweenInformation = GetValue(tweenInformation)
+		local IsSettled = true
 
-        for Index, ThisTween in UnpackedTweens do
-            local Position, Alpha = GetTweenPosition(ThisTween, CurrentTweenInformation)
+		-- Each part of a value is separated into separate tweens, just like springs. For example, a Vector3 is three separate tweens.
+		for index, thisTween in UnpackedTweens do
+			local Position, Alpha = GetTweenPosition(thisTween, CurrentTweenInformation)
 
-            if Alpha < 1 or math.abs(Position - ThisTween.Position1) > EPSILON then
-                IsSettled = false
-            end
+			-- Snap to value based on epsilon to prevent forever retargeting
+			if Alpha < 1 or math.abs(Position - thisTween.Position1) > EPSILON then
+				IsSettled = false
+			end
 
-            PackedValues[Index] = Position
-        end
+			PackedValues[index] = Position
+		end
 
-        CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
+		CurrentValue = ValuePacker.PackValue(PackedValues, ValueType)
 
-        if IsValueChanged(LastValue, CurrentValue) then
-            Batch.Fire(ChangedSignal, "Value")
-        end
+		if IsValueChanged(LastValue, CurrentValue) then
+			Batch.Fire(ChangedSignal, "Value")
+		end
 
-        LastValue = CurrentValue
+		LastValue = CurrentValue
 
-        if IsSettled then
-            IsSleeping = true
-        end
-    end))
+		if IsSettled then
+			IsSleeping = true
+		end
+	end))
 
-    local ActiveValue; ActiveValue = setmetatable({
-        Destroy = function()
-            UnpackedTweens = nil
-            TroveInstance:Destroy()
-            TroveInstance = nil
-        end
-    }, {
-        __index = function(_, Index : string)
-            if Index == "__SEAM_OBJECT" then
-                return InstanceSymbol
-            elseif Index == "Value" then
-                return CurrentValue
-            elseif Index == "Changed" then
-                return ChangedSignal
-            elseif Index == "AttachedToInstance" then
-                return AttachedSignal
-            elseif Index == "TweenInfo" then
-                return TweenInformation
-            end
+	local TweenObject : Types.ObjectDecompiled = {
+		__SEAM_OBJECT = Symbol.new("Tween"),
+		Changed = ChangedSignal,
+		AttachedToInstance = AttachedSignal,
+	}
 
-            return nil
-        end,
+	function TweenObject.Destroy()
+		UnpackedTweens = nil
+		BucketInstance:Destroy()
+		BucketInstance = nil
+	end
 
-        __newindex = function(_, Index : string, NewValue : any)
-            if Index == "Target" then
-                IsSleeping = false
-                CurrentTarget = GetValue(NewValue)
-                local CurrentTweenInformation = GetValue(TweenInformation)
-                
-                local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
+	function TweenObject.__CALLBACK(self : Types.ObjectCompiled, object : any, index : string)
+		AttachedSignal:Fire(object)
 
-                for ThisIndex, ThisTween in UnpackedTweens do
-                    local CurrentPosition = GetTweenPosition(ThisTween, CurrentTweenInformation)
-                    ThisTween.Position0 = CurrentPosition
-                    ThisTween.Position1 = UnpackedTargetValue[ThisIndex]
-                    ThisTween.Tick0 = os.clock()
-                end
-            elseif Index == "Value" then
-                IsSleeping = false
-                local UnpackedValue = ValuePacker.UnpackValue(NewValue, ValueType)
+		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+			Value = function()
+				return self.Value
+			end,
 
-                for ThisIndex, ThisTween in UnpackedTweens do
-                    ThisTween.Position0 = UnpackedValue[ThisIndex]
-                    ThisTween.Position1 = UnpackedValue[ThisIndex]
-                    ThisTween.Tick0 = os.clock()
-                end
-            elseif Index == "TweenInfo" then
-                IsSleeping = false
-                TweenInformation = NewValue
-            end
-        end,
+			PropertyName = index,
+		}))
 
-        __call = function(This, Object, Index : string)
-            AttachedSignal:Fire(Object)
-            
-            TroveInstance:Add(StateManager:AttachStateToObject(Object, {
-                Value = function()
-                    return This.Value
-                end,
+		return ActiveValue
+	end
 
-                PropertyName = Index
-            }))
+	function TweenObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if index == "Value" then
+			return CurrentValue
+		elseif index == "TweenInfo" then
+			return tweenInformation
+		end
 
-            return ActiveValue
-        end
-    })
+		return nil
+	end
 
-    if typeof(Value) == "table" and Value.__SEAM_OBJECT then
-        Value(ActiveValue, "Target")
-    end
+	function TweenObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if index == "Target" then
+			IsSleeping = false
+			CurrentTarget = GetValue(newValue)
+			local CurrentTweenInformation = GetValue(tweenInformation)
 
-    return ActiveValue :: TweenInstance<any>
+			local UnpackedTargetValue = ValuePacker.UnpackValue(CurrentTarget, ValueType)
+
+			for thisIndex, thisTween in UnpackedTweens do
+				local CurrentPosition = GetTweenPosition(thisTween, CurrentTweenInformation)
+				thisTween.Position0 = CurrentPosition
+				thisTween.Position1 = UnpackedTargetValue[thisIndex]
+				thisTween.Tick0 = os.clock()
+			end
+		elseif index == "Value" then
+			IsSleeping = false
+			local UnpackedValue = ValuePacker.UnpackValue(newValue, ValueType)
+
+			for thisIndex, thisTween in UnpackedTweens do
+				thisTween.Position0 = UnpackedValue[thisIndex]
+				thisTween.Position1 = UnpackedValue[thisIndex]
+				thisTween.Tick0 = os.clock()
+			end
+		elseif index == "TweenInfo" then
+			IsSleeping = false
+			tweenInformation = newValue
+		end
+	end
+
+	ActiveValue = Compiler.CompileObject(TweenObject)
+
+	if typeof(value) == "table" and value.__SEAM_OBJECT then
+		value(ActiveValue, "Target")
+	end
+
+	return ActiveValue :: Types.TweenInstance<any>
 end
 
-function Tween:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, Tween)
-
-return Meta :: TweenConstructor<any>
+return Compiler.CompileConstructor(Tween) :: Types.TweenConstructor<any>

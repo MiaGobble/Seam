@@ -1,9 +1,7 @@
--- Author: iGottic
+return function(oldValue : any, newValue : any) : boolean
+	if typeof(oldValue) ~= typeof(newValue) then
+		return true
+	end
 
-return function(OldValue : any, NewValue : any) : boolean
-    if typeof(OldValue) ~= typeof(NewValue) then
-        return true
-    end
-
-    return OldValue ~= NewValue
+	return oldValue ~= newValue
 end

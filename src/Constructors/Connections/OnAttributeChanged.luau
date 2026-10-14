@@ -1,56 +1,45 @@
--- Author: iGottic
-
 local OnAttributeChanged = {}
 
 -- Types
-export type OnAttributeChanged = (AttributeName : string) -> (...any) -> RBXScriptConnection
+type EventBinding = {Destroy : () -> nil,} & typeof(setmetatable({}, {__call = function(_, object : Instance, callback : (...any?) -> nil) end,}))
 
-function OnAttributeChanged:__call(AttributeName : string)
-    local ActiveConnections = setmetatable({}, {__mode = "k"})
+-- Imports
+local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
+local Symbol = require(Modules.Symbol)
 
-    local EventBinding = setmetatable({
-        Destroy = function()
-            for Object, Connection in ActiveConnections do
-                if Connection.Connected then
-                    Connection:Disconnect()
-                end
+OnAttributeChanged.__SEAM_CAN_BE_SCOPED = true
 
-                ActiveConnections[Object] = nil
-            end
-        end,
-    }, {
-        __call = function(_, Object : Instance, Callback : (...any?) -> nil)
-            local ExistingConnection = ActiveConnections[Object]
-            if ExistingConnection and ExistingConnection.Connected then
-                ExistingConnection:Disconnect()
-            end
+function OnAttributeChanged.__CALLBACK(self : Types.ConstructorCompiled, attributeName : string)
+	local EventBinding : Types.ObjectDecompiled = {}
+	local ActiveConnections = setmetatable({}, {__mode = "k",})
 
-            local Connection = Object:GetAttributeChangedSignal(AttributeName):Connect(Callback)
-            ActiveConnections[Object] = Connection
+	EventBinding.__SEAM_INDEX = Symbol.new("OnAttributeChanged")
+	EventBinding.__SEAM_CAN_BE_SCOPED = false
 
-            return Connection
-        end,
+	function EventBinding.Destroy(self : EventBinding)
+		for object, connection in ActiveConnections do
+			if connection.Connected then
+				connection:Disconnect()
+			end
 
-        __index = function(_, Index : string)
-            if Index == "__SEAM_INDEX" then
-                return "OnAttributeChanged"
-            else
-                return nil
-            end
-        end
-    })
+			ActiveConnections[object] = nil
+		end
+	end
 
-    return EventBinding
+	function EventBinding.__CALLBACK(self : EventBinding, object : Instance, callback : (...any?) -> nil)
+		local ExistingConnection = ActiveConnections[object]
+
+		if ExistingConnection and ExistingConnection.Connected then
+			ExistingConnection:Disconnect()
+		end
+
+		local Connection = object:GetAttributeChangedSignal(attributeName):Connect(callback)
+		ActiveConnections[object] = Connection
+	end
+
+	return Compiler.CompileObject(EventBinding) :: EventBinding
 end
 
-function OnAttributeChanged:__index(Index : string)
-    if Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, OnAttributeChanged)
-
-return Meta :: OnAttributeChanged
+return Compiler.CompileConstructor(OnAttributeChanged) :: Types.OnAttributeChanged

@@ -1,0 +1,8 @@
+{
+  "label": "Memory",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Manual and automatic cleanup, preventing memory leaks."
+  }
+}

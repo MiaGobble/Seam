@@ -1,143 +1,117 @@
--- Author: iGottic
-
 local EventSequence = {}
 
 -- Imports
 local Modules = script.Parent.Parent.Parent.Modules
+local Types = require(Modules.Types)
+local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
-local Trove = require(Modules.Trove)
+local Bucket = require(Modules.Bucket)
 local UpdateSignals = require(Modules.UpdateSignals)
 
--- Types extended
-export type SequenceKeyframe = {number | () -> nil}
+EventSequence.__SEAM_OBJECT = Symbol.new("EventSequence")
+EventSequence.__SEAM_CAN_BE_SCOPED = true
 
-export type EventSequenceInstance = {
-    Play : (EventSequenceInstance) -> nil,
-    Stop : (EventSequenceInstance) -> nil,
-    Pause : (EventSequenceInstance) -> nil,
-    Resume : (EventSequenceInstance) -> nil,
-    Looped : boolean,
-    LoopDelayTime : number,
-}
+function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyframes : {Types.SequenceKeyframe}) : Types.EventSequenceInstance
+	local CurrentTime = 0
+	local PlayedIndexes = {}
+	local EventSequenceInstance : Types.EventSequenceInstance = {} :: Types.EventSequenceInstance
+	local PlayingBucket = nil
+	local CurrentlyPaused = false
 
-export type EventSequence = ({SequenceKeyframe}) -> EventSequenceInstance
+	for index, keyframe in sequenceKeyframes do
+		if typeof(index) ~= "number" then
+			error("Attmped to pass dictionary for sequence keyframes")
+		end
 
--- Variables
-local ClassSymbol = Symbol.new("EventSequence")
+		if typeof(keyframe[1]) ~= "number" then
+			error("EventSequenceKeypoint needs a time")
+		end
 
-function EventSequence:__call(SequenceKeyframes : {SequenceKeyframe}) : EventSequenceInstance
-    local CurrentTime = 0
-    local PlayedIndexes = {}
-    local EventSequenceInstance : EventSequenceInstance = {}
-    local PlayingTrove = nil
-    local CurrentlyPaused = false
+		if typeof(keyframe[2]) ~= "function" then
+			error("EventSequenceKeypoint needs callback")
+		end
+	end
 
-    for Index, Keyframe in SequenceKeyframes do
-        if typeof(Index) ~= "number" then
-            error("Attmped to pass dictionary for sequence keyframes")
-        end
+	EventSequenceInstance.Looped = false
+	EventSequenceInstance.LoopDelayTime = 0
 
-        if typeof(Keyframe[1]) ~= "number" then
-            error("EventSequenceKeypoint needs a time")
-        end
+	function EventSequenceInstance.Play()
+		if PlayingBucket then
+			EventSequenceInstance.Stop()
+		end
 
-        if typeof(Keyframe[2]) ~= "function" then
-            error("EventSequenceKeypoint needs callback")
-        end
-    end
+		CurrentlyPaused = false
+		PlayingBucket = Bucket.new()
 
-    EventSequenceInstance.Looped = false
-    EventSequenceInstance.LoopDelayTime = 0
+		PlayingBucket:Add(UpdateSignals.OnFrameUpdate:Connect(function(delta : number)
+			if CurrentlyPaused then
+				return
+			end
 
-    function EventSequenceInstance.Play()
-        if PlayingTrove then
-            EventSequenceInstance.Stop()
-        end
+			CurrentTime += delta
 
-        CurrentlyPaused = false
-        PlayingTrove = Trove.new()
+			for index, keyframe in sequenceKeyframes do
+				if PlayedIndexes[index] then
+					continue
+				end
 
-        PlayingTrove:Add(UpdateSignals.OnFrameUpdate:Connect(function(Delta : number)
-            if CurrentlyPaused then
-                return
-            end
+				local PreviousTotalTime = 0
 
-            CurrentTime += Delta
+				if index > 1 then
+					for previousIndex = 1, index - 1 do
+						PreviousTotalTime += sequenceKeyframes[previousIndex][1]
+					end
+				end
 
-            for Index, Keyframe in SequenceKeyframes do
-                if PlayedIndexes[Index] then
-                    continue
-                end
+				if CurrentTime >= keyframe[1] + PreviousTotalTime then
+					PlayedIndexes[index] = true
+					task.spawn(keyframe[2])
+				end
+			end
 
-                local PreviousTotalTime = 0
+			if #sequenceKeyframes == #PlayedIndexes then
+				if EventSequenceInstance.Looped then
+					CurrentTime = -EventSequenceInstance.LoopDelayTime
+					table.clear(PlayedIndexes)
+				else
+					PlayingBucket:Destroy()
+				end
+			end
+		end))
 
-                if Index > 1 then
-                    for PreviousIndex = 1, Index - 1 do
-                        PreviousTotalTime += SequenceKeyframes[PreviousIndex][1]
-                    end
-                end
+		PlayingBucket:Add(function()
+			CurrentTime = 0
+			PlayingBucket = nil
+			CurrentlyPaused = false
+			PlayedIndexes = {}
+		end)
+	end
 
-                if CurrentTime >= Keyframe[1] + PreviousTotalTime then
-                    PlayedIndexes[Index] = true
-                    task.spawn(Keyframe[2])
-                end
-            end
+	function EventSequenceInstance.Stop()
+		if not PlayingBucket then
+			return
+		end
 
-            if #SequenceKeyframes == #PlayedIndexes then
-                if EventSequenceInstance.Looped then
-                    CurrentTime = -EventSequenceInstance.LoopDelayTime
-                    table.clear(PlayedIndexes)
-                else
-                    PlayingTrove:Destroy()
-                end
-            end
-        end))
+		PlayingBucket:Destroy()
+	end
 
-        PlayingTrove:Add(function()
-            CurrentTime = 0
-            PlayingTrove = nil
-            CurrentlyPaused = false
-            PlayedIndexes = {}
-        end)
-    end
+	function EventSequenceInstance.Pause()
+		if not PlayingBucket then
+			return
+		end
 
-    function EventSequenceInstance.Stop()
-        if not PlayingTrove then
-            return
-        end
+		CurrentlyPaused = true
+	end
 
-        PlayingTrove:Destroy()
-    end
+	function EventSequenceInstance.Resume()
+		if not PlayingBucket then
+			return
+		end
 
-    function EventSequenceInstance.Pause()
-        if not PlayingTrove then
-            return
-        end
+		CurrentlyPaused = false
+	end
 
-        CurrentlyPaused = true
-    end
-
-    function EventSequenceInstance.Resume()
-        if not PlayingTrove then
-            return
-        end
-
-        CurrentlyPaused = false
-    end
-
-    return EventSequenceInstance
+	return EventSequenceInstance
 end
 
-function EventSequence:__index(Index : string)
-    if Index == "__SEAM_OBJECT" then
-        return ClassSymbol
-    elseif Index == "__SEAM_CAN_BE_SCOPED" then
-        return true
-    else
-        return nil
-    end
-end
-
-local Meta = setmetatable({}, EventSequence)
-
-return Meta :: EventSequence
+return Compiler.CompileConstructor(EventSequence) :: Types.EventSequence
