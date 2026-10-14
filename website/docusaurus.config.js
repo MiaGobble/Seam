@@ -19,16 +19,13 @@ const config = {
     v4: true, // Improve compatibility with the upcoming Docusaurus v4
   },
 
-  // Set the production url of your site here
-  url: 'https://seaminterface.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
+  // Custom domain on GitHub Pages
+  url: 'https://seam.igottic.com',
   baseUrl: '/',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'MiaGobble', // Usually your GitHub org/user name.
-  projectName: 'Seam', // Usually your repo name.
+  organizationName: 'MiaGobble',
+  projectName: 'Seam',
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
