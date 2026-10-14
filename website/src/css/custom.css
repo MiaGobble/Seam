@@ -1,0 +1,373 @@
+/* Full-site forced dark theme
+   - Background: #121212
+   - Foreground (UI, icons, headings, buttons): #E6E6E6
+   - Body text: #C2C2C2
+   Backup of previous content is in custom.css.bak
+*/
+
+/* Infima / Docusaurus variables to match dark theme */
+:root {
+  --ifm-color-primary: #E6E6E6;
+  --ifm-color-primary-contrast: #121212;
+  --ifm-color-secondary: #C2C2C2;
+  --ifm-font-color-base: #C2C2C2;
+  --ifm-font-color-heading: #E6E6E6;
+  --ifm-background-color: #121212;
+  --ifm-background-surface: #141414;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.03);
+}
+
+/* Ensure dark color mode variables are set */
+[data-theme='dark'] {
+  --ifm-color-primary: #E6E6E6;
+  --ifm-color-primary-contrast: #121212;
+  --ifm-font-color-base: #C2C2C2;
+  --ifm-font-color-heading: #E6E6E6;
+}
+
+/* Base page background and text */
+html, body, #__docusaurus, .docusaurus-wrapper {
+  background-color: #121212 !important;
+  color: #C2C2C2;
+}
+
+/* Global foreground used for headings, important UI, icons */
+h1, h2, h3, h4, h5, h6, strong, .navbar__brand, .navbar__items a {
+  color: #E6E6E6 !important;
+}
+
+/* Load Roboto for body/buttons (heavy), Georgia will be used for headings (system serif) */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+/* Links and interactive text - inherit color by default; underline removed globally */
+a, a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Buttons and primary controls — make them visible on dark bg */
+.button, .infima-btn, button, input[type="button"], input[type="submit"] {
+  background-color: transparent !important;
+  color: #E6E6E6 !important;
+  border: 0px solid rgba(230,230,230,0.08) !important;
+}
+
+/* Panels, cards, code blocks */
+.card, .infima-card, .infima-hero, .infima-sidebar {
+  background-color: #131313 !important;
+  border-color: rgba(255,255,255,0.03) !important;
+}
+
+/* Normalize code block sizing and remove unexpected top gaps that can be caused
+   by pseudo-elements, copy buttons, or wrappers. Keep high contrast for code. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+pre, code, .prism-react-renderer, .theme-code-block, .theme-code-block pre {
+  background-color: #0f0f0f !important;
+  /* Do NOT force a color here — Prism token colors must be allowed to show.
+     Setting color with !important here prevented inline token colors from appearing. */
+  margin: 0 !important;
+  padding: 0.75rem !important; /* reasonable inner padding */
+  border-radius: 0 !important;
+  line-height: 1.45 !important;
+}
+
+/* Some Docusaurus/Infima wrappers add an extra pseudo-element for a copy button
+   or a language label. Make sure those do not create extra layout space above
+   the code block. If they exist, absolutely position them inside the pre. */
+.theme-code-block .code-block-copy-button,
+.theme-code-block .code-block-language,
+.prism-block .code-block-copy-button,
+.prism-block .code-block-language,
+.prism-react-renderer .copy-button {
+  position: absolute !important;
+  top: 0.4rem !important;
+  right: 0.4rem !important;
+  margin: 0 !important;
+  transform: translateY(0) !important;
+}
+
+/* Ensure pre wrappers are positioned relatively so absolutely positioned
+   copy buttons don't shift the document flow (which can create blank space). */
+pre, .theme-code-block, .prism-react-renderer {
+  position: relative !important;
+}
+
+/* Remove any ::before/::after content that some themes add above code blocks */
+pre::before, pre::after, code::before, code::after, .theme-code-block::before, .theme-code-block::after {
+  content: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+/* Navbar and footer tweaks */
+.navbar, .navbar__inner, .navbar__items {
+  background-color: #121212 !important; /* make navbar opaque to cover underlying whitespace */
+  backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+.footer {
+  background-color: #101010 !important;
+  color: #C2C2C2 !important;
+}
+
+/* Search bar, input placeholders */
+input, textarea, select {
+  background-color: #141414 !important;
+  color: #C2C2C2 !important;
+  border-color: rgba(255,255,255,0.04) !important;
+}
+
+::placeholder {
+  color: rgba(194,194,194,0.7) !important;
+}
+
+/* Focus outlines for accessibility */
+:focus {
+  outline: 2px solid rgba(230,230,230,0.12) !important;
+  outline-offset: 2px !important;
+}
+
+/* Make logo images visible on dark background if they are dark themselves */
+.navbar__brand img, .logo, .hero img {
+  filter: none !important;
+}
+
+/* Small screens: ensure sufficient contrast for mobile nav */
+@media (max-width: 768px) {
+  .navbar__items a {
+    color: #E6E6E6 !important;
+  }
+}
+
+
+/* --- Fixes requested by user --- */
+
+/* Remove underlines site-wide (restore where semantically necessary via component-specific rules) */
+a, a:visited, .navbar__link, .sidebar a, .sidebarItemList_Yudw a {
+  text-decoration: none !important;
+}
+
+/* Remove random underlines on elements that might receive them */
+.hero a, .theme-doc-markdown a, .navbar__item, .sidebarItem__D a {
+  text-decoration: none !important;
+}
+
+/* Sidebar should sit below the fixed top navbar (allowing ~64px for navbar). Use margin instead of padding to avoid layout shifts above nav. */
+.sidebar_re4s, .thin-scrollbar, .theme-doc-sidebar-container, aside .sidebar_re4s {
+  margin-top: 0 !important;
+  padding-top: 0px !important; /* reduce to 0px so it aligns properly under navbar */
+  box-sizing: border-box;
+}
+
+/* Also ensure sticky headings and anchor offsets account for navbar height */
+.anchorWithStickyNavbar_LWe7 {
+  scroll-margin-top: 88px;
+}
+
+/* Ensure sidebar link styling isn't underlined and uses the bright foreground */
+.sidebar_re4s a, .sidebarItemList_Yudw a, .sidebarItem__D a {
+  color: #E6E6E6 !important;
+  text-decoration: none !important;
+}
+
+/* If there are still underlines coming from SVG/text-decoration rules, force none */
+[class*="__link"], [class*="-link"] {
+  text-decoration: none !important;
+}
+
+/* --- Fonts and button styles per request --- */
+/* Headings use Georgia (system serif) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+/* Body and normal text use Roboto */
+body, .theme-doc-markdown, p, li, td, th {
+  font-family: 'Roboto', Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Make all buttons square (no rounding) and use Roboto heavy */
+.infima-btn, button, input[type="button"], input[type="submit"], [class^="button_"] {
+  border-radius: 0 !important;
+  font-family: 'Roboto', Roboto, sans-serif !important;
+  font-weight: 900 !important; /* heaviest for buttons */
+}
+
+/* Default/normal button appearance: dark background (#242424) with light text */
+.infima-btn, button, input[type="button"], input[type="submit"], [class^="button_"] {
+  background-color: #242424 !important;
+  color: #E6E6E6 !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* Focused/important buttons: white background with black text (use .buttonPrimary or hero-specific buttons) */
+.buttonPrimary, .hero [class^="button_"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+/* Ensure the front-page button (module class) remains white/black: target anchor classes starting with 'button_' inside hero */
+.hero a[class^="button_"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  border-radius: 0 !important;
+}
+
+/* Sidebar collapse / expand buttons: remove filled background and heavy outlines, keep keyboard focus visible but subtle */
+button.expandButton_TmdG, .expandButton_TmdG, .collapseSidebarButton_PEFL, .expandButtonIcon_i1dp, .collapseSidebarButton_PEFL {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #E6E6E6 !important;
+}
+
+/* Menu caret and category collapse controls (the small arrows) */
+.menu__caret, button.menu__caret, .clean-btn.menu__caret {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #E6E6E6 !important;
+}
+
+/* Docs prev/next pagination links - remove heavy outlines/background but keep an accessible focus indicator */
+.pagination-nav__link, .pagination-nav__item a {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #E6E6E6 !important;
+}
+
+.pagination-nav__link:focus, .pagination-nav__item a:focus {
+  outline: 2px dashed rgba(230,230,230,0.12) !important;
+  outline-offset: 3px !important;
+}
+
+/* TOC collapsible toggle button */
+.tocCollapsibleButton_TO0P, button.tocCollapsibleButton_TO0P {
+  background: transparent !important;
+  border: none !important;
+  color: #E6E6E6 !important;
+}
+
+/* Remove outlines that remain after clicking (mouse interaction) while keeping keyboard focus visible via :focus-visible */
+button:focus, a:focus, .infima-btn:focus, .button:focus, .pagination-nav__link:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep clear keyboard focus only for keyboard users */
+:focus-visible {
+  outline: 2px solid rgba(230,230,230,0.14) !important;
+  outline-offset: 2px !important;
+}
+
+/* Center footer content and lists */
+.footer, .footer .footer__links, .footer .footer__links .footer__link-items, .footer .container {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center !important; */
+  text-align: center;
+}
+
+.footer .footer__links .footer__link-items ul {
+  padding: 0 !important;
+  margin: 0.4rem 0 !important;
+}
+
+/* Docs page / api: style buttons inside markdown to match site buttons (no outline, dark background, square) */
+.theme-doc-markdown button, .theme-doc-markdown .button, .theme-doc-markdown a.button, .theme-doc-markdown a.buttonSecondary, .theme-doc-markdown .infima-btn {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: #242424 !important;
+  color: #E6E6E6 !important;
+  border-radius: 0 !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+}
+
+/* Remove outline on :active/click for markdown buttons specifically */
+.theme-doc-markdown button:active, .theme-doc-markdown a.button:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Place footer content at top center of footer area (center-top) */
+.footer {
+  align-items: flex-start !important; /* vertical: top */
+  justify-content: center !important; /* horizontal: center */
+  padding-top: 1.25rem !important;
+}
+
+/* Ensure footer link rows wrap nicely on small screens */
+@media (min-width: 768px) {
+  .footer .footer__links {
+    flex-direction: row !important;
+    gap: 2.5rem !important;
+  }
+}
+
+/* Page transition: fade + slight zoom on route changes */
+.route-transition-outer {
+  /* Prevent overflow during animation */
+  overflow: visible;
+}
+
+.route-transition-wrapper {
+  /* No default animation: only play when explicitly enabled by Root via
+     .route-transition-full or .route-transition-docInner on the outer wrapper. */
+  animation: none;
+  transform-origin: top center;
+}
+
+@keyframes fadeZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.995) translateY(6px);
+  }
+  /* 60% {
+    opacity: 0.6;
+    transform: scale(0.99) translateY(0);
+  } */
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Full-page transition only when swapping between site roots (home, api, blog) */
+.route-transition-outer.route-transition-full > .route-transition-wrapper {
+  animation: fadeZoomIn 320ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+/* Docs inner content transition when navigating between docs pages. We target the
+   docs content area (.theme-doc-markdown inside main) so the sidebar remains steady. */
+.route-transition-outer.route-transition-docInner .theme-doc .theme-doc-main-content,
+.route-transition-outer.route-transition-docInner .theme-doc .theme-doc-markdown,
+.route-transition-outer.route-transition-docInner .theme-doc .markdown,
+.route-transition-outer.route-transition-docInner .theme-doc .theme-doc-content {
+  /* Broaden selectors to match different theme variations. Use !important so
+     these run even if other CSS is applied to these elements. */
+  animation: fadeZoomIn 260ms ease-out both !important;
+  transform-origin: top center !important;
+}
+
+/* Respect reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+  .route-transition-wrapper,
+  .route-transition-outer.route-transition-docInner .theme-doc .theme-doc-main-content,
+  .route-transition-outer.route-transition-docInner .theme-doc .theme-doc-markdown {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+
+

@@ -1,0 +1,8 @@
+{
+  "label": "Declarations",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Make, hydrate, and modify instances."
+  }
+}
