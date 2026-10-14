@@ -3,7 +3,7 @@ sidebar_position: 6
 ---
 
 # FollowAttribute
-Tracks attribute changes and propagates updated userdata to states.
+One-way sync from an instance attribute into a Seam value state.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -15,16 +15,16 @@ Tracks attribute changes and propagates updated userdata to states.
 ```
 
 ## Usage
-Similarly to `FollowProperty()`, it as a constructor index; declare `FollowAttribute()` with a string parameter matching the attribute name you want followed, and set the value to the value you want updated.
+When the named attribute changes, the provided `Value` is updated. Changes to the state do **not** write back to the attribute.
 
 ```lua
 local NumApples = Value(0)
 
 New(MyObject, {
-   [FollowAttribute "Apples"] = NumApples, -- When the "Apples" attribute changes, NumApples updates
+	[FollowAttribute "Apples"] = NumApples,
 })
 
-MyObject:SetAttribute("Apples", 5) -- Updates NumApples to 5 as well
+MyObject:SetAttribute("Apples", 5) -- NumApples becomes 5
 ```
 
-Whenever the attached state changes, the attribute does not change. Instead, the way this works is that the attribute changes get reflected into the state value, meaning that using `Instance:SetAttribute()` will trigger the change and any reactivity to it.
+There is no initial sync on attach — only subsequent attribute-changed signals update the state. Returns a cleanup function; the binding also has `Destroy()`.

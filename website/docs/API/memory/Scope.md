@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 
 # Scope
-A core memory manager in Seam
+A memory manager that owns Seam objects and cleans them up together.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,54 +11,101 @@ A core memory manager in Seam
 
 ## Constructor
 ```lua
-Scope {[ObjectName : string] = Object : SeamScopableObject}
+Scope(ScopedObjects : {[string] : SeamScopableObject}) -> Scope
 ```
 
-## Methods
-#### `InnerScope() -> Scope`
-Returns an inner scope, which a sub-scope derived from the main scope.
+Pass a table of Seam constructors (or the whole `Seam` module) to make those APIs available on the scope as methods. Only objects marked as scopable can be included.
 
-#### `Destroy() -> nil`
-Destroys the scope and cleans up all descendants.
+## Methods
+#### `New(Class, Properties) -> Instance`
+Scoped version of `New`. The scope is passed into components as their first argument.
+
+#### `Value(InitialValue) -> Value`
+#### `Computed(Callback) -> Computed`
+#### `ForPairs(TrackedValue, Callback) -> ForPairs`
+#### `Resource(Callback) -> Resource`
+#### `Bezier(Alpha, Origin, Midpoint, Target) -> Bezier`
+#### `Spring(Target, Speed, Dampening) -> Spring`
+#### `Tween(Target, TweenInfo) -> Tween`
+#### `Rendered(Callback) -> Rendered`
+#### `OnChanged(Object, Callback) -> RBXScriptConnection`
+#### `OnAttributeChanged(AttributeName) -> Binding`
+#### `OnEvent(EventName) -> Binding`
+#### `OnAttached(Object, Callback) -> RBXScriptConnection`
+
+Each of the above mirrors the global API. Return values are registered on the scope and destroyed with it.
+
+#### `InnerScope(ScopedObjects?) -> Scope`
+Creates a child scope. If `ScopedObjects` is omitted, the child inherits the parent's scoped constructors. Extra keys in `ScopedObjects` override parent keys. The child is owned by the parent bucket.
+
+#### `AddObject(Object) -> Object`
+Manually registers an object (instance, connection, Seam object, etc.) for cleanup.
+
+#### `RemoveObject(Object)`
+Removes an object from the scope bucket without destroying the scope.
+
+#### `CleanInnerScopes()`
+Destroys every nested scope created with `InnerScope` and removes them from the bucket.
+
+#### `Destroy()`
+Destroys the scope and cleans up everything in its bucket. Destroying an inner scope also removes it from its parent. Calling methods on a destroyed scope warns and no-ops.
 
 ## Usage
-`Scope` is a janitor-like organization object that groups instances together. Anything created with a Scope-declared Seam object will be cleaned up when the scope itself is destroyed.To make a scope, you declare what Seam objects you want to include. Be weary that an object must be marked as scopable, otherwise you will get an error.
+Create a scope with the constructors you need:
 
 ```lua
 local MyScope = Scope {
-    New = New,
-    Spring = Spring,
-    Computed = Computed,
-    -- etc
+	New = New,
+	Value = Value,
+	Computed = Computed,
+	Spring = Spring,
 }
 ```
 
-You can also create a generic scope, inheriting all methods, like this:
+Or inherit everything from Seam:
 
 ```lua
 local MyScope = Scope(Seam)
 ```
 
-In this example, you can make an object with the scope by calling `Scope:New`:
+Anything created through the scope is cleaned up when the scope is destroyed:
 
 ```lua
-local MyGui = MyScope:New("ScreenGui", {
-    -- Properties like normal
+local Gui = MyScope:New("ScreenGui", {
+	Parent = PlayerGui,
 })
+
+local Position = MyScope:Value(0)
+local Springed = MyScope:Spring(Position, 20, 1)
+
+MyScope:New("Frame", {
+	Parent = Gui,
+	Position = Computed(function(Use)
+		return UDim2.fromScale(Use(Springed), 0)
+	end),
+})
+
+-- Later:
+MyScope:Destroy() -- Gui, Position, Springed, and connections are cleaned up
 ```
 
-Let’s continue this example. Let’s say we want to create a child group of frames. To do so, we can call `InnerScope()`:
+Use `InnerScope` for temporary subgroups:
 
 ```lua
 local FramesScope = MyScope:InnerScope()
+
+FramesScope:New("Frame", {
+	Parent = Gui,
+})
+
+FramesScope:Destroy() -- Only cleans the inner group
+-- Or:
+MyScope:CleanInnerScopes() -- Destroys all inner scopes
 ```
 
-And we can use it the same way:
+Plain functions placed in the scope table receive the scope as their first argument. Manual ownership is available when something was not created through a scoped method:
 
 ```lua
-local MyNewFrame = FramesScope:New("Frame", {
-    --- Properties like normal
-})
+MyScope:AddObject(SomeConnection)
+MyScope:RemoveObject(SomeConnection)
 ```
-
-If we want to clean up the frames in this example, we can call `FramesScope:Destroy()`. Alternatively, or in addition, we can also call `MyScope:Destroy()`.

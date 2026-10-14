@@ -3,7 +3,7 @@ sidebar_position: 3
 ---
 
 # Spring
-An animation state using the spring method
+An animation state that approaches a target using spring physics.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,51 +11,63 @@ An animation state using the spring method
 
 ## Constructor
 ```lua
-Spring(Target : Value | any, Speed : number, Dampening : number)
+Spring(
+	Target : Value | any,
+	Speed : Value | number,
+	Dampening : Value | number
+) -> Spring
 ```
+
+If `Target` is a Seam state, its changes automatically retarget the spring. `Speed` and `Dampening` may also be states and are read each frame.
 
 ## Properties
 #### `Value : any`
-The position of the spring.
+Current spring position. Writable; assigning snaps the start position while keeping current velocity.
 
 #### `Velocity : any`
-The velocity of the spring.
+Current spring velocity. Readable and writable.
 
-#### `Target : Value | any`
-The target value that the spring position should reach.
+#### `Target : any`
+Write-only target. Assign to retarget; reading `.Target` is not supported.
 
-#### `Dampening : number`
-A value between 0 and 1 describing the friction of the spring. Going over 1 applies overdamping.
+#### `Speed : number | Value`
+Spring frequency. Readable and writable.
 
-#### `Speed : number`
-The speed of the spring.
+#### `Dampening : number | Value`
+Damping ratio. Readable and writable.
+- `0` — undamped
+- Between `0` and `1` — underdamped (bouncy)
+- `1` — critically damped
+- Greater than `1` — overdamped
 
 ## Events
 #### `Changed`
-Fired when `.Value` changes.
+Fired when `.Value` changes during simulation.
+
+#### `AttachedToInstance`
+Fired when bound to an instance property through `New`.
+
+## Methods
+#### `Destroy()`
+Stops simulation and cleans up.
 
 ## Usage
-Springs are animation objects that simulate hooke’s law in any Roblox type. There are four types of springs:- Undamped (dampening = 0)
-- Underdamped (1 > dampening > 0)
-- Critically damped (dampening = 1)
-- Overdamped (dampening > 1)Each of these provide different levels of simulated friction, with undampended being the least and overdamped being the most. Critically damped springs create just enough friction to have no “bounce”.Springs can be created on their own, like this:
-
 ```lua
-local Seam = require(ReplicatedFirst.Seam)
-local Spring = Seam.Spring
+local Goal = Value(0)
+local Motion = Spring(Goal, 30, 0.8)
 
-local MySpring = Spring(0, 30, 0.8)
+Goal.Value = 1 -- Retargets the spring
+
+-- Or set the target directly:
+Motion.Target = 0
 ```
 
-Or as a property of a hydrated Seam object, like this:
+Bind to properties:
 
 ```lua
-local Seam = require(ReplicatedFirst.Seam)
-local Spring = Seam.Spring
-
-local Object = New("Object", {
-    Position = Spring(0, 30, 0.8)
+New("Frame", {
+	Position = Spring(Goal, 25, 1),
 })
 ```
 
-Springs are a great way to do either bouncy or smooth animation, without having to declare a tween.
+Multi-component types such as `Vector3`, `UDim2`, and `Color3` are unpacked into per-channel springs. When settled within a small epsilon, the spring sleeps until the target or parameters change.

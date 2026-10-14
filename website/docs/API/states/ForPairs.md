@@ -3,7 +3,7 @@ sidebar_position: 6
 ---
 
 # ForPairs
-A reactive state that updates based on when other values update, similar to computed, but only updating for specific key changes.
+A reactive map over a table value that only recomputes entries whose keys changed.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,38 +11,60 @@ A reactive state that updates based on when other values update, similar to comp
 
 ## Constructor
 ```lua
-Computed(ReactiveValue : Value, CalculationFunction : (Use : (Value : Value) -> Value.Value, Index : any, Value: any) -> nil)
+ForPairs(
+	TrackedValue : Value,
+	Callback : (Use : (State | any) -> any, Index : any, EntryValue : any) -> any
+) -> ForPairs
 ```
 
+`TrackedValue` must resolve to a table.
+
 ## Properties
-#### `Value : any`
-The current value of the ForPairs state. Read-only.
+#### `Value : {[any] : any}`
+A table of per-key results. Read-only. Unchanged keys reuse their previous outputs.
+
+## Events
+#### `Changed`
+Fired when the mapped table changes. Inherited from the inner `Computed`.
+
+#### `AttachedToInstance`
+Fired when bound to an instance property through `New`.
+
+## Methods
+#### `Destroy()`
+Cleans up the underlying computed state.
 
 ## Usage
-`ForPairs` works just like computed behind the scenes, with the exception that only certain key changes will be triggered by index values in an array or dictionary value changes.
+`ForPairs` is built on `Computed`, but only re-runs the callback for indices whose source values changed. That makes it a better fit than a full `Computed` rebuild for inventories, grids, and other keyed collections.
 
-:::info 
+```lua
+local Numbers = Value({1, 2, 3})
 
-`ForPairs` is a better altnerative to `Computed` when re-computing similar arrays or dictionaries of data. For example, an inventory grid of items would benefit from this state, since `Computed` would force-computed every key, regardless of what changed specifically.
+local Doubled = ForPairs(Numbers, function(Use, Index, EntryValue)
+	return `{Index} = {EntryValue * 2}`
+end)
+
+print(Doubled.Value)
+-- {
+--   [1] = "1 = 2",
+--   [2] = "2 = 4",
+--   [3] = "3 = 6",
+-- }
+
+Numbers.Value = {4, 5, 6}
+
+print(Doubled.Value)
+-- {
+--   [1] = "1 = 8",
+--   [2] = "2 = 10",
+--   [3] = "3 = 12",
+-- }
+```
+
+:::info
+
+Prefer `ForPairs` over `Computed` when only some keys in a table change. A plain `Computed` rebuilds every entry on each update.
 
 :::
 
-To construct, the first argument should be a value object that is always a table, with the second argument being a calculation similar to what you use in `Computed`. In addition to `Use`, this callback also passes `Index` and `Value`.
-
-Rather than returning a final result calculation, you will only calculate on a per-value basis in the table.
-
-Here is an example:
-
-```lua
-local MyValue = Value({1, 2, 3})
-
-local TestState = ForPairs(MyValue, function(Use, Index, Value)
-    return `{Index} = {Value * 2}`
-end)
-
-print(TestState.Value) -- Prints "1 = 2, 2 = 4, 3 = 6"
-
-MyValue.Value = {4, 5, 6}
-
-print(TestState.Value) -- Prints "1 = 8, 2 = 10, 3 = 12"
-```
+The callback receives `Use` (same semantics as `Computed`), plus the current `Index` and `EntryValue` for that key.

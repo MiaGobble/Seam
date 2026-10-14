@@ -3,7 +3,7 @@ sidebar_position: 4
 ---
 
 # IsComponent
-Checks if a userdata value is a Seam component.
+Returns whether a value is a Seam component created with `Component`.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,18 +11,14 @@ Checks if a userdata value is a Seam component.
 
 ## Constructor
 ```lua
-IsComponent(CheckedObject : any)
+IsComponent(CheckedValue : any?) -> boolean
 ```
 
 ## Usage
-If you need to quickly check if a userdata is a component, use this. It can be used like so:
-
 ```lua
-local IsComponent = Seam.IsComponent
-
-local MyComponent = require(path.to.component) -- Assume this is a Seam component built with Component()
+local MyComponent = require(Path.To.Component) -- returned from Component(...)
 local NotComponent = {Foo = "Hi!"}
 
-print(IsComponent(MyComponent)) -- Prints true
-print(IsComponent(NotComponent)) -- Prints false
+print(IsComponent(MyComponent)) -- true
+print(IsComponent(NotComponent)) -- false
 ```

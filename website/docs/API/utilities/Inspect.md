@@ -3,29 +3,27 @@ sidebar_position: 8
 ---
 
 # Inspect
-Used for debugging changes to Seam states.
+Prints whenever a Seam state with a `Changed` signal updates.
 
 |Type|Since|Scoped|
 |----|-----|------|
-|Utility|0.3.3|No|
+|Utility|0.3.3|Yes|
 
 ## Constructor
 ```lua
-Inspect(State : any, DebugName : string)
+Inspect(State : State, DebugName : string) -> RBXScriptConnection
 ```
 
+`DebugName` is required.
+
 ## Usage
-`Inspect` is a utility function that prints whenever the associated state changes. It's best used for debugging.
-
-Example usage:
-
 ```lua
-local Value = Seam.Value
-local Inspect = Seam.Inspect
-
 local Test = Value("Started")
 
-Inspect(Test, "Test Value")
+local Connection = Inspect(Test, "Test")
 
-Test.Value = "Ended" -- Prints "SEAM_INSPECT | Test Value | Value changed to Ended"
+Test.Value = "Ended"
+-- Prints: SEAM_Test.Value = Ended
+
+Connection:Disconnect()
 ```

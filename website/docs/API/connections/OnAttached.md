@@ -3,7 +3,7 @@ sidebar_position: 4
 ---
 
 # OnAttached
-Used to track attribute changes in states or instances
+Fires when a Seam state is bound to an instance property through `New`.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,28 +11,20 @@ Used to track attribute changes in states or instances
 
 ## Constructor
 ```lua
-OnAttached(State : any, Callback : (AttachedInstance : Instance) -> nil)
+OnAttached(State : State, Callback : (AttachedInstance : Instance) -> ()) -> RBXScriptConnection
 ```
 
 ## Usage
-`OnAttached` is a highly specific connection that allows you to connect to when states attach to instances with `New`.
-
-It works like this:
+Connects to the state's `AttachedToInstance` signal. Reading a state or using `OnChanged` does **not** fire this — only binding the state as a property in `New` does.
 
 ```lua
-local New = Seam.New
-local Value = Seam.Value
-local OnAttached = Seam.OnAttached
-
 local MyState = Value(Color3.fromRGB(255, 0, 0))
 
 OnAttached(MyState, function(AttachedInstance)
-	print("Attached to: " .. AttachedInstance.Name)
+	print("Attached to:", AttachedInstance.Name)
 end)
 
-local MyInstance = New("Part", {
-	Color = MyState -- Because we set Color to MyState, OnAttached triggers and prints "Attached to: Part"
+New("Part", {
+	Color = MyState, -- Fires OnAttached
 })
 ```
-
-More specifically, `OnAttached` only uses the callback function when the associated state is used by something else in a reactive way. For example, reading a state value or using `OnChanged` will *not* trigger `OnAttached`, but using a state in `New` *will* trigger it.

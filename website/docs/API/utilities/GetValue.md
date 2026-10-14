@@ -3,7 +3,7 @@ sidebar_position: 2
 ---
 
 # GetValue
-Safely retrieves a value from any userdata, including states.
+Reads `.Value` from a Seam state, or returns the input as-is.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,25 +11,16 @@ Safely retrieves a value from any userdata, including states.
 
 ## Constructor
 ```lua
-GetValue(Value : any)
+GetValue(Input : any?) -> any?
 ```
 
 ## Usage
-`GetValue` is an alternative to reading `Value.Value`, since it allows you to safely read it in case you're using a different userdata type.
-
-To get a value from a value object, do something like this:
-
 ```lua
 local MyValue = Value(5)
 
-local MyNumber = GetValue(MyValue) -- Equals 5
+print(GetValue(MyValue)) -- 5
+print(GetValue("Banana")) -- "Banana"
+print(GetValue(nil)) -- nil
 ```
 
-In the below example, both variables sourced from `GetValue` will equate to "Banana":
-
-```lua
-local MyValue = Value("Banana")
-
-local X = GetValue(MyValue) -- Equals "Banana"
-local Y = GetValue("Banana") -- Equals "Banana"
-```
+Safe when the input might be either a state or a plain value.

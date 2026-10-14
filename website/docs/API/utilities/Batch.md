@@ -3,7 +3,7 @@ sidebar_position: 6
 ---
 
 # Batch
-Groups changed-signal emissions into a transaction window.
+Groups Seam changed-signal emissions into a transaction window.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,20 +11,20 @@ Groups changed-signal emissions into a transaction window.
 
 ## Callable Form
 ```lua
-Batch(Function : (...any) -> ...any, ...any) -> ...any
+Batch(Callback : (...any) -> ...any, ...any) -> ...any
 ```
+
+Wraps `Begin` / `End` around the callback. Errors are re-raised after the batch ends.
 
 ## Methods
 #### `Begin()`
-Starts a batch transaction.
+Starts (or nests) a batch transaction.
 
 #### `End()`
-Ends the current batch transaction and flushes queued emissions when the outermost transaction closes.
+Ends the current transaction. When the outermost batch closes, queued emissions flush. Calling `End` without a matching `Begin` errors.
 
 ## Usage
-`Batch` supports nested transactions. While a batch is active, changed emissions are queued and the last queued arguments for each signal win when the outermost transaction ends. The callable form wraps `Begin()` and `End()` around a function so you can batch a block without manual cleanup.
-
-Wrap multiple state writes in a batch when you want them to flush as one signal window.
+While a batch is active, Seam state `Changed` emissions are queued. Nested batches are supported. For each signal, the last queued arguments win when the outermost batch ends.
 
 ```lua
 Batch(function()
@@ -32,3 +32,14 @@ Batch(function()
 	MyValue2.Value = 20
 end)
 ```
+
+Or manually:
+
+```lua
+Batch.Begin()
+MyValue1.Value = 10
+MyValue2.Value = 20
+Batch.End()
+```
+
+Use `Batch` when updating many dependent states at once to avoid intermediate recomputes.

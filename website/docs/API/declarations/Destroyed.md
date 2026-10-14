@@ -3,7 +3,7 @@ sidebar_position: 11
 ---
 
 # Destroyed
-Fires a callback function when an instance hydrated or created with `New` gets destroyed.
+Runs a callback when an instance created or hydrated with `New` is destroyed.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,25 +11,18 @@ Fires a callback function when an instance hydrated or created with `New` gets d
 
 ## Constructor
 ```lua
-[Destroyed] = () -> nil
+[Destroyed] = () -> ()
 ```
 
 ## Usage
-`Destroyed` allows you to attach a callback function to an instance when it destroyed.
-
-It works like this:
-
 ```lua
-local New = Seam.New
-local Destroyed = Seam.Destroyed
-
 local Object = New("ScreenGui", {
-	[Destroyed]  = function()
+	[Destroyed] = function()
 		print("I've been destroyed!")
 	end,
 })
 
-Object:Destroy() -- Prints "I've been destroyed!"
+Object:Destroy() -- Prints once
 ```
 
-This is equivalent to connecting to `Instance.Destroying`
+Implemented with `Instance.Destroying:Once`, so the callback runs once when destruction begins.

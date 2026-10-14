@@ -3,66 +3,61 @@ sidebar_position: 12
 ---
 
 # EventSequence
-A sequence of value changes and custom callbacks that can be played/stopped/etc at any time.
+A playable sequence of timed callbacks.
 
 |Type|Since|Scoped|
 |----|-----|------|
-|Declaration|0.3.4|No|
+|Declaration|0.3.4|Yes|
 
 ## Constructor
 ```lua
 EventSequence({
-	{
-		Time : number,
-		Callback : () -> nil,
-	},
-
+	{ TimeDelta : number, Callback : () -> () },
 	-- ...
-})
+}) -> EventSequence
 ```
+
+Keyframes must be an array. Each entry is `{number, function}` — first the relative delay in seconds, then the callback. Dictionary keys error.
+
+## Properties
+#### `Looped : boolean`
+When `true`, the sequence restarts after the last keyframe. Defaults to `false`.
+
+#### `LoopDelayTime : number`
+Extra wait before looping, in seconds. Defaults to `0`.
 
 ## Methods
 #### `Play()`
-Plays the event sequence in order of times provided.
+Starts playback. If already playing, stops and restarts.
 
 #### `Stop()`
-Stops the playing event sequence.
+Stops playback and resets progress.
 
 #### `Pause()`
-Pauses the playing event sequence.
+Pauses while playing. No-op if not playing.
 
 #### `Resume()`
-Resumes the paused event sequence.
-
-#### `Looped`
-Setting `.Looped` to *true* will make sequences repeat after completion.
-
-#### `LoopDelayTime`
-Changes the amount of time to wait before looping (defaults to 0).
+Resumes a paused sequence. No-op if not playing.
 
 ## Usage
-`EventSequence` allows you to group timed callbacks with each other, and that group has methods to play and stop the sequence. This is particularly most helpful in applications such as complex animation, since it allows you to change values at time intervals.
-
-Here is an example usage of this:
+Times are **relative deltas**, summed with previous keyframes:
 
 ```lua
-local EventSeqeuence = Seam.EventSequence({
-	{1, function() -- Waits one second, then runs
+local Sequence = Seam.EventSequence({
+	{1, function() -- After 1s
 		print("a")
 	end},
-	
-	{2, function() -- Waits two seconds (plus the one from before), then runs
+	{2, function() -- After 1 + 2 = 3s total
 		print("b")
 	end},
-	
-	{3, function() -- Waits three seconds (plus the three from before), then runs
+	{3, function() -- After 1 + 2 + 3 = 6s total
 		print("c")
 	end},
 })
 
-EventSeqeuence:Play()
+Sequence.Looped = true
+Sequence.LoopDelayTime = 0.5
+Sequence:Play()
 ```
 
-In an event sequence, you pass in an array of sequence keypoints. Each keypoint contains the following, ***in order***:
-* A time, in seconds, when the keypoint will play (ordered and relative)
-* A callback function for the keypoint
+Playback advances on Seam's frame-update signal (`RenderStepped` on the client, `Heartbeat` on the server).

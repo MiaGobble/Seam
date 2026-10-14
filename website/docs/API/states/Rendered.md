@@ -3,7 +3,7 @@ sidebar_position: 5
 ---
 
 # Rendered
-A reactive state that force-updates every frame
+A state that recomputes every frame on Seam's pre-update signal.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,25 +11,36 @@ A reactive state that force-updates every frame
 
 ## Constructor
 ```lua
-Rendered(CalculationFunction : (number) -> Value.Value) -> nil)
+Rendered(Callback : (DeltaTime : number) -> any) -> Rendered
 ```
 
 ## Properties
 #### `Value : any`
-The current value of the render. Read-only.
-## Usage
-Similar to `Computed()`, `Rendered()` acts as an ever-changing state. However, it does not include the `Use()` method, and instead can derive from any userdata. As such, it force-updates every `RunService.RenderStepped` and is not reactive.
+Latest callback result. Read-only. The first read forces one compute if the frame loop has not run yet.
 
-The function for it passes a single argument for `DeltaTime`.
+## Events
+#### `Changed`
+Fired each frame after the callback runs (when the value updates through the batching layer).
+
+#### `AttachedToInstance`
+Fired when bound to an instance property through `New`.
+
+## Methods
+#### `Destroy()`
+Disconnects the frame listener and cleans up.
+
+## Usage
+Unlike `Computed`, `Rendered` is not dependency-driven. It runs every frame on Seam's pre-update loop (`PreRender` on the client, `Heartbeat` on the server). `DeltaTime` is measured with `os.clock()` between those callbacks.
 
 ```lua
-local XPosition = 0
+local Angle = 0
 
-New(MyFrame, {
-    Position = Rendered(function(DeltaTime) -- Updates every frame
-        return UDim2.fromScale(XPosition, 0) -- Can react to any userdata
-    end)
+New(MyPart, {
+	CFrame = Rendered(function(DeltaTime)
+		Angle += DeltaTime
+		return CFrame.Angles(0, Angle, 0)
+	end),
 })
-
-XPosition = 0.5 -- Updates x position to 0.5, meaning rendered.value = UDim2.fromScale(0.5, 0)
 ```
+
+Use `Rendered` when you need continuous sampling of non-reactive data. Prefer `Computed` when updates should only happen because Seam states changed.

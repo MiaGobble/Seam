@@ -3,7 +3,7 @@ sidebar_position: 2
 ---
 
 # OnEvent
-Used to track any events in a Roblox instance
+Connects to a named Roblox instance event.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,30 +11,30 @@ Used to track any events in a Roblox instance
 
 ## Constructor
 ```lua
-[OnEvent(EventName : string)] = () -> nil
+OnEvent(EventName : string) -> Binding
+
+-- Embedded:
+[OnEvent(EventName)] = (...any) -> ()
+
+-- Standalone:
+OnEvent(EventName)(Instance, Callback) -> RBXScriptConnection
 ```
 
+## Methods (`Binding`)
+#### `Destroy()`
+Disconnects all active connections created by this binding.
+
 ## Usage
-`OnEvent` is an Seam index to be used in the New constructor. `OnEvent` detects a specified rbx event that could be fired.
-
-You can use it like so:
-
 ```lua
-local Object = New("ImageButton", {
-    -- Properties
+New("ImageButton", {
+	[OnEvent "Activated"] = function()
+		print("clicked")
+	end,
 
-    [OnEvent "Activated"] = function()
-        -- When the button is clicked, this function is called
-    end,
-
-    [OnEvent "MouseEnter"] = function()
-        -- When the mouse enters, this function is called
-    end,
-
-    [OnEvent "MouseLeave"] = function()
-        -- When the mouse leaves, this function is called
-    end,
+	[OnEvent "MouseEnter"] = function()
+		print("enter")
+	end,
 })
 ```
 
-`OnEvent` essentially gets the event from the instance and connects to it. For example, `OnEvent "Activated` is equivalent to `Instance.Activated:Connect()`.
+Equivalent to `Instance[EventName]:Connect(Callback)`. Rebinding the same event on the same instance replaces the previous connection. Call `Destroy()` on the binding to disconnect everything it owns.

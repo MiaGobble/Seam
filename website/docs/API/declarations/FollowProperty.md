@@ -3,7 +3,7 @@ sidebar_position: 5
 ---
 
 # FollowProperty
-Tracks property changes and propagates updated userdata to states.
+One-way sync from an instance property into a Seam value state.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -15,16 +15,16 @@ Tracks property changes and propagates updated userdata to states.
 ```
 
 ## Usage
-Using it as a constructor index, declare `FollowProperty()` with a string parameter matching the property name you want followed, and set the value to the value you want updated.
+When the named property changes on the instance, the provided `Value` is updated. Changes to the state do **not** write back to the property.
 
 ```lua
 local CurrentColor = Value(Color3.fromRGB(255, 255, 255))
 
-New(MyObject, {
-   [FollowProperty "Color3"] = CurrentColor, -- When Color3 property updates, it will set CurrentColor to the new value
+New(MyPart, {
+	[FollowProperty "Color"] = CurrentColor,
 })
 
-MyObject.Color3 = Color3.fromRGB(50, 50, 50) -- This will be reflected in CurrentColor
+MyPart.Color = Color3.fromRGB(50, 50, 50) -- CurrentColor updates
 ```
 
-Whenever the attached state changes, the property does not change. Instead, the way this works is that the property changes get reflected into the state value, meaning that using `Instance.xyz = abc` will trigger the change and any reactivity to it.
+There is no initial sync on attach — only subsequent property-changed signals update the state. Returns a cleanup function; the binding also has `Destroy()` to disconnect all tracked instances.

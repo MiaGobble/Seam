@@ -3,7 +3,7 @@ sidebar_position: 2
 ---
 
 # Computed
-A reactive state that updates based on when other values update
+A reactive state that recomputes when dependencies used inside its callback change.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,44 +11,52 @@ A reactive state that updates based on when other values update
 
 ## Constructor
 ```lua
-Computed(CalculationFunction : (Use : (Value : Value) -> Value.Value) -> nil)
+Computed(Callback : (Use : (State | any) -> any) -> any) -> Computed
 ```
 
 ## Properties
 #### `Value : any`
-The current value of the compute state. Read-only.
+The latest computed result. Read-only. The first read runs the callback if it has not run yet.
+
+## Events
+#### `Changed`
+Fired when the computed result changes. Connecting to `Changed` also triggers the first computation if needed.
+
+#### `AttachedToInstance`
+Fired when this state is bound to an instance property through `New`.
+
+## Methods
+#### `Destroy()`
+Disconnects dependency listeners and cleans up the state.
 
 ## Usage
-`Computed` acts as a state that is updated every frame. For example, if you want the x-position of a frame instance to be based on a number value, then you can do:
+`Computed` does **not** update every frame. It recomputes when a dependency you read through `Use` fires `Changed`.
+
+`Use(state)` both reads the current value and subscribes to that state. Passing a non-state through `Use` returns the value via `GetValue` without subscribing.
 
 ```lua
 local XPosition = Value(0)
 
-New(MyFrame, {
-    Position = Computed(function(Use) -- Updates when XPosition changes
-        return UDim2.fromScale(Use(XPosition), 0)
-    end)
-})
-
-XPosition.Value = 0.5 -- Updates x position to 0.5, meaning compute.value = UDim2.fromScale(0.5, 0)
-```
-
-Computeds can be created on their own, like this:
-
-```lua
-local MyComputation = Computed(function(Use)
-    return UDim2.fromScale(Use(XPosition), 0)
+local Position = Computed(function(Use)
+	return UDim2.fromScale(Use(XPosition), 0)
 end)
+
+print(Position.Value) -- UDim2.fromScale(0, 0)
+
+XPosition.Value = 0.5 -- Position recomputes
+print(Position.Value) -- UDim2.fromScale(0.5, 0)
 ```
 
-Or embedded like this:
+Bind it directly in `New`:
 
 ```lua
 New(MyFrame, {
-    Position = Computed(function(Use)
-        return UDim2.fromScale(Use(XPosition), 0)
-    end)
+	Position = Computed(function(Use)
+		return UDim2.fromScale(Use(XPosition), 0)
+	end),
 })
 ```
 
-When you get a state's value with `Use`, you are telling the `Computed` instance to update anytime that read value updates. `Computed` will *not* react to values that are not wrapped with `Use`.
+Dependencies are tracked per recompute. If a branch stops calling `Use` on a state, that subscription is dropped.
+
+Only values wrapped in `Use` create reactivity. Reading `SomeState.Value` inside the callback does not subscribe.

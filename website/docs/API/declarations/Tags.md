@@ -3,7 +3,7 @@ sidebar_position: 10
 ---
 
 # Tags
-Adds `CollectionService` tags to an instance.
+Adds CollectionService tags to an instance.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -15,16 +15,10 @@ Adds `CollectionService` tags to an instance.
 ```
 
 ## Usage
-`Tags` is an easy way of adding `CollectionService` tags to an instance you are creating or hydrating with `New`.
-
-It must be an index in `New`'s properties, like so:
-
 ```lua
-local NewObject = New(Object, {
-    [Tags] = {"X", "Y", "Z"} -- Adds "X", "Y", and "Z" CollectionService tags to Object
-
-    -- Other properties, etc...
+New(Object, {
+	[Tags] = {"X", "Y", "Z"},
 })
 ```
 
-An equivalent to the above example would be to call `Instance:AddTag()` for each of the provided strings.
+Equivalent to calling `Instance:AddTag` for each string. Returns a cleanup function that removes those tags again when hydration/scope teardown runs the returned cleanup.

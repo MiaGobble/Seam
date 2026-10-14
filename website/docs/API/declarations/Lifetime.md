@@ -3,7 +3,7 @@ sidebar_position: 4
 ---
 
 # Lifetime
-Forces new and hydrated instances to be temporary.
+Schedules automatic destruction of an instance after a delay.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -15,12 +15,10 @@ Forces new and hydrated instances to be temporary.
 ```
 
 ## Usage
-Usage is simple; when using `New()`, set an index to `[Lifetime]`, with a value equal to the lifetime in seconds.
-
 ```lua
 New(MyObject, {
-    [Lifetime] = 5 -- Delete after 5 seconds
+	[Lifetime] = 5, -- Destroy after 5 seconds
 })
 ```
 
-Behind the scenes this is just using `Debris:AddItem()`, which will guarantee cleanup.
+Uses `Debris:AddItem` internally.

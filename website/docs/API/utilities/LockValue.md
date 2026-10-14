@@ -3,7 +3,7 @@ sidebar_position: 5
 ---
 
 # LockValue
-Locks a Seam value state, disconnecting it from the reactive backend and preventing future writes.
+Permanently locks a `Value` state against future writes.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,25 +11,20 @@ Locks a Seam value state, disconnecting it from the reactive backend and prevent
 
 ## Constructor
 ```lua
-LockValue(Value : Seam.ValueInstance)
+LockValue(Value : Value)
 ```
 
-## Usage
-This utility locks a Seam value state. Upon doing so, the following happen:
-* All reactivity relating to the value is removed
-* All future writes to `Value.Value` will throw an error
+Only `Value` states can be locked. Locking is irreversible.
 
-Here is an example of this in action:
+## Usage
+Sets an internal lock flag and destroys the value's reactive backend. Afterward, assigning `.Value` errors.
 
 ```lua
-local Value = Seam.Value
-local LockValue = Seam.LockValue
+local MyValue = Value("Peach")
 
-local MyTestValue = Value("Peach")
+MyValue.Value = "Starfruit" -- Ok
 
-MyTestValue.Value = "Starfruit" -- No error
+LockValue(MyValue)
 
-LockValue(MyTestValue)
-
-MyTestValue.Value = "Kiwi" -- Throws an error, it's locked
+MyValue.Value = "Kiwi" -- Errors: locked
 ```

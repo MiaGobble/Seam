@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 
 # SetValue
-Safely sets a value for a state, then returns it.
+Assigns `.Value` on a state-like table when possible, and returns the new value.
 
 |Type|Since|Scoped|
 |----|-----|------|
@@ -11,16 +11,15 @@ Safely sets a value for a state, then returns it.
 
 ## Constructor
 ```lua
-SetValue(Value : ValueObject, NewValue : any?)
+SetValue(State : any?, NewValue : any?) -> any?
 ```
 
 ## Usage
-`SetValue` is an alternative to setting `Value.Value` that returns the value you set. It also does not error if you try to set another userdata, but it will not change random userdata.
-
-Below is an example usage:
-
 ```lua
 local MyValue = Value(1000)
 
-local NewValue = SetValue(MyValue, 1001) -- NewValue is 1001, and MyValue.Value is also equal to 1001
+local Result = SetValue(MyValue, 1001)
+-- Result == 1001, MyValue.Value == 1001
 ```
+
+If `State` is `nil`, returns `NewValue` unchanged. If `State` is a table with a `.Value` field, that field is assigned. Non-state userdata is left alone and `NewValue` is still returned.

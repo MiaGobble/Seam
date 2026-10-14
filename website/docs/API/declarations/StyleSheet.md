@@ -5,8 +5,6 @@ sidebar_position: 8
 # StyleSheet
 A reversible declaration for applying style rules to instances and descendants.
 
-`StyleSheet` gives Seam a native way to describe visual rules separately from instance creation. You define selectors, assign properties to each selector, and then pass the stylesheet into `New` with `[Seam.StyleSheet] = Theme` when the tree is being created. Seam applies the rules while building the instance tree and restores the original property values later if the stylesheet is unapplied.
-
 |Type|Since|Scoped|
 |----|-----|------|
 |Declaration|v1.0.0|No|
@@ -17,70 +15,77 @@ StyleSheet.new() -> StyleSheetInstance
 StyleSheet.group(Stylesheets : {[any]: StyleSheetInstance}) -> StyleSheetGroup
 ```
 
-## Methods
-#### `Style(selector : string)(properties : {[any] : any})`
-Adds a style rule to the stylesheet. The selector decides which instances match, and the properties table defines what gets changed on each match.
+## Callable Form
+```lua
+[StyleSheet] = StyleSheetInstance | { { Selector : string, Properties : {[any] : any} }, ... }
+[StyleSheetGroup] = Key
+```
 
-#### `Apply(root : Instance)`
-Applies the stylesheet to the given instance tree. Existing matching instances are updated immediately, and descendants added later are also tracked.
+## Methods (`StyleSheetInstance`)
+#### `Style(Selector : string)(Properties : {[any] : any})`
+Adds a rule. Selector forms:
+- `"Frame"` — class name
+- `"@Name"` — exact instance name
+- `"#Tag"` — CollectionService tag
+- `"$Prefix"` — name starts with prefix
+- `"Suffix$"` — name ends with suffix
 
-#### `Unapply(root : Instance)`
-Removes the stylesheet from the given instance tree and restores tracked values to what they were before the stylesheet touched them.
+#### `Apply(Root : Instance)`
+Applies rules to `Root` and descendants. Replaces any previously active stylesheet on that root. Auto-unapplies when the root is destroyed. Tracks newly added descendants.
+
+#### `Unapply(Root : Instance)`
+Removes the stylesheet from the root and restores tracked property values.
 
 #### `Destroy()`
-Releases the stylesheet and any tracked connections.
+Unapplies from every root and clears rules.
 
 ## Usage
-Create a stylesheet when you want a reusable set of visual rules that can be applied as part of `New`.
+Create reusable themes and attach them during `New`:
 
 ```lua
--- Create a stylesheet object that can store multiple selector rules.
 local Theme = Seam.StyleSheet.new()
 
--- Match every Frame in the tree and apply shared base styling.
 Theme:Style("Frame")({
-	BackgroundColor3 = Color3.fromRGB(30, 30, 30), -- Dark background for all frames.
-	BorderSizePixel = 0, -- Remove the default border.
+	BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+	BorderSizePixel = 0,
 })
 
--- Match a specific instance name and override just that target.
 Theme:Style("@Title")({
-	TextColor3 = Color3.fromRGB(255, 255, 255), -- Make the title readable on the dark theme.
+	TextColor3 = Color3.fromRGB(255, 255, 255),
 })
 
--- Apply the stylesheet during construction.
 local ScreenGui = New("ScreenGui", {
 	Parent = PlayerGui,
 	[Seam.StyleSheet] = Theme,
 })
 ```
 
-Use `Seam.StyleSheet.group(...)` when you want several stylesheets to behave like one declaration target inside `New`.
+Inline rule arrays also work:
 
 ```lua
--- Create two separate stylesheets for different concerns.
-local BaseTheme = Seam.StyleSheet.new()
-local AccentTheme = Seam.StyleSheet.new()
+New("ScreenGui", {
+	[Seam.StyleSheet] = {
+		{
+			Selector = "TextLabel",
+			Properties = {
+				TextColor3 = Color3.new(1, 1, 1),
+			},
+		},
+	},
+})
+```
 
--- Group them so one declaration key can reference both.
+Groups require an explicit key — do not pass a group through `[Seam.StyleSheet]`:
+
+```lua
 local ThemeGroup = Seam.StyleSheet.group({
 	Base = BaseTheme,
 	Accent = AccentTheme,
 })
 
 New(ScreenGui, {
-	-- Attach the grouped stylesheets using a single declaration key.
-	[ThemeGroup] = "Base",
+	[ThemeGroup] = "Base", -- Key must exist in the group table
 })
 ```
 
-`Theme:Apply(root)` still exists for applying a stylesheet after the fact, especially when the root instance tree already exists. `Unapply(root)` removes it again and restores the previous values.
-
-`StyleSheet` selectors match against instances using these forms:
-- `"Frame"` matches by class name
-- `"@Name"` matches an exact instance name
-- `"#Tag"` matches a CollectionService tag
-- `"$Prefix"` matches names that start with the prefix
-- `"Suffix$"` matches names that end with the suffix
-
-`StyleSheet` tracks original property values and restores them on unapply. It also watches descendants added or removed while it is applied, and it invokes declaration keys inside `Properties` when a key exposes `__SEAM_INDEX`.
+Rule `Properties` may include declaration keys (`Attribute`, `Children`, etc.). `Apply` can also be called later on an existing tree; only one stylesheet is active per root at a time.
