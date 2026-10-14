@@ -1,7 +1,13 @@
+--!strict
+
+const InstanceTypeMap = require(script.Parent.InstanceTypeMap)
+
 -- Primitives
 export type BaseState<T> = {
 	Value : T,
 }
+
+type LiteralString = string | ""
 
 export type Child = Instance | BaseState<any> | {[unknown] : Child}
 export type ConstructorDecompiled = {__CALLBACK : (...any) -> any} & {[string] : any}
@@ -27,8 +33,90 @@ export type Lifetime = (object : Instance, cleanupTime : number) -> nil
 export type Destroyed = (object : Instance, callback : () -> nil) -> nil
 export type FollowProperty = (propertyName : string) -> (object : Instance, valueState : BaseState<any>) -> nil
 export type FollowAttribute = (attributeName : string) -> (object : Instance, valueState : BaseState<any>) -> nil
-export type NewConstructor = (class : string | Instance | (ScopeInstance?, {[any] : any}) -> any, properties : {[any] : any}) -> Instance
 export type Component = ({[any] : any}) -> (ScopeInstance?, {[string] : any}) -> any
+
+-- Aliases to allow usage in UDTF
+type fnIndex<T, U> = index<T, U>
+type fnKeyOf<T> = keyof<T>
+
+type Classes = InstanceTypeMap.Classes
+type ClassNames = InstanceTypeMap.ClassNames
+type InstanceAlias = Instance
+
+type function ResolveNewClass(class: type): (type)
+	const tag = class.tag
+	if tag == "extern" then
+		return class
+	elseif tag == "singleton" then
+		const exists, classType = pcall(fnIndex, Classes, class)
+		if exists then return classType end
+
+		print(`{class} isn't a registered class and can't be checked.\nAnnotate the class type to silence.`)
+		return InstanceAlias
+	elseif tag == "string" then
+		print(`Can't resolve class from string primitive, consider annotating the class.\nAnnotate as \`any\` to silence.`)
+		return InstanceAlias
+	elseif tag == "any" then
+		return InstanceAlias
+	else
+		--print(`Can't resolve class from {tag}type.`)
+		return InstanceAlias
+	end
+end
+
+type UsedAs<T> = T | BaseState<any> | (...any) -> (...any)
+type function NewProperties(tbl: type): (type)
+	const EXCLUDE = {
+		["ClassName"] = true,
+		["RobloxLocked"] = true,
+		["AbsolutePosition"] = true,
+		["AbsoluteRotation"] = true,
+		["AbsoluteSize"] = true,
+		["Localize"] = true,
+	}
+
+	-- Luau appears to infer an indexer for us, probably a bug, but it complains if we set the indexer ourselves.
+	const props = types.newtable()
+
+	local node = tbl
+	while node do
+		for keyType, rwType in node:properties() do
+			if EXCLUDE[keyType:value()] then continue end
+
+			const writeType = rwType.write
+
+			-- Filter out read-only members
+			-- LUAU FIXME: This doesn't work right now because there is no serialized distinction
+			-- between read-only and other members. Both read and write are always set.
+			if not writeType then continue end
+
+			-- Filter out methods
+			if writeType.tag == "function" then continue end
+
+			-- Account for overloads too
+			if writeType.tag == "intersection" and writeType:components()[1].tag == "function" then continue end
+
+			-- Filter out signals
+			if writeType.tag == "table" or writeType.tag == "extern" then
+				const exists = pcall(fnIndex, writeType, types.singleton("Connect"))
+				if exists then continue end
+			end
+
+			-- LUAU FIXME: subtyping doesn't work if we don't make it read-only
+			props:setreadproperty(keyType, types.optional(UsedAs(writeType)))
+		end
+
+		node = node:readparent()
+	end
+
+	return props
+end
+
+export type NewConstructor = <T>(
+	-- I don't know why but the typesolver refuses to work when LiteralString comes after ClassNames
+	class: T & (LiteralString | ClassNames | Instance | ((ScopeInstance?, {[any]: any}) -> (any))),
+	properties: NewProperties<ResolveNewClass<T>>
+) -> (ResolveNewClass<T>)
 
 export type SequenceKeyframe = {number | () -> nil}
 export type EventSequenceInstance = {
@@ -109,7 +197,7 @@ export type TweenConstructor<T> = (value : BaseState<T> | any, tweenInformation 
 
 -- Memory
 export type ScopeInstance = {
-	New : (self : ScopeInstance, class : string | Instance | {[string] : any?}, properties : {[any] : any}, from : any?) -> Instance,
+	New : <T>(self : ScopeInstance, class: T & (LiteralString | ClassNames | Instance), properties: NewProperties<ResolveNewClass<T>>, from : any?) -> ResolveNewClass<T>,
 	Rendered : (self : ScopeInstance, callback : (number) -> any?) -> RenderedInstance<any>,
 	Value : (self : ScopeInstance, initialValue : any) -> ValueInstance<any>,
 	Spring : (self : ScopeInstance, value : BaseState<any> | any, speed : number, dampening : number) -> SpringInstance<any>,
@@ -129,7 +217,7 @@ export type ScopeInstance = {
 	Destroy : (self : ScopeInstance) -> (),
 }
 
-export type ScopeConstructor = (scopedObjects : {[string] : (...any) -> ...any}) -> ScopeInstance
+export type ScopeConstructor = (scopedObjects : {[string]: (...any) -> ...any} | any) -> ScopeInstance
 
 -- Utilities
 export type GetValue = (state : any?) -> any?

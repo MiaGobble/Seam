@@ -1,0 +1,9 @@
+{
+	"languageMode": "strict",
+    "aliases": {
+        "transform": "@std/commands/transform/types",
+        "std": "~/.lute/typedefs/1.0.1/std",
+        "lint": "@std/commands/lint/types",
+        "lute": "~/.lute/typedefs/1.0.1/lute"
+    }
+}

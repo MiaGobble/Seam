@@ -1,6 +1,0 @@
-std = "roblox"
-
-[lints]
-unused_variable = "allow"
-shadowing = "allow"
-incorrect_standard_library_use = "allow"
