@@ -57,6 +57,10 @@ function StateManager.AttachStateToObject(object : any, stateInstance : StateIns
 		end
 
 		task.defer(function()
+			if BucketInstance.CleanupQueue == nil or BucketInstance.IsCleaning then
+				return
+			end
+
 			BucketInstance:Add(object.AncestryChanged:Connect(function()
 				if not object:IsDescendantOf(game) then
 					BucketInstance:Destroy()
