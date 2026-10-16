@@ -7,8 +7,6 @@ export type BaseState<T> = {
 	Value : T,
 }
 
-type LiteralString = string | ""
-
 export type Child = Instance | BaseState<any> | {[unknown] : Child}
 export type ConstructorDecompiled = {__CALLBACK : (...any) -> any} & {[string] : any}
 export type ConstructorCompiled = typeof(setmetatable({}, {__call = function() end}))
@@ -40,7 +38,7 @@ type fnIndex<T, U> = index<T, U>
 type fnKeyOf<T> = keyof<T>
 
 type Classes = InstanceTypeMap.Classes
-type ClassNames = InstanceTypeMap.ClassNames
+type ClassNames = string | InstanceTypeMap.ClassNames
 type InstanceAlias = Instance
 
 type function ResolveNewClass(class: type): (type)
@@ -65,7 +63,7 @@ type function ResolveNewClass(class: type): (type)
 end
 
 type UsedAs<T> = T | BaseState<any> | (...any) -> (...any)
-type function NewProperties(tbl: type): (type)
+type function ResolveNewProperties(class: type): (type)
 	const EXCLUDE = {
 		["ClassName"] = true,
 		["RobloxLocked"] = true,
@@ -78,7 +76,7 @@ type function NewProperties(tbl: type): (type)
 	-- Luau appears to infer an indexer for us, probably a bug, but it complains if we set the indexer ourselves.
 	const props = types.newtable()
 
-	local node = tbl
+	local node = class
 	while node do
 		for keyType, rwType in node:properties() do
 			if EXCLUDE[keyType:value()] then continue end
@@ -112,10 +110,20 @@ type function NewProperties(tbl: type): (type)
 	return props
 end
 
+-- Works around an issue where the typesolver locks up with "Code is too complex to typecheck!"
+-- when hydrating Instances by inhibiting ClassNames.
+type function InhibitClassNames(userClass: type): (type)
+	if userClass.tag == "extern" then
+		return types.unknown
+	else
+		return ClassNames
+	end
+end
+type NewProperties<T> = ResolveNewProperties<ResolveNewClass<T>>
+
 export type NewConstructor = <T>(
-	-- I don't know why but the typesolver refuses to work when LiteralString comes after ClassNames
-	class: T & (LiteralString | ClassNames | Instance | ((ScopeInstance?, {[any]: any}) -> (any))),
-	properties: NewProperties<ResolveNewClass<T>>
+	class: T & (InhibitClassNames<T> | "" | Instance | ((ScopeInstance?, {[any]: any}) -> (any))),
+	properties: NewProperties<T>
 ) -> (ResolveNewClass<T>)
 
 export type SequenceKeyframe = {number | () -> nil}
@@ -197,7 +205,7 @@ export type TweenConstructor<T> = (value : BaseState<T> | any, tweenInformation 
 
 -- Memory
 export type ScopeInstance = {
-	New : <T>(self : ScopeInstance, class: T & (LiteralString | ClassNames | Instance), properties: NewProperties<ResolveNewClass<T>>, from : any?) -> ResolveNewClass<T>,
+	New : <T>(self : ScopeInstance, class: T & (InhibitClassNames<T> | "" | Instance), properties: NewProperties<T>, from : any?) -> ResolveNewClass<T>,
 	Rendered : (self : ScopeInstance, callback : (number) -> any?) -> RenderedInstance<any>,
 	Value : (self : ScopeInstance, initialValue : any) -> ValueInstance<any>,
 	Spring : (self : ScopeInstance, value : BaseState<any> | any, speed : number, dampening : number) -> SpringInstance<any>,
