@@ -24,7 +24,7 @@ local function GetObjectType(object : any) : string
 	return "unknown"
 end
 
--- This function is a bit weird but it's a lot of stuff to essentially just progate changes from one thing to another
+-- Binds reactive state changes to target instance properties or Seam objects
 function StateManager.AttachStateToObject(object : any, stateInstance : StateInstance)
 	local ObjectType = GetObjectType(object)
 	local BucketInstance = Bucket.new()
@@ -32,7 +32,7 @@ function StateManager.AttachStateToObject(object : any, stateInstance : StateIns
 	local ChangedSignal = nil
 
 	if ObjectType == "Instance" then
-		-- Propogate state value to a instance
+		-- Propagate state value to an instance
 
 		local LastValue = nil
 
@@ -68,7 +68,7 @@ function StateManager.AttachStateToObject(object : any, stateInstance : StateIns
 			end))
 		end)
 	elseif ObjectType == "SeamObject" then
-		-- Propogate state value to a Seam state
+		-- Propagate state value to a Seam state
 
 		local LastValue = nil
 

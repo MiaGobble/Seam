@@ -47,11 +47,10 @@ function FollowProperty.__CALLBACK(_ : Types.ConstructorCompiled, propertyName :
 		CleanupObjectConnection(object)
 
 		local PropertyConnection = object:GetPropertyChangedSignal(propertyName):Connect(function()
-			if object[propertyName] ~= valueState.Value then
-				valueState.Value = object[propertyName]
+			local currentValue = object[propertyName]
+			if currentValue ~= valueState.Value then
+				valueState.Value = currentValue
 			end
-
-			valueState.Value = object[propertyName]
 		end)
 
 		local DestroyingConnection = object.Destroying:Connect(function()

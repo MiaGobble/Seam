@@ -10,7 +10,9 @@ local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
-Resource.__SEAM_OBJECT = Symbol.new("Resource")
+local RESOURCE_SYMBOL = Symbol.new("Resource")
+
+Resource.__SEAM_OBJECT = RESOURCE_SYMBOL
 Resource.__SEAM_CAN_BE_SCOPED = true
 
 function Resource.__CALLBACK(_ : Types.ConstructorCompiled, callback : () -> any) : Types.ResourceInstance<any>
@@ -56,29 +58,36 @@ function Resource.__CALLBACK(_ : Types.ConstructorCompiled, callback : () -> any
 	end
 
 	local ResourceObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("Resource"),
+		__SEAM_OBJECT = RESOURCE_SYMBOL,
+		__SEAM_IS_STATE = true,
 		Changed = ChangedSignal,
 		AttachedToInstance = AttachedSignal,
 		Refresh = Refresh,
 	}
 
 	function ResourceObject.Destroy()
-		BucketInstance:Destroy()
-		BucketInstance = nil
+		RequestId += 1
+		if BucketInstance then
+			BucketInstance:Destroy()
+			BucketInstance = nil
+		end
 	end
 
 	function ResourceObject.__CALLBACK(self : Types.ObjectCompiled, object : Instance, index : string)
 		AttachedSignal:Fire(object)
 
-		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+		local AttachedBucket = StateManager.AttachStateToObject(object, {
 			Value = function()
 				return self.Value
 			end,
 
 			PropertyName = index,
-		}))
+			Changed = ChangedSignal,
+		})
 
-		return ActiveResource
+		BucketInstance:Add(AttachedBucket)
+
+		return AttachedBucket
 	end
 
 	function ResourceObject.__INDEX(_ : Types.ObjectCompiled, index : string)

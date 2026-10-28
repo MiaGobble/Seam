@@ -14,17 +14,19 @@ local PendingSignals : {[any] : BatchedArguments} = {}
 local PendingOrder : {any} = {}
 
 local function FlushPendingSignals()
-	for _, changedSignal in PendingOrder do
-		local PackedArguments = PendingSignals[changedSignal]
+	local SignalsToFlush = PendingOrder
+	local ArgumentsToFlush = PendingSignals
+
+	PendingOrder = {}
+	PendingSignals = {}
+
+	for _, changedSignal in SignalsToFlush do
+		local PackedArguments = ArgumentsToFlush[changedSignal]
 
 		if PackedArguments ~= nil then
 			changedSignal:Fire(table.unpack(PackedArguments, 1, PackedArguments.n))
 		end
-
-		PendingSignals[changedSignal] = nil
 	end
-
-	table.clear(PendingOrder)
 end
 
 -- Beginning a batch does nothing but mark that it's opened

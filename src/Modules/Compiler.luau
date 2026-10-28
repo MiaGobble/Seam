@@ -32,8 +32,9 @@ function Compiler.CompileConstructor(constructorDecompiled : Types.ConstructorDe
 	end
 
 	function Meta.__index(self, index : string)
-		if BackendIndexes[index] ~= nil then
-			return BackendIndexes[index]
+		local Value = BackendIndexes[index]
+		if Value ~= nil then
+			return Value
 		end
 
 		return nil
@@ -62,8 +63,9 @@ function Compiler.CompileObject(objectDecompiled : Types.ObjectDecompiled) : Typ
 	end
 
 	function Meta.__index(self, index : string)
-		if BackendIndexes[index] ~= nil then
-			return BackendIndexes[index]
+		local Value = BackendIndexes[index]
+		if Value ~= nil then
+			return Value
 		end
 
 		if IndexCallback then

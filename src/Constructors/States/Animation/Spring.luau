@@ -18,7 +18,9 @@ local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
-Spring.__SEAM_OBJECT = Symbol.new("Spring")
+local SPRING_SYMBOL = Symbol.new("Spring")
+
+Spring.__SEAM_OBJECT = SPRING_SYMBOL
 Spring.__SEAM_CAN_BE_SCOPED = true
 
 local function GetPositionAndVelocity(oldPosition : number, oldVelocity : number, target : number, dampening : number, speed : number, timeStarted : number) : (number, number)
@@ -153,33 +155,42 @@ function Spring.__CALLBACK(_ : Types.ConstructorCompiled, value : Types.BaseStat
 	end))
 
 	local SpringObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("Spring"),
+		__SEAM_OBJECT = SPRING_SYMBOL,
+		__SEAM_IS_STATE = true,
 		Changed = ChangedSignal,
 		AttachedToInstance = AttachedSignal,
 	}
 
 	function SpringObject.Destroy()
 		UnpackedSprings = nil
-		BucketInstance:Destroy()
-		BucketInstance = nil
+		if BucketInstance then
+			BucketInstance:Destroy()
+			BucketInstance = nil
+		end
 	end
 
 	function SpringObject.__CALLBACK(self : Types.ObjectCompiled, object : any, index : string)
 		AttachedSignal:Fire(object)
 
-		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+		local AttachedBucket = StateManager.AttachStateToObject(object, {
 			Value = function()
-				Batch.Fire(ChangedSignal, "Value")
 				return self.Value
 			end,
 
 			PropertyName = index,
-		}))
+			Changed = ChangedSignal,
+		})
 
-		return ActiveValue
+		BucketInstance:Add(AttachedBucket)
+
+		return AttachedBucket
 	end
 
 	function SpringObject.__INDEX(_ : Types.ObjectCompiled, index : string)
+		if not UnpackedSprings then
+			return nil
+		end
+
 		if index == "Value" then
 			return CurrentValue
 		elseif index == "Velocity" then
@@ -202,6 +213,10 @@ function Spring.__CALLBACK(_ : Types.ConstructorCompiled, value : Types.BaseStat
 	end
 
 	function SpringObject.__NEWINDEX(_ : Types.ObjectCompiled, index : string, newValue : any)
+		if not UnpackedSprings then
+			return
+		end
+
 		if index == "Target" then
 			IsSleeping = false
 			CurrentTarget = GetValue(newValue)
@@ -250,7 +265,10 @@ function Spring.__CALLBACK(_ : Types.ConstructorCompiled, value : Types.BaseStat
 	ActiveValue = Compiler.CompileObject(SpringObject)
 
 	if typeof(value) == "table" and value.__SEAM_OBJECT then
-		value(ActiveValue, "Target")
+		local TargetAttachment = value(ActiveValue, "Target")
+		if TargetAttachment and typeof(TargetAttachment) == "table" and TargetAttachment.Destroy then
+			BucketInstance:Add(TargetAttachment)
+		end
 	end
 
 	return ActiveValue :: Types.SpringInstance<any>

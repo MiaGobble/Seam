@@ -15,7 +15,7 @@ Scope.__SEAM_OBJECT = Symbol.new("Scope")
 Scope.__SEAM_CAN_BE_SCOPED = true
 
 function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[string] : any})
-	-- Scopes have been a headache to get working, since I'm a dumdum
+	-- Manages hierarchical object lifecycle and scoped resource cleanup
 
 	local IsDestroyed = false
 	local ScopeInstance : Types.ObjectCompiled
@@ -92,6 +92,9 @@ function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[strin
 		end
 
 		IsDestroyed = true
+		if self.CachedWrappers then
+			table.clear(self.CachedWrappers)
+		end
 		self.Bucket:Destroy()
 		self.Bucket = nil
 
@@ -133,12 +136,16 @@ function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[strin
 				-- then we should error what specifically the user tried to use
 				error(`{tostring(Object.__SEAM_OBJECT or Object.__SEAM_INDEX)} is not a valid scopable Seam object`)
 			else
-				-- Idk just error
 				error("Object is not a valid scopable Seam object")
 			end
 		end
 
-		return function(_, ...)
+		local Cached = ScopeInstance.CachedWrappers[key]
+		if Cached ~= nil then
+			return Cached
+		end
+
+		local Wrapper = function(_, ...)
 			if not self.Bucket then -- If the bucket instance doesn't exist, the scope is likely destroyed
 				warn(`Attempted to use something in scope ({key}) but scope is already destroyed: {CreateDeepTraceback()}`)
 				return
@@ -170,16 +177,25 @@ function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[strin
 
 			-- But yeah, let's add created things to the bucket
 			for _, thisValue in Tuple do
-				self.Bucket:Add(thisValue)
+				local valType = typeof(thisValue)
+				if valType == "table" or valType == "Instance" or valType == "function" or valType == "thread" or valType == "RBXScriptConnection" then
+					pcall(function()
+						self.Bucket:Add(thisValue)
+					end)
+				end
 			end
 
 			-- Unpack the tuple and return it ALLLLLLLL
 			return unpack(Tuple)
 		end
+
+		ScopeInstance.CachedWrappers[key] = Wrapper
+		return Wrapper
 	end
 
 	ScopeInstance = Compiler.CompileObject(ScopeObject)
 	ScopeInstance.ScopedObjects = scopedObjects
+	ScopeInstance.CachedWrappers = {}
 	ScopeInstance.Bucket = Bucket.new()
 	ScopeInstance.ParentScope = nil
 

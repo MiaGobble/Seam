@@ -36,7 +36,7 @@ function New.__CALLBACK(_ : Types.ConstructorCompiled, class : string | Instance
 					-- A seam index is something like Attribute, Children, or Lifetime
 					index(Object, property)
 				else
-					error(`Object hydration recieved invalid index type! Expected Seam object or string, got table ({Object:GetFullName()}); {CreateDeepTraceback()}`)
+					error(`Object hydration received invalid index type! Expected Seam object or string, got table ({Object:GetFullName()}); {CreateDeepTraceback()}`)
 				end
 			elseif typeof(index) == "number" then -- Allows for implicit
 				Children(Object, property)

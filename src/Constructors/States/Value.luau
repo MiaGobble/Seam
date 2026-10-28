@@ -11,7 +11,8 @@ local Signal = require(Modules.Signal)
 local IsValueChanged = require(Modules.IsValueChanged)
 local Symbol = require(Modules.Symbol)
 
-Value.__SEAM_INDEX = Symbol.new("Value")
+local VALUE_SYMBOL = Symbol.new("Value")
+Value.__SEAM_INDEX = VALUE_SYMBOL
 Value.__SEAM_CAN_BE_SCOPED = true
 
 function Value.__CALLBACK(_ : Types.ConstructorCompiled, thisValue : any)
@@ -97,7 +98,8 @@ function Value.__CALLBACK(_ : Types.ConstructorCompiled, thisValue : any)
 	--]]
 
 	local ValueObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("Value"),
+		__SEAM_OBJECT = VALUE_SYMBOL,
+		__SEAM_IS_STATE = true,
 		Changed = ChangedSignal,
 		AttachedToInstance = AttachedSignal,
 	}
@@ -160,7 +162,7 @@ function Value.__CALLBACK(_ : Types.ConstructorCompiled, thisValue : any)
 
 		AttachedSignal:Fire(object)
 
-		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+		local AttachedBucket = StateManager.AttachStateToObject(object, {
 			Value = function()
 				if typeof(thisValue) == "table" and thisValue ~= nil then
 					return table.clone(thisValue)
@@ -170,7 +172,12 @@ function Value.__CALLBACK(_ : Types.ConstructorCompiled, thisValue : any)
 			end,
 
 			PropertyName = index,
-		}))
+			Changed = ChangedSignal,
+		})
+
+		BucketInstance:Add(AttachedBucket)
+
+		return AttachedBucket
 	end
 
 	function ValueObject.__INDEX(_ : Types.ObjectCompiled, index : string)

@@ -13,7 +13,9 @@ local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 
-Bezier.__SEAM_OBJECT = Symbol.new("Bezier")
+local BEZIER_SYMBOL = Symbol.new("Bezier")
+
+Bezier.__SEAM_OBJECT = BEZIER_SYMBOL
 Bezier.__SEAM_CAN_BE_SCOPED = true
 
 local function ClampAlpha(alphaValue : number) : number
@@ -132,7 +134,8 @@ function Bezier.__CALLBACK(_ : Types.ConstructorCompiled, alpha : any, origin : 
 	end
 
 	local BezierObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("Bezier"),
+		__SEAM_OBJECT = BEZIER_SYMBOL,
+		__SEAM_IS_STATE = true,
 		AttachedToInstance = AttachedSignal,
 	}
 
@@ -144,13 +147,14 @@ function Bezier.__CALLBACK(_ : Types.ConstructorCompiled, alpha : any, origin : 
 		end
 
 		table.clear(BoundInputConnections)
-		BucketInstance:Destroy()
-		BucketInstance = nil
+		if BucketInstance then
+			BucketInstance:Destroy()
+			BucketInstance = nil
+		end
 	end
 
 	function BezierObject.__CALLBACK(_ : Types.ObjectCompiled, object : any, index : string)
-		ComputedValue(object, index)
-		return ActiveValue
+		return ComputedValue(object, index)
 	end
 
 	function BezierObject.__INDEX(_ : Types.ObjectCompiled, index : string)

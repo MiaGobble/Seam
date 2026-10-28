@@ -47,11 +47,10 @@ function FollowAttribute.__CALLBACK(_ : Types.ConstructorCompiled, attributeName
 		CleanupObjectConnection(object)
 
 		local AttributeConnection = object:GetAttributeChangedSignal(attributeName):Connect(function()
-			if object:GetAttribute(attributeName) ~= valueState.Value then
-				valueState.Value = object:GetAttribute(attributeName)
+			local currentAttribute = object:GetAttribute(attributeName)
+			if currentAttribute ~= valueState.Value then
+				valueState.Value = currentAttribute
 			end
-
-			valueState.Value = object:GetAttribute(attributeName)
 		end)
 
 		local DestroyingConnection = object.Destroying:Connect(function()

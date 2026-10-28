@@ -8,19 +8,22 @@ local Symbol = require(Modules.Symbol)
 local Bucket = require(Modules.Bucket)
 local UpdateSignals = require(Modules.UpdateSignals)
 
-EventSequence.__SEAM_OBJECT = Symbol.new("EventSequence")
+local EVENT_SEQUENCE_SYMBOL = Symbol.new("EventSequence")
+
+EventSequence.__SEAM_OBJECT = EVENT_SEQUENCE_SYMBOL
 EventSequence.__SEAM_CAN_BE_SCOPED = true
 
 function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyframes : {Types.SequenceKeyframe}) : Types.EventSequenceInstance
 	local CurrentTime = 0
 	local PlayedIndexes = {}
+	local PlayedCount = 0
 	local EventSequenceInstance : Types.EventSequenceInstance = {} :: Types.EventSequenceInstance
 	local PlayingBucket = nil
 	local CurrentlyPaused = false
 
 	for index, keyframe in sequenceKeyframes do
 		if typeof(index) ~= "number" then
-			error("Attmped to pass dictionary for sequence keyframes")
+			error("Attempted to pass dictionary for sequence keyframes")
 		end
 
 		if typeof(keyframe[1]) ~= "number" then
@@ -30,6 +33,13 @@ function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyfram
 		if typeof(keyframe[2]) ~= "function" then
 			error("EventSequenceKeypoint needs callback")
 		end
+	end
+
+	local CumulativeTimes = table.create(#sequenceKeyframes)
+	local RunningTime = 0
+	for index, keyframe in sequenceKeyframes do
+		RunningTime += keyframe[1]
+		CumulativeTimes[index] = RunningTime
 	end
 
 	EventSequenceInstance.Looped = false
@@ -42,6 +52,7 @@ function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyfram
 
 		CurrentlyPaused = false
 		PlayingBucket = Bucket.new()
+		PlayedCount = 0
 
 		PlayingBucket:Add(UpdateSignals.OnFrameUpdate:Connect(function(delta : number)
 			if CurrentlyPaused then
@@ -55,24 +66,18 @@ function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyfram
 					continue
 				end
 
-				local PreviousTotalTime = 0
-
-				if index > 1 then
-					for previousIndex = 1, index - 1 do
-						PreviousTotalTime += sequenceKeyframes[previousIndex][1]
-					end
-				end
-
-				if CurrentTime >= keyframe[1] + PreviousTotalTime then
+				if CurrentTime >= CumulativeTimes[index] then
 					PlayedIndexes[index] = true
+					PlayedCount += 1
 					task.spawn(keyframe[2])
 				end
 			end
 
-			if #sequenceKeyframes == #PlayedIndexes then
+			if PlayedCount == #sequenceKeyframes then
 				if EventSequenceInstance.Looped then
 					CurrentTime = -EventSequenceInstance.LoopDelayTime
 					table.clear(PlayedIndexes)
+					PlayedCount = 0
 				else
 					PlayingBucket:Destroy()
 				end
@@ -83,7 +88,8 @@ function EventSequence.__CALLBACK(_ : Types.ConstructorCompiled, sequenceKeyfram
 			CurrentTime = 0
 			PlayingBucket = nil
 			CurrentlyPaused = false
-			PlayedIndexes = {}
+			table.clear(PlayedIndexes)
+			PlayedCount = 0
 		end)
 	end
 

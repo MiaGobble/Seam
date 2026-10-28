@@ -9,14 +9,18 @@ local StateManager = require(Modules.StateManager)
 local Bucket = require(Modules.Bucket)
 local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
+local IsValueChanged = require(Modules.IsValueChanged)
 local GetValue = require(script.Parent.Parent.Utilities.GetValue)
 local IsState = require(script.Parent.Parent.Utilities.IsState)
 
-Computed.__SEAM_INDEX = Symbol.new("Computed")
+local COMPUTED_INDEX_SYMBOL = Symbol.new("Computed")
+local COMPUTED_OBJECT_SYMBOL = Symbol.new("ComputedInstance")
+
+Computed.__SEAM_INDEX = COMPUTED_INDEX_SYMBOL
 Computed.__SEAM_CAN_BE_SCOPED = true
 
 function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value : Types.ValueInstance<any>) -> any) -> any?)
-	-- This shit has caused me so much pain
+	-- Manages reactive computation, dependency tracking, and cached evaluation
 	local BucketInstance = Bucket.new()
 	local ChangedSignal = Signal.new()
 	local DependencyConnections : {[any] : RBXScriptConnection} = {}
@@ -62,7 +66,14 @@ function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value :
 			return GetValue(thisValue)
 		end
 
-		CurrentValue = callback(Use)
+		local Success, Result = pcall(callback, Use)
+		IsRecomputing = false
+
+		if not Success then
+			error(Result, 2)
+		end
+
+		CurrentValue = Result
 		IsInitialized = true
 
 		for dependency, connection in DependencyConnections do
@@ -74,13 +85,14 @@ function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value :
 				DependencyConnections[dependency] = nil
 			end
 		end
-
-		IsRecomputing = false
 	end
 
 	RecomputeAndFireChanged = function()
+		local OldValue = CurrentValue
 		RecomputeCore()
-		Batch.Fire(ChangedSignal, "Value", CurrentValue)
+		if IsValueChanged(OldValue, CurrentValue) then
+			Batch.Fire(ChangedSignal, "Value", CurrentValue)
+		end
 	end
 
 	local function RecomputeSilently()
@@ -88,7 +100,8 @@ function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value :
 	end
 
 	local ComputationObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("ComputedInstance"),
+		__SEAM_OBJECT = COMPUTED_OBJECT_SYMBOL,
+		__SEAM_IS_STATE = true,
 	}
 
 	function ComputationObject.Destroy()
@@ -99,7 +112,7 @@ function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value :
 	function ComputationObject.__CALLBACK(_ : Types.ObjectCompiled, object : Instance, index : string)
 		AttachedSignal:Fire(object)
 
-		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+		local AttachedBucket = StateManager.AttachStateToObject(object, {
 			Value = function()
 				-- We don't want to re-calculate the computed when the states haven't changed,
 				-- so let's just force-calculate only when it's first checked
@@ -112,9 +125,12 @@ function Computed.__CALLBACK(_ : Types.ConstructorCompiled, callback : ((value :
 			end,
 
 			PropertyName = index,
-		}))
+			Changed = ChangedSignal,
+		})
 
-		return ActiveComputation
+		BucketInstance:Add(AttachedBucket)
+
+		return AttachedBucket
 	end
 
 	function ComputationObject.__INDEX(_ : Types.ObjectCompiled, index : string)

@@ -63,3 +63,4 @@ pesde.lock
 website/node_modules/
 website/.docusaurus/
 website/.cache-loader/
+.opencode/

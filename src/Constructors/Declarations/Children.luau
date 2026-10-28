@@ -28,11 +28,15 @@ local function ApplyChildren(parent : Instance, children : {Types.Child} | Types
 			error(`Invalid child type! Expected Instance, got {typeof(child)}`)
 		end
 
-		local Success = pcall(function()
-			child.Parent = parent
-		end)
+		if child.Parent ~= parent then
+			local Success = pcall(function()
+				child.Parent = parent
+			end)
 
-		if Success then
+			if Success then
+				table.insert(ChildrenCreated, child)
+			end
+		else
 			table.insert(ChildrenCreated, child)
 		end
 	end
@@ -42,11 +46,15 @@ end
 
 local function GetOldChildren(oldChildren : {Instance}, newChildren : {Instance})
 	local DifferenceSet = {}
+	local NewSet = {}
+
+	for _, child in newChildren do
+		NewSet[child] = true
+	end
 
 	for _, oldChild in oldChildren do
-		if not table.find(newChildren, oldChild) then
+		if not NewSet[oldChild] then
 			table.insert(DifferenceSet, oldChild)
-			continue
 		end
 	end
 

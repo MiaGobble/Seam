@@ -6,31 +6,35 @@ local Types = require(Modules.Types)
 local Compiler = require(Modules.Compiler)
 
 local RECOGNIZED_STATE_SYMBOLS = {
-	"Spring",
-	"Tween",
-	"Bezier",
-	"Resource",
-	"ComputedInstance",
-	"RenderedInstance",
-	"Value",
+	Spring = true,
+	Tween = true,
+	Bezier = true,
+	Resource = true,
+	ComputedInstance = true,
+	RenderedInstance = true,
+	Value = true,
 }
 
 IsState.__SEAM_CAN_BE_SCOPED = false
 
 function IsState.__CALLBACK(_ : Types.ConstructorCompiled, checkedValue : any?) : boolean
 	if typeof(checkedValue) ~= "table" then
-		return false -- Not a state since it's not a table
+		return false
+	end
+
+	if checkedValue.__SEAM_IS_STATE then
+		return true
 	end
 
 	if not checkedValue.__SEAM_OBJECT then
-		return false -- Not a state since it's not from Seam or not a Seam object
+		return false
 	end
 
-	if table.find(RECOGNIZED_STATE_SYMBOLS, tostring(checkedValue.__SEAM_OBJECT)) then
-		return true -- Is a state since the symbol can be coerced into a string from the recognized state symbols table
+	if RECOGNIZED_STATE_SYMBOLS[tostring(checkedValue.__SEAM_OBJECT)] then
+		return true
 	end
 
-	return false -- Default to false
+	return false
 end
 
 return Compiler.CompileConstructor(IsState) :: Types.IsState

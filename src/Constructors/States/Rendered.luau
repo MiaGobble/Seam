@@ -11,7 +11,10 @@ local Signal = require(Modules.Signal)
 local Symbol = require(Modules.Symbol)
 local UpdateSignals = require(Modules.UpdateSignals)
 
-Rendered.__SEAM_INDEX = Symbol.new("Rendered")
+local RENDERED_INDEX_SYMBOL = Symbol.new("Rendered")
+local RENDERED_OBJECT_SYMBOL = Symbol.new("RenderedInstance")
+
+Rendered.__SEAM_INDEX = RENDERED_INDEX_SYMBOL
 Rendered.__SEAM_CAN_BE_SCOPED = true
 
 function Rendered.__CALLBACK(_ : Types.ConstructorCompiled, callback : (number) -> any?)
@@ -38,7 +41,8 @@ function Rendered.__CALLBACK(_ : Types.ConstructorCompiled, callback : (number) 
 	end))
 
 	local RenderedObject : Types.ObjectDecompiled = {
-		__SEAM_OBJECT = Symbol.new("RenderedInstance"),
+		__SEAM_OBJECT = RENDERED_OBJECT_SYMBOL,
+		__SEAM_IS_STATE = true,
 		Changed = ChangedSignal,
 		AttachedToInstance = AttachedSignal,
 	}
@@ -50,14 +54,17 @@ function Rendered.__CALLBACK(_ : Types.ConstructorCompiled, callback : (number) 
 	function RenderedObject.__CALLBACK(self : Types.ObjectCompiled, object : Instance, index : string)
 		AttachedSignal:Fire(object)
 
-		BucketInstance:Add(StateManager.AttachStateToObject(object, {
+		local AttachedBucket = StateManager.AttachStateToObject(object, {
 			Value = function()
 				return self.Value
 			end,
 			PropertyName = index,
-		}))
+			Changed = ChangedSignal,
+		})
 
-		return ActiveComputation
+		BucketInstance:Add(AttachedBucket)
+
+		return AttachedBucket
 	end
 
 	function RenderedObject.__INDEX(_ : Types.ObjectCompiled, index : string)

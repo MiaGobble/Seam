@@ -254,7 +254,7 @@ function StyleSheet.__CALLBACK(_ : Types.ConstructorCompiled, object : Instance,
 	if typeof(activeStyleSheet) == "table" and activeStyleSheet.__SEAM_STYLESHEET_INSTANCE == nil and #activeStyleSheet > 0 then
 		local InlineStyleSheet = StyleSheet.new()
 
-		for _, rule in pairs(activeStyleSheet) do
+		for _, rule in activeStyleSheet do
 			if typeof(rule) == "table" and typeof(rule.Selector) == "string" and typeof(rule.Properties) == "table" then
 				InlineStyleSheet:Style(rule.Selector)(rule.Properties)
 			end

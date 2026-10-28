@@ -10,10 +10,15 @@ export type Bucket = typeof(setmetatable({} :: {
 -- Constants
 local TABLE_CLEANUP_METHODS = {
 	"Destroy",
+	"destroy",
 	"Disconnect",
+	"disconnect",
 	"Cleanup",
+	"cleanup",
 	"Clean",
+	"clean",
 	"Cancel",
+	"cancel",
 }
 
 local CLEANUP_METHOD_NAMES = {
@@ -43,12 +48,9 @@ local function GetMatchingCleanupCallback(object : any, cleanupMethodName : stri
 		end
 
 		for _, genericCleanupName in TABLE_CLEANUP_METHODS do
-			if typeof(object[genericCleanupName]) == "function" then
-				return object[genericCleanupName] :: (any) -> nil
-			end
-
-			if typeof(object[genericCleanupName:lower()]) == "function" then
-				return object[genericCleanupName:lower()] :: (any) -> nil
+			local cleanupMethod = object[genericCleanupName]
+			if typeof(cleanupMethod) == "function" then
+				return cleanupMethod :: (any) -> nil
 			end
 		end
 	end
