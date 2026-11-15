@@ -7,13 +7,18 @@ local Compiler = require(Modules.Compiler)
 local Symbol = require(Modules.Symbol)
 local CreateDeepTraceback = require(Modules.CreateDeepTraceback)
 local Computed = require(script.Parent.Computed)
+local Scope = require(script.Parent.Parent.Memory.Scope)
 
 ForPairs.__SEAM_INDEX = Symbol.new("ForPairs")
 ForPairs.__SEAM_CAN_BE_SCOPED = true
 
-function ForPairs.__CALLBACK(_ : Types.ConstructorCompiled, trackedValue : Types.ValueInstance<any>, callback : ((value : Types.ValueInstance<any>) -> any) -> any?)
+function ForPairs.__CALLBACK(_ : Types.ConstructorCompiled, thisScope : Types.ScopeInstance?, trackedValue : Types.ValueInstance<any>, callback : ((value : Types.ValueInstance<any>) -> any) -> any?, comparator : (old : Types.ValueInstance<any>, new: Types.ValueInstance<any>) -> boolean)
 	local LastValues = {}
+	local Scopes = {}
 	local OutputtedValues = {}
+	
+	local scope = thisScope or Scope()
+	
 
 	-- ForPairs is literally just Computed behind the scenes, with the exception that it checks for key differences
 	local ActiveComputation = Computed(function(use)
@@ -25,18 +30,29 @@ function ForPairs.__CALLBACK(_ : Types.ConstructorCompiled, trackedValue : Types
 		end
 
 		for index, newValue in ThisTable do
-			if LastValues[index] ~= newValue then
+			if LastValues[index] ~= newValue or (comparator and comparator(LastValues[index], newValue)) then
+				
+				if Scopes[index] then
+					Scopes[index]:Destroy()
+					Scopes[index] = nil
+				end
+				
 				LastValues[index] = newValue
-				ThisOuput[index] = callback(use, index, newValue)
+				Scopes[index] = scope:InnerScope()
+				ThisOuput[index] = callback(Scopes[index], use, index, newValue)
 			end
 		end
 
 		for index, lastValue in LastValues do
-			if ThisTable[index] ~= lastValue then
+			if ThisTable[index] ~= lastValue or (comparator and comparator(lastValue, ThisTable[index])) then
+				Scopes[index]:Destroy()
+				Scopes[index] = nil
+				
 				LastValues[index] = ThisTable[index]
-
+				
 				if ThisTable[index] then
-					ThisOuput[index] = callback(use, index, ThisTable[index])
+					Scopes[index] = scope:InnerScope()
+					ThisOuput[index] = callback(Scopes[index], use, index, ThisTable[index])
 				end
 			elseif not ThisOuput[index] then
 				ThisOuput[index] = OutputtedValues[index]
