@@ -190,7 +190,7 @@ export type RenderedInstance<T> = {} & BaseState<T>
 export type RenderedConstructor<T> = (callback : (number) -> any?) -> RenderedInstance<T>
 
 export type ForPairsInstance<T> = {} & BaseState<T>
-export type ForPairsConstructor<T> = (trackedValue : ValueInstance<any>, callback : ((value : ValueInstance<T>) -> any) -> any?) -> ForPairsInstance<T>
+export type ForPairsConstructor<T> = (trackedValue : ValueInstance<any>, callback : (scope: ScopeInstance, use: ((value : ValueInstance<T>) -> any) -> any?, index: any, value: any) -> any?, comparator: ((old: ValueInstance<any>, new: ValueInstance<any>) -> boolean)?) -> ForPairsInstance<T>
 
 export type SpringInstance<T> = {
 	Velocity : T,

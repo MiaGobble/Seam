@@ -169,7 +169,6 @@ function Spring.__CALLBACK(_ : Types.ConstructorCompiled, value : Types.BaseStat
 
 		BucketInstance:Add(StateManager.AttachStateToObject(object, {
 			Value = function()
-				Batch.Fire(ChangedSignal, "Value")
 				return self.Value
 			end,
 

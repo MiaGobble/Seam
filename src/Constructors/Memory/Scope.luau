@@ -152,12 +152,14 @@ function Scope.__CALLBACK(_ : Types.ConstructorCompiled, scopedObjects : {[strin
 				-- If it's a non-Seam function, let's pass the scope as the first parameter,
 				-- then pass in everything else
 				Tuple = {Object(self, ...)}
-			elseif Object.__SEAM_OBJECT and tostring(Object.__SEAM_OBJECT) == "New" then
+			elseif (Object.__SEAM_OBJECT and tostring(Object.__SEAM_OBJECT) == "New") then
 				-- For New specifically, we want to actually put scope at the end. In the
 				-- future, if seam requires scopes, this will change
 				local Args = {...}
 				table.insert(Args, self)
 				Tuple = {Object(unpack(Args))}
+			elseif (Object.__SEAM_INDEX and tostring(Object.__SEAM_INDEX) == "ForPairs") then
+				Tuple = {Object(self, ...)}
 			else
 				-- Right now, scope is not passed in to most seam objects
 				Tuple = {Object(...)}
