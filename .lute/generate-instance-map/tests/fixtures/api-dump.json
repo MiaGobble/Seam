@@ -1,0 +1,60 @@
+{
+	"Version": 1,
+	"Classes": [
+		{
+			"Name": "Instance",
+			"Superclass": "<<<ROOT>>>",
+			"Tags": ["NotCreatable", "NotBrowsable"],
+			"Members": [
+				{ "MemberType": "Property", "Name": "Archivable", "ValueType": { "Category": "Primitive", "Name": "bool" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Name", "ValueType": { "Category": "Primitive", "Name": "string" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Parent", "ValueType": { "Category": "Class", "Name": "Instance" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["NotReplicated"] },
+				{ "MemberType": "Property", "Name": "ClassName", "ValueType": { "Category": "Primitive", "Name": "string" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["ReadOnly", "NotReplicated"] },
+				{ "MemberType": "Property", "Name": "RobloxLocked", "ValueType": { "Category": "Primitive", "Name": "bool" }, "Security": { "Read": "PluginSecurity", "Write": "PluginSecurity" } },
+				{ "MemberType": "Property", "Name": "DataCost", "ValueType": { "Category": "Primitive", "Name": "int" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["Hidden", "Deprecated"] },
+				{ "MemberType": "Function", "Name": "Destroy", "Security": "None", "Parameters": [], "ReturnType": { "Category": "Primitive", "Name": "null" } },
+				{ "MemberType": "Event", "Name": "Changed", "Security": "None", "Parameters": [] }
+			]
+		},
+		{
+			"Name": "GuiObject",
+			"Superclass": "Instance",
+			"Tags": ["NotCreatable"],
+			"Members": [
+				{ "MemberType": "Property", "Name": "Size", "ValueType": { "Category": "DataType", "Name": "UDim2" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Visible", "ValueType": { "Category": "Primitive", "Name": "bool" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "BackgroundColor", "ValueType": { "Category": "DataType", "Name": "BrickColor" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["Hidden", "Deprecated"] },
+				{ "MemberType": "Property", "Name": "NextSelectionUp", "ValueType": { "Category": "Class", "Name": "GuiObject" }, "Security": { "Read": "None", "Write": "None" } }
+			]
+		},
+		{
+			"Name": "Frame",
+			"Superclass": "GuiObject",
+			"Members": [
+				{ "MemberType": "Property", "Name": "Style", "ValueType": { "Category": "Enum", "Name": "FrameStyle" }, "Security": { "Read": "None", "Write": "None" } }
+			]
+		},
+		{
+			"Name": "TextLabel",
+			"Superclass": "GuiObject",
+			"Members": [
+				{ "MemberType": "Property", "Name": "Text", "ValueType": { "Category": "Primitive", "Name": "string" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Font", "ValueType": { "Category": "Enum", "Name": "Font" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["Hidden", "NotReplicated"] },
+				{ "MemberType": "Property", "Name": "ContentText", "ValueType": { "Category": "Primitive", "Name": "string" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["ReadOnly", "NotReplicated"] },
+				{ "MemberType": "Property", "Name": "Odd Name", "ValueType": { "Category": "Primitive", "Name": "float" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "end", "ValueType": { "Category": "Primitive", "Name": "int64" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Mystery", "ValueType": { "Category": "DataType", "Name": "Mystery" }, "Security": { "Read": "None", "Write": "None" } },
+				{ "MemberType": "Property", "Name": "Hidden", "ValueType": { "Category": "Primitive", "Name": "bool" }, "Security": { "Read": "None", "Write": "None" }, "Tags": ["NotScriptable"] },
+				{ "MemberType": "Property", "Name": "Size", "ValueType": { "Category": "DataType", "Name": "Vector2" }, "Security": { "Read": "None", "Write": "None" } }
+			]
+		},
+		{
+			"Name": "Workspace",
+			"Superclass": "Instance",
+			"Tags": ["NotCreatable", "Service"],
+			"Members": [
+				{ "MemberType": "Property", "Name": "Gravity", "ValueType": { "Category": "Primitive", "Name": "double" }, "Security": { "Read": "None", "Write": "None" } }
+			]
+		}
+	]
+}
