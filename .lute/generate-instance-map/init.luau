@@ -7,7 +7,7 @@
 
 	Example:
 	```bash
-	lute run generate-instance-map -t "!NotCreatable,!NotReplicated,!Deprecated" -s GuiBase,UIBase
+	lute run generate-instance-map -r 0.746 -t '!NotCreatable,!NotReplicated,!Deprecated,!Service' -w 'T | {Value: any} | (...any) -> (...any)' -o src/Modules/InstanceTypeMap.luau
 	```
 
 	For more information on usage, run:
