@@ -41,9 +41,57 @@ type Classes = InstanceTypeMap.Classes
 type ClassNames = string | InstanceTypeMap.ClassNames
 type InstanceAlias = Instance
 
+type AncestorClasses = InstanceTypeMap.AncestorClasses
+
+-- The properties New accepts for each class, precomputed by generate-instance-map (see InstanceTypeMap.luau's
+-- header). Each property's type is wrapped as `T | {Value: any} | (...any) -> (...any)`.
+-- Don't reference this from a type function: it'd be serialized on every call, which is slow.
+type Properties = InstanceTypeMap.Properties
+
+-- Selects the class's entry in Properties: the class name itself, the nearest known class an Instance type
+-- inherits from when hydrating, and Instance otherwise
+type function NewPropertiesKey(class: type): (type)
+	const tag = class.tag
+	if tag == "singleton" then
+		if pcall(fnIndex, Classes, class) then
+			return class
+		end
+	elseif tag == "extern" then
+		local node = class
+		while node do
+			for _, classMap in {Classes, AncestorClasses} do
+				for key, entry in classMap:properties() do
+					if entry.read == node then
+						return key
+					end
+				end
+			end
+
+			node = node:readparent()
+		end
+	end
+
+	return types.singleton("Instance")
+end
+
 type function ResolveNewClass(class: type): (type)
 	const tag = class.tag
-	if tag == "extern" then
+	if tag == "intersection" then
+		-- Newer Luau (seen on 0.746/0.747, not 0.740) can run this while T is still being inferred, apparently with the
+		-- class parameter's intersection. Answering with a fallback then stops the properties table literal from being
+		-- checked against NewProperties<T>. Since Luau 0.744 a missing optional property no longer passes width subtyping,
+		-- so `New(Class, {})` fails. Erroring makes the solver retry once T is solved.
+		for _, component in class:components() do
+			if component.tag == "extern" then
+				return component
+			elseif component.tag == "singleton" then
+				const exists, classType = pcall(fnIndex, Classes, component)
+				if exists then return classType end
+			end
+		end
+
+		error("the class isn't resolved yet")
+	elseif tag == "extern" then
 		return class
 	elseif tag == "singleton" then
 		const exists, classType = pcall(fnIndex, Classes, class)
@@ -62,67 +110,29 @@ type function ResolveNewClass(class: type): (type)
 	end
 end
 
-type UsedAs<T> = T | BaseState<any> | (...any) -> (...any)
-type function ResolveNewProperties(class: type): (type)
-	const EXCLUDE = {
-		["ClassName"] = true,
-		["RobloxLocked"] = true,
-		["AbsolutePosition"] = true,
-		["AbsoluteRotation"] = true,
-		["AbsoluteSize"] = true,
-		["Localize"] = true,
-	}
-
-	-- Luau appears to infer an indexer for us, probably a bug, but it complains if we set the indexer ourselves.
-	const props = types.newtable()
-
-	local node = class
-	while node do
-		for keyType, rwType in node:properties() do
-			if EXCLUDE[keyType:value()] then continue end
-
-			const writeType = rwType.write
-
-			-- Filter out read-only members
-			-- LUAU FIXME: This doesn't work right now because there is no serialized distinction
-			-- between read-only and other members. Both read and write are always set.
-			if not writeType then continue end
-
-			-- Filter out methods
-			if writeType.tag == "function" then continue end
-
-			-- Account for overloads too
-			if writeType.tag == "intersection" and writeType:components()[1].tag == "function" then continue end
-
-			-- Filter out signals
-			if writeType.tag == "table" or writeType.tag == "extern" then
-				const exists = pcall(fnIndex, writeType, types.singleton("Connect"))
-				if exists then continue end
-			end
-
-			-- LUAU FIXME: subtyping doesn't work if we don't make it read-only
-			props:setreadproperty(keyType, types.optional(UsedAs(writeType)))
-		end
-
-		node = node:readparent()
-	end
-
-	return props
-end
-
--- Works around an issue where the typesolver locks up with "Code is too complex to typecheck!"
--- when hydrating Instances by inhibiting ClassNames.
+-- Works around an issue where the typesolver locks up with "Code is too complex to typecheck!" when hydrating Instances
+-- by inhibiting ClassNames.
+-- Known class names return themselves: checking them against the full union is slow, and the union only helps
+-- autocomplete while the name is incomplete.
 type function InhibitClassNames(userClass: type): (type)
 	if userClass.tag == "extern" then
 		return types.unknown
+	elseif userClass.tag == "singleton" and pcall(fnIndex, Classes, userClass) then
+		return userClass
 	else
 		return ClassNames
 	end
 end
-type NewProperties<T> = ResolveNewProperties<ResolveNewClass<T>>
+
+-- A single index keeps type errors pointing at the property, with its expected type
+type NewProperties<T> = fnIndex<Properties, NewPropertiesKey<T>>
 
 export type NewConstructor = <T>(
-	class: T & (InhibitClassNames<T> | "" | Instance | ((ScopeInstance?, {[any]: any}) -> (any))),
+	class: T & (
+		InhibitClassNames<T> | "" | Instance
+		-- ScopeInstance constructor, we use any to avoid a cycle that breaks optional table properties
+		| ((any?, {[any]: any}) -> (any))
+	),
 	properties: NewProperties<T>
 ) -> (ResolveNewClass<T>)
 
